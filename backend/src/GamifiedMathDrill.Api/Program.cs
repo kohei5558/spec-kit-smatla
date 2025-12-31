@@ -1,5 +1,6 @@
 using GamifiedMathDrill.Api.Middleware;
 using GamifiedMathDrill.Core.Interfaces;
+using GamifiedMathDrill.Core.Services;
 using GamifiedMathDrill.Infrastructure.Data;
 using GamifiedMathDrill.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,14 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IProblemRepository, ProblemRepository>();
 builder.Services.AddScoped<ILearningRecordRepository, LearningRecordRepository>();
+builder.Services.AddScoped<ILevelRepository, LevelRepository>();
+builder.Services.AddScoped<IRewardRepository, RewardRepository>();
+builder.Services.AddScoped<IAcquiredRewardRepository, AcquiredRewardRepository>();
+builder.Services.AddScoped<IDailyChallengeRepository, DailyChallengeRepository>();
+
+// Register services
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IProblemService, ProblemService>();
 
 // CORS policy
 builder.Services.AddCors(options =>
