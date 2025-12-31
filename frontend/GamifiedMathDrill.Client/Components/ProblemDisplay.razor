@@ -1,0 +1,75 @@
+@using GamifiedMathDrill.Client.Models
+
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">問題</h3>
+    </div>
+    <div class="card-body">
+        <div class="text-center mb-4">
+            <span class="badge bg-secondary fs-6">@Problem.CalculationTypeText</span>
+            <span class="badge bg-info fs-6 ms-2">難易度: @Problem.DifficultyLevel</span>
+        </div>
+        
+        <div class="problem-display text-center mb-4">
+            <h1 class="display-3 fw-bold text-primary">@Problem.Question</h1>
+        </div>
+
+        <div class="answer-input mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text">答え:</span>
+                        <input type="number" 
+                               class="form-control form-control-lg text-center" 
+                               @bind="Answer"
+                               @bind:event="oninput"
+                               @onkeypress="HandleKeyPress"
+                               placeholder="数字を入力"
+                               disabled="@IsSubmitting" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button class="btn btn-success btn-lg px-5" 
+                    @onclick="OnSubmit" 
+                    disabled="@IsSubmitting">
+                @if (IsSubmitting)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    <span>判定中...</span>
+                }
+                else
+                {
+                    <span>答える</span>
+                }
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ProblemDto Problem { get; set; } = null!;
+
+    [Parameter]
+    public int Answer { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnAnswerChange { get; set; }
+
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    [Parameter]
+    public bool IsSubmitting { get; set; }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !IsSubmitting)
+        {
+            await OnSubmit.InvokeAsync();
+        }
+    }
+}
