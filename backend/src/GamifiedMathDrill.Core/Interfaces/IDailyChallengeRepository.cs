@@ -4,5 +4,5 @@ namespace GamifiedMathDrill.Core.Interfaces;
 
 public interface IDailyChallengeRepository : IRepository<DailyChallenge>
 {
-    Task<DailyChallenge?> GetByDateAsync(DateTime date);
+    Task<DailyChallenge?> GetByDateAsync(DateOnly date);
 }

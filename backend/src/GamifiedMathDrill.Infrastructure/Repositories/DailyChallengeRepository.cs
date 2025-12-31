@@ -11,11 +11,10 @@ public class DailyChallengeRepository : Repository<DailyChallenge>, IDailyChalle
     {
     }
 
-    public async Task<DailyChallenge?> GetByDateAsync(DateTime date)
+    public async Task<DailyChallenge?> GetByDateAsync(DateOnly date)
     {
-        var targetDate = DateOnly.FromDateTime(date.Date);
         return await _context.Set<DailyChallenge>()
             .Include(dc => dc.Problem)
-            .FirstOrDefaultAsync(dc => dc.TargetDate == targetDate);
+            .FirstOrDefaultAsync(dc => dc.TargetDate == date);
     }
 }

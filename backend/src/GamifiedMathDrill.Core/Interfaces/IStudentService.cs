@@ -9,4 +9,5 @@ public interface IStudentService
     Task<Student> UpdateLoginAsync(int id);
     Task<Student> UpdatePointsAsync(int id, int pointsToAdd);
     Task<Student> UpdateLevelAsync(int id, int newLevelId);
+    string GetEncouragementMessage(int consecutiveDays);
 }

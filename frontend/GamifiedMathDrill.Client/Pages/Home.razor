@@ -1,7 +1,9 @@
 ﻿@page "/"
 @using GamifiedMathDrill.Client.Services
 @using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Components.Home
 @inject StudentApiClient StudentApi
+@inject DailyChallengeApiClient DailyChallengeApi
 @inject NavigationManager Navigation
 
 <PageTitle>ホーム - 計算ドリル</PageTitle>
@@ -43,6 +45,22 @@
                 おかえり、@student.Name さん！
             </MudText>
 
+            <!-- 連続日数の大きな表示 -->
+            <MudItem Class="mb-6">
+                <ConsecutiveDaysDisplay ConsecutiveDays="@student.ConsecutiveDays" 
+                                       EncouragementMessage="@encouragementMessage" />
+            </MudItem>
+
+            <!-- デイリーチャレンジカード -->
+            @if (dailyChallenge != null)
+            {
+                <MudItem Class="mb-6">
+                    <DailyChallengeCard Challenge="@dailyChallenge" 
+                                       IsActive="true"
+                                       OnStartChallenge="StartDailyChallenge" />
+                </MudItem>
+            }
+
             <MudGrid Class="mb-6">
                 <MudItem xs="6" md="3">
                     <MudPaper Class="pa-4 text-center" Elevation="1">
@@ -74,13 +92,6 @@
                 </MudItem>
             </MudGrid>
 
-            @if (student.ConsecutiveDays >= 3)
-            {
-                <MudAlert Severity="Severity.Success" Icon="@Icons.Material.Filled.Celebration" Class="mb-4">
-                    すごい！@student.ConsecutiveDays 日連続だよ！その調子！
-                </MudAlert>
-            }
-
             <MudButton Variant="Variant.Filled" 
                       Color="Color.Primary" 
                       Size="Size.Large"
@@ -105,12 +116,19 @@
 
 @code {
     private StudentDto? student;
+    private DailyChallengeDto? dailyChallenge;
     private string studentName = "";
+    private string encouragementMessage = "";
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadStudent();
+        if (student != null)
+        {
+            await LoadDailyChallenge();
+            encouragementMessage = GetEncouragementMessage(student.ConsecutiveDays);
+        }
     }
 
     private async Task LoadStudent()
@@ -132,6 +150,19 @@
         }
     }
 
+    private async Task LoadDailyChallenge()
+    {
+        try
+        {
+            dailyChallenge = await DailyChallengeApi.GetTodaysChallengeAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading daily challenge: {ex.Message}");
+            dailyChallenge = null;
+        }
+    }
+
     private async Task CreateStudent()
     {
         if (string.IsNullOrWhiteSpace(studentName)) return;
@@ -149,6 +180,27 @@
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private string GetEncouragementMessage(int consecutiveDays)
+    {
+        return consecutiveDays switch
+        {
+            >= 30 => "🎉 すごい！30日連続達成！あなたは計算マスターです！",
+            >= 14 => "🌟 14日連続！素晴らしい継続力です！この調子で続けよう！",
+            >= 7 => "💪 1週間連続達成！がんばっているね！",
+            >= 3 => "😊 3日連続！いい感じだよ！毎日続けよう！",
+            >= 1 => "👍 今日もがんばろう！",
+            _ => "🎯 さあ、始めよう！"
+        };
+    }
+
+    private void StartDailyChallenge()
+    {
+        if (dailyChallenge != null)
+        {
+            Navigation.NavigateTo($"/problem?challengeId={dailyChallenge.Id}");
         }
     }
 }

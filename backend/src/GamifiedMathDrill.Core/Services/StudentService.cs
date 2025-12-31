@@ -117,4 +117,17 @@ public class StudentService : IStudentService
         await _studentRepository.UpdateAsync(student);
         return student;
     }
+
+    public string GetEncouragementMessage(int consecutiveDays)
+    {
+        return consecutiveDays switch
+        {
+            >= 30 => "🎉 すごい！30日連続達成！あなたは計算マスターです！",
+            >= 14 => "🌟 14日連続！素晴らしい継続力です！この調子で続けよう！",
+            >= 7 => "💪 1週間連続達成！がんばっているね！",
+            >= 3 => "😊 3日連続！いい感じだよ！毎日続けよう！",
+            >= 1 => "👍 今日もがんばろう！",
+            _ => "🎯 さあ、始めよう！"
+        };
+    }
 }
