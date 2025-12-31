@@ -19,5 +19,6 @@ builder.Services.AddScoped<ProblemApiClient>();
 builder.Services.AddScoped<StudentApiClient>();
 builder.Services.AddScoped<LearningRecordApiClient>();
 builder.Services.AddScoped<DailyChallengeApiClient>();
+builder.Services.AddScoped<RewardApiClient>();
 
 await builder.Build().RunAsync();

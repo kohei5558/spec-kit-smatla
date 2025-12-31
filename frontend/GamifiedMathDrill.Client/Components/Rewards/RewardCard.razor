@@ -1,0 +1,61 @@
+@using GamifiedMathDrill.Client.Models
+
+<MudCard Class="reward-card" Style="height: 100%;">
+    <MudCardMedia Image="@(string.IsNullOrEmpty(Reward.ImageUrl) ? "/images/placeholder-reward.png" : Reward.ImageUrl)" Height="200" />
+    <MudCardContent>
+        <MudStack Spacing="2">
+            <MudText Typo="Typo.h6">@Reward.Name</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Reward.Description</MudText>
+            <MudChip T="string" Size="Size.Small" Color="Color.Info">@GetCategoryText(Reward.Category)</MudChip>
+        </MudStack>
+    </MudCardContent>
+    <MudCardActions>
+        <MudStack Row="true" Justify="Justify.SpaceBetween" Style="width: 100%;" AlignItems="AlignItems.Center">
+            <MudChip T="string" Color="Color.Warning" Icon="@Icons.Material.Filled.Stars">
+                @Reward.RequiredPoints ポイント
+            </MudChip>
+            @if (CanAfford)
+            {
+                <MudButton Variant="Variant.Filled" 
+                          Color="Color.Primary" 
+                          Size="Size.Small"
+                          OnClick="OnExchange">
+                    交換する
+                </MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Outlined" 
+                          Color="Color.Default" 
+                          Size="Size.Small"
+                          Disabled="true">
+                    ポイント不足
+                </MudButton>
+            }
+        </MudStack>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter]
+    public RewardDto Reward { get; set; } = new();
+
+    [Parameter]
+    public int CurrentPoints { get; set; }
+
+    [Parameter]
+    public EventCallback OnExchange { get; set; }
+
+    private bool CanAfford => CurrentPoints >= Reward.RequiredPoints;
+
+    private string GetCategoryText(string category)
+    {
+        return category switch
+        {
+            "Badge" => "バッジ",
+            "Avatar" => "アバター",
+            "Character" => "キャラクター",
+            _ => category
+        };
+    }
+}
