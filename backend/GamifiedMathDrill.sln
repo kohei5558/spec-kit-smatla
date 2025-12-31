@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{853452EB-7658-4E2B-B43B-31FDC766B862}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamifiedMathDrill.Api", "src\GamifiedMathDrill.Api\GamifiedMathDrill.Api.csproj", "{8CF9E37F-6A0A-492B-8761-396BA2B0CCDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamifiedMathDrill.Core", "src\GamifiedMathDrill.Core\GamifiedMathDrill.Core.csproj", "{FBB29738-F6F6-4041-AA5B-D670E85DAB25}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamifiedMathDrill.Infrastructure", "src\GamifiedMathDrill.Infrastructure\GamifiedMathDrill.Infrastructure.csproj", "{2905B025-1485-4DE9-928D-232E68BB2DC1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8CF9E37F-6A0A-492B-8761-396BA2B0CCDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CF9E37F-6A0A-492B-8761-396BA2B0CCDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CF9E37F-6A0A-492B-8761-396BA2B0CCDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CF9E37F-6A0A-492B-8761-396BA2B0CCDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBB29738-F6F6-4041-AA5B-D670E85DAB25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBB29738-F6F6-4041-AA5B-D670E85DAB25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBB29738-F6F6-4041-AA5B-D670E85DAB25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBB29738-F6F6-4041-AA5B-D670E85DAB25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2905B025-1485-4DE9-928D-232E68BB2DC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2905B025-1485-4DE9-928D-232E68BB2DC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2905B025-1485-4DE9-928D-232E68BB2DC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2905B025-1485-4DE9-928D-232E68BB2DC1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8CF9E37F-6A0A-492B-8761-396BA2B0CCDA} = {853452EB-7658-4E2B-B43B-31FDC766B862}
+		{FBB29738-F6F6-4041-AA5B-D670E85DAB25} = {853452EB-7658-4E2B-B43B-31FDC766B862}
+		{2905B025-1485-4DE9-928D-232E68BB2DC1} = {853452EB-7658-4E2B-B43B-31FDC766B862}
+	EndGlobalSection
+EndGlobal

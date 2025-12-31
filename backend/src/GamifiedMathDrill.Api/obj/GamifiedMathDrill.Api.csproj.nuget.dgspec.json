@@ -1,0 +1,210 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj": {}
+  },
+  "projects": {
+    "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj",
+        "projectName": "GamifiedMathDrill.Api",
+        "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj",
+        "packagesPath": "/Users/murayama/.nuget/packages/",
+        "outputPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/murayama/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj": {
+                "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj"
+              },
+              "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj": {
+                "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[8.0.22, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "target": "Package",
+              "version": "[8.0.11, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.6.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj",
+        "projectName": "GamifiedMathDrill.Core",
+        "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj",
+        "packagesPath": "/Users/murayama/.nuget/packages/",
+        "outputPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/murayama/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj",
+        "projectName": "GamifiedMathDrill.Infrastructure",
+        "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj",
+        "packagesPath": "/Users/murayama/.nuget/packages/",
+        "outputPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/murayama/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj": {
+                "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
