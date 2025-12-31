@@ -80,11 +80,14 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Initialize database with seed data
-using (var scope = app.Services.CreateScope())
+// Initialize database with seed data (テスト環境では実行しない)
+if (app.Environment.EnvironmentName != "Testing")
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await context.InitializeDatabaseAsync();
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await context.InitializeDatabaseAsync();
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -124,3 +127,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// テスト用にProgramクラスを公開
+public partial class Program { }

@@ -11,6 +11,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamifiedMathDrill.Core", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamifiedMathDrill.Infrastructure", "src\GamifiedMathDrill.Infrastructure\GamifiedMathDrill.Infrastructure.csproj", "{2905B025-1485-4DE9-928D-232E68BB2DC1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{018C31C8-2A97-4BD0-92CF-98F358DB3D72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamifiedMathDrill.Tests.Unit", "tests\GamifiedMathDrill.Tests.Unit\GamifiedMathDrill.Tests.Unit.csproj", "{2B1649AD-5B26-4841-B4E1-B2C00F2069C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamifiedMathDrill.Tests.Integration", "tests\GamifiedMathDrill.Tests.Integration\GamifiedMathDrill.Tests.Integration.csproj", "{28999BD8-BEDD-4B63-9B84-D7779485FFDC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,10 +38,20 @@ Global
 		{2905B025-1485-4DE9-928D-232E68BB2DC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2905B025-1485-4DE9-928D-232E68BB2DC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2905B025-1485-4DE9-928D-232E68BB2DC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B1649AD-5B26-4841-B4E1-B2C00F2069C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B1649AD-5B26-4841-B4E1-B2C00F2069C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B1649AD-5B26-4841-B4E1-B2C00F2069C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B1649AD-5B26-4841-B4E1-B2C00F2069C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28999BD8-BEDD-4B63-9B84-D7779485FFDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28999BD8-BEDD-4B63-9B84-D7779485FFDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28999BD8-BEDD-4B63-9B84-D7779485FFDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28999BD8-BEDD-4B63-9B84-D7779485FFDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8CF9E37F-6A0A-492B-8761-396BA2B0CCDA} = {853452EB-7658-4E2B-B43B-31FDC766B862}
 		{FBB29738-F6F6-4041-AA5B-D670E85DAB25} = {853452EB-7658-4E2B-B43B-31FDC766B862}
 		{2905B025-1485-4DE9-928D-232E68BB2DC1} = {853452EB-7658-4E2B-B43B-31FDC766B862}
+		{2B1649AD-5B26-4841-B4E1-B2C00F2069C1} = {018C31C8-2A97-4BD0-92CF-98F358DB3D72}
+		{28999BD8-BEDD-4B63-9B84-D7779485FFDC} = {018C31C8-2A97-4BD0-92CF-98F358DB3D72}
 	EndGlobalSection
 EndGlobal
