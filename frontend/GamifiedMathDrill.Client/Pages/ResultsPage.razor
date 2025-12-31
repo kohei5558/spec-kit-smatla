@@ -1,0 +1,160 @@
+@page "/results/{StudentId:int}"
+@using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Services
+@using GamifiedMathDrill.Client.Components.Results
+@inject LearningRecordApiClient LearningRecordClient
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h3" Class="mb-6">学習結果</MudText>
+
+    @if (_isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (_statistics == null)
+    {
+        <MudAlert Severity="Severity.Error">データの読み込みに失敗しました</MudAlert>
+    }
+    else
+    {
+        <!-- Filters -->
+        <MudPaper Class="pa-4 mb-4">
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker Label="開始日" @bind-Date="_startDate" MaxDate="DateTime.Today" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker Label="終了日" @bind-Date="_endDate" MaxDate="DateTime.Today" />
+                </MudItem>
+                <MudItem xs="12" sm="4" Class="d-flex align-center">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyFilters" StartIcon="@Icons.Material.Filled.Search">
+                        検索
+                    </MudButton>
+                    <MudButton Variant="Variant.Text" OnClick="ClearFilters" Class="ml-2">
+                        クリア
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            <!-- Calculation Type Tabs -->
+            <MudTabs ActivePanelIndex="_activeTab" Elevation="0" Rounded="true" Class="mt-4" ActivePanelIndexChanged="OnTabChanged">
+                <MudTabPanel Text="すべて" />
+                <MudTabPanel Text="たし算" />
+                <MudTabPanel Text="ひき算" />
+                <MudTabPanel Text="かけ算" />
+                <MudTabPanel Text="わり算" />
+            </MudTabs>
+        </MudPaper>
+
+        <!-- Statistics Summary -->
+        <StatisticsSummary Statistics="_statistics" Class="mb-4" />
+
+        <!-- Learning Records List -->
+        <LearningRecordList 
+            Records="_records" 
+            TotalCount="_totalCount" 
+            Page="_currentPage" 
+            PageSize="_pageSize"
+            OnPageChanged="OnPageChanged" />
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int StudentId { get; set; }
+
+    private bool _isLoading = true;
+    private StatisticsDto? _statistics;
+    private List<LearningRecordDto> _records = new();
+    private int _totalCount = 0;
+    private int _currentPage = 1;
+    private int _pageSize = 10;
+    private int _activeTab = 0;
+
+    private DateTime? _startDate;
+    private DateTime? _endDate;
+    private string? _selectedCalculationType;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Default to last 30 days
+        _endDate = DateTime.Today;
+        _startDate = DateTime.Today.AddDays(-30);
+        
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _isLoading = true;
+
+        try
+        {
+            // Load statistics
+            _statistics = await LearningRecordClient.GetStatisticsAsync(
+                StudentId, _startDate, _endDate);
+
+            // Load records
+            var response = await LearningRecordClient.GetRecordsAsync(
+                StudentId, 
+                _startDate, 
+                _endDate, 
+                _selectedCalculationType,
+                _currentPage,
+                _pageSize);
+
+            if (response != null)
+            {
+                _records = response.Records;
+                _totalCount = response.TotalCount;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task ApplyFilters()
+    {
+        _currentPage = 1;
+        await LoadDataAsync();
+    }
+
+    private async Task ClearFilters()
+    {
+        _startDate = DateTime.Today.AddDays(-30);
+        _endDate = DateTime.Today;
+        _selectedCalculationType = null;
+        _activeTab = 0;
+        _currentPage = 1;
+        await LoadDataAsync();
+    }
+
+    private async Task OnTabChanged(int index)
+    {
+        _activeTab = index;
+        _selectedCalculationType = index switch
+        {
+            0 => null,
+            1 => "Addition",
+            2 => "Subtraction",
+            3 => "Multiplication",
+            4 => "Division",
+            _ => null
+        };
+        _currentPage = 1;
+        await LoadDataAsync();
+    }
+
+    private async Task OnPageChanged(int page)
+    {
+        _currentPage = page;
+        await LoadDataAsync();
+    }
+}

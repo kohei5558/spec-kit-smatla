@@ -1,0 +1,154 @@
+@using GamifiedMathDrill.Client.Models
+
+<MudPaper Class="pa-4" Elevation="3">
+    <MudText Typo="Typo.h5" Class="mb-4">学習記録一覧</MudText>
+
+    @if (!Records.Any())
+    {
+        <MudAlert Severity="Severity.Info">まだ学習記録がありません。問題を解いてみましょう！</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@Records" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
+            <HeaderContent>
+                <MudTh>日時</MudTh>
+                <MudTh>問題</MudTh>
+                <MudTh>タイプ</MudTh>
+                <MudTh>難易度</MudTh>
+                <MudTh>あなたの答え</MudTh>
+                <MudTh>正解</MudTh>
+                <MudTh>結果</MudTh>
+                <MudTh>ポイント</MudTh>
+                <MudTh>時間</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="日時">
+                    @context.SolvedAt.ToString("MM/dd HH:mm")
+                </MudTd>
+                <MudTd DataLabel="問題">
+                    <MudText Typo="Typo.body2" Style="font-family: monospace;">
+                        @context.Question
+                    </MudText>
+                </MudTd>
+                <MudTd DataLabel="タイプ">
+                    <MudChip T="string" Size="Size.Small" Color="@GetCalculationTypeColor(context.CalculationTypeText)">
+                        @GetCalculationTypeName(context.CalculationTypeText)
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="難易度">
+                    <MudRating ReadOnly="true" SelectedValue="@context.DifficultyLevel" MaxValue="5" Size="Size.Small" />
+                </MudTd>
+                <MudTd DataLabel="あなたの答え">
+                    <MudText Typo="Typo.body2" Style="@GetAnswerStyle(context.IsCorrect)">
+                        @context.StudentAnswer
+                    </MudText>
+                </MudTd>
+                <MudTd DataLabel="正解">
+                    <strong>@context.CorrectAnswer</strong>
+                </MudTd>
+                <MudTd DataLabel="結果">
+                    @if (context.IsCorrect)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Medium" />
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Medium" />
+                    }
+                </MudTd>
+                <MudTd DataLabel="ポイント">
+                    @if (context.PointsEarned > 0)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success">+@context.PointsEarned</MudChip>
+                    }
+                    else
+                    {
+                        <span>0</span>
+                    }
+                </MudTd>
+                <MudTd DataLabel="時間">
+                    @(context.TimeTakenSeconds)秒
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        <!-- Pagination -->
+        @if (TotalPages > 1)
+        {
+            <MudPagination 
+                Count="@TotalPages" 
+                Selected="@Page" 
+                SelectedChanged="@OnPageSelected" 
+                Class="mt-4"
+                ShowFirstButton="true"
+                ShowLastButton="true" />
+        }
+
+        <!-- Summary -->
+        <MudText Typo="Typo.body2" Class="mt-2" Color="Color.Secondary">
+            全@TotalCount件中 @GetRecordRange() を表示
+        </MudText>
+    }
+</MudPaper>
+
+@code {
+    [Parameter]
+    public List<LearningRecordDto> Records { get; set; } = new();
+
+    [Parameter]
+    public int TotalCount { get; set; }
+
+    [Parameter]
+    public int Page { get; set; }
+
+    [Parameter]
+    public int PageSize { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnPageChanged { get; set; }
+
+    private int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+
+    private async Task OnPageSelected(int page)
+    {
+        await OnPageChanged.InvokeAsync(page);
+    }
+
+    private string GetRecordRange()
+    {
+        var start = (Page - 1) * PageSize + 1;
+        var end = Math.Min(Page * PageSize, TotalCount);
+        return $"{start}～{end}件";
+    }
+
+    private Color GetCalculationTypeColor(string type)
+    {
+        return type switch
+        {
+            "Addition" => Color.Primary,
+            "Subtraction" => Color.Secondary,
+            "Multiplication" => Color.Tertiary,
+            "Division" => Color.Info,
+            _ => Color.Default
+        };
+    }
+
+    private string GetCalculationTypeName(string type)
+    {
+        return type switch
+        {
+            "Addition" => "たし算",
+            "Subtraction" => "ひき算",
+            "Multiplication" => "かけ算",
+            "Division" => "わり算",
+            _ => type
+        };
+    }
+
+    private string GetAnswerStyle(bool isCorrect)
+    {
+        return isCorrect 
+            ? "color: var(--mud-palette-success); font-weight: bold;" 
+            : "color: var(--mud-palette-error); font-weight: bold;";
+    }
+}

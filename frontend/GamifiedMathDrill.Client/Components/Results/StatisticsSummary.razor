@@ -1,0 +1,132 @@
+@using GamifiedMathDrill.Client.Models
+
+<MudPaper Class="pa-6" Elevation="3">
+    <MudText Typo="Typo.h5" Class="mb-4">統計サマリー</MudText>
+
+    <MudGrid>
+        <!-- Total Problems -->
+        <MudItem xs="6" sm="3">
+            <MudPaper Class="pa-4 text-center" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <MudIcon Icon="@Icons.Material.Filled.Quiz" Color="Color.Surface" Size="Size.Large" />
+                <MudText Typo="Typo.h4" Color="Color.Surface" Class="mt-2">@Statistics.TotalProblems</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Surface">問題数</MudText>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Correct Answers -->
+        <MudItem xs="6" sm="3">
+            <MudPaper Class="pa-4 text-center" Style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Surface" Size="Size.Large" />
+                <MudText Typo="Typo.h4" Color="Color.Surface" Class="mt-2">@Statistics.CorrectAnswers</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Surface">正解数</MudText>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Accuracy Rate -->
+        <MudItem xs="6" sm="3">
+            <MudPaper Class="pa-4 text-center" Style="@GetAccuracyGradient(Statistics.AccuracyRate)">
+                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Surface" Size="Size.Large" />
+                <MudText Typo="Typo.h4" Color="Color.Surface" Class="mt-2">@Statistics.AccuracyRate.ToString("F1")%</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Surface">正答率</MudText>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Total Points -->
+        <MudItem xs="6" sm="3">
+            <MudPaper Class="pa-4 text-center" Style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Surface" Size="Size.Large" />
+                <MudText Typo="Typo.h4" Color="Color.Surface" Class="mt-2">@Statistics.TotalPoints</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Surface">ポイント</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Accuracy by Type -->
+    @if (Statistics.AccuracyByType.Any())
+    {
+        <MudText Typo="Typo.h6" Class="mt-6 mb-3">計算タイプ別の正答率</MudText>
+        <MudGrid>
+            @foreach (var kvp in Statistics.AccuracyByType.OrderBy(x => x.Key))
+            {
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Class="pa-3">
+                        <MudText Typo="Typo.body1" Class="mb-2">
+                            <strong>@GetCalculationTypeName(kvp.Key)</strong>
+                        </MudText>
+                        <MudProgressLinear 
+                            Color="@GetAccuracyColor(kvp.Value)" 
+                            Value="@kvp.Value" 
+                            Size="Size.Large" 
+                            Class="mb-1" />
+                        <MudText Typo="Typo.body2" Align="Align.Right">
+                            @kvp.Value.ToString("F1")% (@GetProblemCountByType(kvp.Key)問)
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
+    <!-- Visual Accuracy Indicator -->
+    @if (Statistics.TotalProblems > 0)
+    {
+        <MudAlert Severity="@GetAccuracySeverity(Statistics.AccuracyRate)" Class="mt-4" Dense="true">
+            @GetAccuracyMessage(Statistics.AccuracyRate)
+        </MudAlert>
+    }
+</MudPaper>
+
+@code {
+    [Parameter]
+    public StatisticsDto Statistics { get; set; } = new();
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    private string GetAccuracyGradient(double accuracy)
+    {
+        if (accuracy >= 80) return "background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);";
+        if (accuracy >= 60) return "background: linear-gradient(135deg, #f5af19 0%, #f12711 100%);";
+        return "background: linear-gradient(135deg, #f12711 0%, #c71d6f 100%);";
+    }
+
+    private Color GetAccuracyColor(double accuracy)
+    {
+        if (accuracy >= 80) return Color.Success;
+        if (accuracy >= 60) return Color.Warning;
+        return Color.Error;
+    }
+
+    private Severity GetAccuracySeverity(double accuracy)
+    {
+        if (accuracy >= 80) return Severity.Success;
+        if (accuracy >= 60) return Severity.Warning;
+        return Severity.Error;
+    }
+
+    private string GetAccuracyMessage(double accuracy)
+    {
+        if (accuracy >= 90) return "🎉 すばらしい！とてもよくできています！";
+        if (accuracy >= 80) return "😊 よくできています！この調子でがんばろう！";
+        if (accuracy >= 70) return "👍 いい感じです！もう少しでマスターできそう！";
+        if (accuracy >= 60) return "💪 がんばっています！復習すればもっとよくなるよ！";
+        return "📚 まだまだこれから！あきらめずにチャレンジしよう！";
+    }
+
+    private string GetCalculationTypeName(string type)
+    {
+        return type switch
+        {
+            "Addition" => "たし算",
+            "Subtraction" => "ひき算",
+            "Multiplication" => "かけ算",
+            "Division" => "わり算",
+            _ => type
+        };
+    }
+
+    private int GetProblemCountByType(string type)
+    {
+        return Statistics.ProblemsByType.TryGetValue(type, out var count) ? count : 0;
+    }
+}

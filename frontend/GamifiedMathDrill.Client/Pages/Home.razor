@@ -86,8 +86,18 @@
                       Size="Size.Large"
                       FullWidth="true"
                       StartIcon="@Icons.Material.Filled.PlayArrow"
-                      Href="/problem">
+                      Href="/problem"
+                      Class="mb-3">
                 問題を解く
+            </MudButton>
+
+            <MudButton Variant="Variant.Outlined" 
+                      Color="Color.Info" 
+                      Size="Size.Large"
+                      FullWidth="true"
+                      StartIcon="@Icons.Material.Filled.Assessment"
+                      Href="@($"/results/{student.Id}")">
+                学習結果を見る
             </MudButton>
         </MudPaper>
     }
