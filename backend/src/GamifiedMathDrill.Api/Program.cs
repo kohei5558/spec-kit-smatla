@@ -1,4 +1,7 @@
+using GamifiedMathDrill.Api.Middleware;
+using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Infrastructure.Data;
+using GamifiedMathDrill.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +20,23 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     }
 });
 
+// Register repositories
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<IProblemRepository, ProblemRepository>();
+builder.Services.AddScoped<ILearningRecordRepository, LearningRecordRepository>();
+
+// CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorClient", policy =>
+    {
+        policy.WithOrigins("https://localhost:5001", "http://localhost:5000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -25,7 +45,16 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Initialize database with seed data
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.InitializeDatabaseAsync();
+}
+
 // Configure the HTTP request pipeline.
+app.UseErrorHandling();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -33,6 +62,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowBlazorClient");
 
 app.UseAuthorization();
 

@@ -1,0 +1,40 @@
+using GamifiedMathDrill.Infrastructure.Data.Seed;
+using Microsoft.EntityFrameworkCore;
+
+namespace GamifiedMathDrill.Infrastructure.Data;
+
+/// <summary>
+/// データベース初期化の拡張メソッド
+/// </summary>
+public static class DatabaseInitializer
+{
+    /// <summary>
+    /// データベースをマイグレーションしてシードデータを投入
+    /// </summary>
+    public static async Task InitializeDatabaseAsync(this ApplicationDbContext context)
+    {
+        // マイグレーションを適用
+        await context.Database.MigrateAsync();
+
+        // シードデータが既に存在するかチェック
+        if (await context.Levels.AnyAsync())
+        {
+            return; // 既にデータがあれば何もしない
+        }
+
+        // レベルデータを追加
+        var levels = LevelSeeder.GetLevels();
+        await context.Levels.AddRangeAsync(levels);
+        await context.SaveChangesAsync();
+
+        // 問題データを追加
+        var problems = ProblemSeeder.GetProblems();
+        await context.Problems.AddRangeAsync(problems);
+        await context.SaveChangesAsync();
+
+        // 景品データを追加
+        var rewards = RewardSeeder.GetRewards();
+        await context.Rewards.AddRangeAsync(rewards);
+        await context.SaveChangesAsync();
+    }
+}
