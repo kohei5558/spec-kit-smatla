@@ -1,7 +1,144 @@
 ﻿@page "/"
+@using GamifiedMathDrill.Client.Services
+@using GamifiedMathDrill.Client.Models
+@inject StudentApiClient StudentApi
+@inject NavigationManager Navigation
 
-<PageTitle>Home</PageTitle>
+<PageTitle>ホーム - 計算ドリル</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (student == null)
+    {
+        <MudPaper Class="pa-8 text-center" Elevation="3">
+            <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 5rem;" />
+            <MudText Typo="Typo.h3" Class="mb-4">計算ドリルへようこそ！</MudText>
+            <MudText Typo="Typo.body1" Class="mb-6">
+                楽しく計算を学んで、ポイントをためて景品をゲットしよう！
+            </MudText>
+            
+            <MudTextField @bind-Value="studentName" 
+                         Label="きみの名前を入力してね" 
+                         Variant="Variant.Outlined"
+                         Class="mb-4"
+                         MaxLength="50" />
+            
+            <MudButton Variant="Variant.Filled" 
+                      Color="Color.Primary" 
+                      Size="Size.Large"
+                      OnClick="CreateStudent"
+                      Disabled="string.IsNullOrWhiteSpace(studentName)">
+                はじめる
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Class="pa-6" Elevation="3">
+            <MudText Typo="Typo.h4" Class="mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" />
+                おかえり、@student.Name さん！
+            </MudText>
 
-Welcome to your new app.
+            <MudGrid Class="mb-6">
+                <MudItem xs="6" md="3">
+                    <MudPaper Class="pa-4 text-center" Elevation="1">
+                        <MudIcon Icon="@Icons.Material.Filled.Stars" Color="Color.Warning" Size="Size.Large" />
+                        <MudText Typo="Typo.h5">@student.TotalPoints</MudText>
+                        <MudText Typo="Typo.body2">ポイント</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudPaper Class="pa-4 text-center" Elevation="1">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Info" Size="Size.Large" />
+                        <MudText Typo="Typo.h5">レベル @(student.CurrentLevelId)</MudText>
+                        <MudText Typo="Typo.body2">現在のレベル</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudPaper Class="pa-4 text-center" Elevation="1">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                        <MudText Typo="Typo.h5">@student.CorrectAnswers</MudText>
+                        <MudText Typo="Typo.body2">連続正解</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudPaper Class="pa-4 text-center" Elevation="1">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Tertiary" Size="Size.Large" />
+                        <MudText Typo="Typo.h5">@student.ConsecutiveDays</MudText>
+                        <MudText Typo="Typo.body2">連続日数</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+            @if (student.ConsecutiveDays >= 3)
+            {
+                <MudAlert Severity="Severity.Success" Icon="@Icons.Material.Filled.Celebration" Class="mb-4">
+                    すごい！@student.ConsecutiveDays 日連続だよ！その調子！
+                </MudAlert>
+            }
+
+            <MudButton Variant="Variant.Filled" 
+                      Color="Color.Primary" 
+                      Size="Size.Large"
+                      FullWidth="true"
+                      StartIcon="@Icons.Material.Filled.PlayArrow"
+                      Href="/problem">
+                問題を解く
+            </MudButton>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private StudentDto? student;
+    private string studentName = "";
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStudent();
+    }
+
+    private async Task LoadStudent()
+    {
+        isLoading = true;
+        try
+        {
+            // デモ用: StudentId = 1 を使用
+            // 本番環境ではローカルストレージまたは認証から取得
+            student = await StudentApi.GetByIdAsync(1);
+        }
+        catch
+        {
+            student = null;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CreateStudent()
+    {
+        if (string.IsNullOrWhiteSpace(studentName)) return;
+
+        isLoading = true;
+        try
+        {
+            student = await StudentApi.CreateAsync(studentName);
+            // 本番環境ではStudentIdをローカルストレージに保存
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating student: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

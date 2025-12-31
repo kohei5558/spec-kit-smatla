@@ -31,6 +31,11 @@ public class StudentApiClient
         return null;
     }
 
+    public async Task<StudentDto?> GetByIdAsync(int id)
+    {
+        return await GetStudentAsync(id);
+    }
+
     public async Task<StudentDto?> CreateStudentAsync(string name)
     {
         var createDto = new CreateStudentDto { Name = name };
@@ -43,6 +48,11 @@ public class StudentApiClient
         }
 
         return null;
+    }
+
+    public async Task<StudentDto?> CreateAsync(string name)
+    {
+        return await CreateStudentAsync(name);
     }
 
     public async Task<StudentDto?> UpdateLoginAsync(int id)

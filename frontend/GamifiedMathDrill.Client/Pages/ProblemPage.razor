@@ -5,60 +5,79 @@
 @inject StudentApiClient StudentApi
 @inject NavigationManager Navigation
 
-<PageTitle>問題を解く</PageTitle>
+<PageTitle>問題を解く - 計算ドリル</PageTitle>
 
-<div class="container mt-5">
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
     @if (isLoading)
     {
-        <div class="text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">読み込み中...</span>
-            </div>
-        </div>
+        <MudPaper Class="pa-8 text-center" Elevation="3">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+            <MudText Typo="Typo.h6" Class="mt-4">問題を読み込み中...</MudText>
+        </MudPaper>
     }
     else if (currentProblem != null && !showFeedback)
     {
-        <ProblemDisplay 
-            Problem="@currentProblem" 
-            Answer="@userAnswer"
-            OnAnswerChange="@HandleAnswerChange"
-            OnSubmit="@HandleSubmitAnswer"
-            IsSubmitting="@isSubmitting" />
+        <MudPaper Class="pa-6" Elevation="3">
+            <MudText Typo="Typo.h4" Class="mb-6 text-center">
+                <MudIcon Icon="@Icons.Material.Filled.Calculate" Color="Color.Primary" />
+                問題 @currentProblem.Id
+            </MudText>
+
+            <ProblemDisplay 
+                Problem="@currentProblem" 
+                Answer="@userAnswer"
+                OnAnswerChange="@HandleAnswerChange"
+                OnSubmit="@HandleSubmitAnswer"
+                IsSubmitting="@isSubmitting" />
+        </MudPaper>
     }
     else if (showFeedback && answerResult != null)
     {
         <AnswerFeedback 
             Result="@answerResult"
             OnNext="@HandleNextProblem" />
+
+        @if (answerResult.LeveledUp && answerResult.NewLevel != null)
+        {
+            <MudPaper Class="pa-6 mt-4 text-center" Elevation="3" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Style="font-size: 5rem;" />
+                <MudText Typo="Typo.h3" Class="mt-2" Style="color: white;">レベルアップ！</MudText>
+                <MudText Typo="Typo.h5" Style="color: white;">レベル @answerResult.NewLevel.LevelNumber になったよ！</MudText>
+            </MudPaper>
+        }
     }
     else
     {
-        <div class="alert alert-warning">
-            <h4>問題の読み込みに失敗しました</h4>
-            <button class="btn btn-primary" @onclick="LoadNextProblem">再試行</button>
-        </div>
+        <MudAlert Severity="Severity.Warning" Class="mb-4">
+            問題の読み込みに失敗しました
+        </MudAlert>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadNextProblem">再試行</MudButton>
     }
 
     @if (student != null)
     {
-        <div class="mt-4 p-3 bg-light rounded">
-            <div class="row">
-                <div class="col-md-3">
-                    <strong>ポイント:</strong> @student.TotalPoints
-                </div>
-                <div class="col-md-3">
-                    <strong>レベル:</strong> @student.CurrentLevelName
-                </div>
-                <div class="col-md-3">
-                    <strong>正解数:</strong> @student.CorrectAnswers
-                </div>
-                <div class="col-md-3">
-                    <strong>連続日数:</strong> @student.ConsecutiveDays 日
-                </div>
-            </div>
-        </div>
+        <MudPaper Class="pa-4 mt-4" Elevation="1">
+            <MudGrid>
+                <MudItem xs="3">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">ポイント</MudText>
+                    <MudText Typo="Typo.h6">@student.TotalPoints</MudText>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">レベル</MudText>
+                    <MudText Typo="Typo.h6">@student.CurrentLevelId</MudText>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">連続正解</MudText>
+                    <MudText Typo="Typo.h6">@student.CorrectAnswers</MudText>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">連続日数</MudText>
+                    <MudText Typo="Typo.h6">@student.ConsecutiveDays 日</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
     }
-</div>
+</MudContainer>
 
 @code {
     private StudentDto? student;

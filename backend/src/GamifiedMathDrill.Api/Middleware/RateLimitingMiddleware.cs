@@ -45,6 +45,9 @@ public class RateLimitingMiddleware
         // リクエスト履歴を取得または作成
         var history = _requestHistories.GetOrAdd($"{clientIp}:{path}", _ => new RequestHistory());
 
+        bool shouldBlock = false;
+        int retryAfter = 0;
+
         lock (history)
         {
             // 古いリクエストを削除
@@ -54,28 +57,33 @@ public class RateLimitingMiddleware
             // レート制限チェック
             if (history.Requests.Count >= rateLimitConfig.MaxRequests)
             {
+                shouldBlock = true;
+                retryAfter = (int)rateLimitConfig.TimeWindow.TotalSeconds;
                 _logger.LogWarning("レート制限超過: IP={ClientIp}, Path={Path}, Count={Count}", 
                     clientIp, path, history.Requests.Count);
-
-                context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                context.Response.ContentType = "application/json";
-
-                var retryAfter = (int)rateLimitConfig.TimeWindow.TotalSeconds;
-                context.Response.Headers["Retry-After"] = retryAfter.ToString();
-
-                var errorResponse = System.Text.Json.JsonSerializer.Serialize(new
-                {
-                    error = "RateLimitExceeded",
-                    message = "リクエストが多すぎます。少し待ってからもう一度お試しください。",
-                    retryAfter
-                });
-
-                await context.Response.WriteAsync(errorResponse);
-                return;
             }
+            else
+            {
+                // リクエストを記録
+                history.Requests.Add(now);
+            }
+        }
 
-            // リクエストを記録
-            history.Requests.Add(now);
+        if (shouldBlock)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
+            context.Response.ContentType = "application/json";
+            context.Response.Headers["Retry-After"] = retryAfter.ToString();
+
+            var errorResponse = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                error = "RateLimitExceeded",
+                message = "リクエストが多すぎます。少し待ってからもう一度お試しください。",
+                retryAfter
+            });
+
+            await context.Response.WriteAsync(errorResponse);
+            return;
         }
 
         await _next(context);

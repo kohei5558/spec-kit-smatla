@@ -1,84 +1,53 @@
 @using GamifiedMathDrill.Client.Models
 
-<div class="card shadow-lg">
-    <div class="card-body text-center p-5">
-        @if (Result.IsCorrect)
-        {
-            <div class="correct-feedback animate__animated animate__bounceIn">
-                <div class="mb-3">
-                    <svg width="100" height="100" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="45" fill="#28a745" />
-                        <path d="M30 50 L45 65 L70 35" stroke="white" stroke-width="8" fill="none" />
-                    </svg>
-                </div>
-                <h2 class="text-success fw-bold mb-3">正解！ 🎉</h2>
-                <p class="fs-4 mb-3">
-                    <span class="badge bg-success fs-5">+@Result.PointsEarned ポイント</span>
-                </p>
-            </div>
-        }
-        else
-        {
-            <div class="incorrect-feedback animate__animated animate__shakeX">
-                <div class="mb-3">
-                    <svg width="100" height="100" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="45" fill="#dc3545" />
-                        <path d="M30 30 L70 70 M70 30 L30 70" stroke="white" stroke-width="8" />
-                    </svg>
-                </div>
-                <h2 class="text-danger fw-bold mb-3">不正解 😢</h2>
-                <p class="fs-5 mb-3">
-                    正解: <span class="badge bg-info fs-5">@Result.CorrectAnswer</span>
-                </p>
-                <p class="text-muted">もう一度がんばろう！</p>
-            </div>
-        }
-
-        @if (Result.LeveledUp && Result.NewLevel != null)
-        {
-            <div class="level-up-notification mt-4 animate__animated animate__tada">
-                <div class="alert alert-warning border-3 border-warning">
-                    <h3 class="mb-3">🎊 レベルアップ！ 🎊</h3>
-                    <p class="fs-4 mb-0">
-                        <strong>Level @Result.NewLevel.LevelNumber</strong> になりました！
-                    </p>
-                    <p class="text-muted mt-2">
-                        次のレベルまで: @Result.NewLevel.RequiredCorrectAnswers 問正解
-                    </p>
-                </div>
-            </div>
-        }
-
-        <div class="mt-5">
-            <button class="btn btn-primary btn-lg px-5" @onclick="OnNext">
-                次の問題へ →
-            </button>
+<MudPaper Class="pa-8 text-center" Elevation="3">
+    @if (Result.IsCorrect)
+    {
+        <div class="correct-feedback">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
+                     Color="Color.Success" 
+                     Style="font-size: 6rem;" />
+            <MudText Typo="Typo.h3" Color="Color.Success" Class="mt-4 mb-4">
+                正解！ 🎉
+            </MudText>
+            <MudChip T="string" Color="Color.Success" Size="Size.Large" Style="font-size: 1.5rem; padding: 16px;">
+                +@Result.PointsEarned ポイント
+            </MudChip>
         </div>
+    }
+    else
+    {
+        <div class="incorrect-feedback">
+            <MudIcon Icon="@Icons.Material.Filled.Cancel" 
+                     Color="Color.Error" 
+                     Style="font-size: 6rem;" />
+            <MudText Typo="Typo.h3" Color="Color.Error" Class="mt-4 mb-4">
+                不正解 😢
+            </MudText>
+            <MudText Typo="Typo.h5" Class="mb-2">
+                正解は:
+            </MudText>
+            <MudChip T="string" Color="Color.Info" Size="Size.Large" Style="font-size: 1.5rem; padding: 16px;">
+                @Result.CorrectAnswer
+            </MudChip>
+            <MudText Typo="Typo.body1" Class="mt-4" Color="Color.Secondary">
+                もう一度がんばろう！
+            </MudText>
+        </div>
+    }
+
+    <div class="mt-8">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Large"
+                   OnClick="OnNext"
+                   EndIcon="@Icons.Material.Filled.ArrowForward"
+                   Style="font-size: 1.25rem; padding: 12px 32px;">
+            次の問題へ
+        </MudButton>
     </div>
-</div>
+</MudPaper>
 
-<style>
-    .correct-feedback {
-        color: #28a745;
-    }
-
-    .incorrect-feedback {
-        color: #dc3545;
-    }
-
-    .level-up-notification {
-        animation: pulse 1s infinite;
-    }
-
-    @@keyframes pulse {
-        0%, 100% {
-            transform: scale(1);
-        }
-        50% {
-            transform: scale(1.05);
-        }
-    }
-</style>
 
 @code {
     [Parameter]

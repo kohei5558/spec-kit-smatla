@@ -1,52 +1,46 @@
 @using GamifiedMathDrill.Client.Models
 
-<div class="card shadow-lg">
-    <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">問題</h3>
-    </div>
-    <div class="card-body">
-        <div class="text-center mb-4">
-            <span class="badge bg-secondary fs-6">@Problem.CalculationTypeText</span>
-            <span class="badge bg-info fs-6 ms-2">難易度: @Problem.DifficultyLevel</span>
-        </div>
-        
-        <div class="problem-display text-center mb-4">
-            <h1 class="display-3 fw-bold text-primary">@Problem.Question</h1>
-        </div>
+<div class="text-center mb-4">
+    <MudChip T="string" Color="Color.Secondary" Size="Size.Medium">@Problem.CalculationTypeText</MudChip>
+    <MudChip T="string" Color="Color.Info" Size="Size.Medium">難易度: @Problem.DifficultyLevel</MudChip>
+</div>
 
-        <div class="answer-input mt-5">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="input-group input-group-lg">
-                        <span class="input-group-text">答え:</span>
-                        <input type="number" 
-                               class="form-control form-control-lg text-center" 
-                               @bind="Answer"
-                               @bind:event="oninput"
-                               @onkeypress="HandleKeyPress"
-                               placeholder="数字を入力"
-                               disabled="@IsSubmitting" />
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="problem-display text-center my-8">
+    <MudText Typo="Typo.h2" Color="Color.Primary" Style="font-size: 4rem; font-weight: bold;">
+        @Problem.Question
+    </MudText>
+</div>
 
-        <div class="text-center mt-4">
-            <button class="btn btn-success btn-lg px-5" 
-                    @onclick="OnSubmit" 
-                    disabled="@IsSubmitting">
-                @if (IsSubmitting)
-                {
-                    <span class="spinner-border spinner-border-sm me-2"></span>
-                    <span>判定中...</span>
-                }
-                else
-                {
-                    <span>答える</span>
-                }
-            </button>
-        </div>
-    </div>
+<div class="answer-input mt-6">
+    <MudNumericField @bind-Value="Answer"
+                     Label="答えを入力してね"
+                     Variant="Variant.Outlined"
+                     Margin="Margin.Dense"
+                     FullWidth="true"
+                     Class="mud-text-field-large"
+                     Disabled="@IsSubmitting"
+                     Style="font-size: 2rem;"
+                     T="int" />
+</div>
+
+<div class="text-center mt-6">
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Success"
+               Size="Size.Large"
+               OnClick="OnSubmit"
+               Disabled="@IsSubmitting"
+               StartIcon="@Icons.Material.Filled.Check"
+               Style="font-size: 1.5rem; padding: 16px 48px;">
+        @if (IsSubmitting)
+        {
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            <span>判定中...</span>
+        }
+        else
+        {
+            <span>答える</span>
+        }
+    </MudButton>
 </div>
 
 @code {
@@ -64,12 +58,4 @@
 
     [Parameter]
     public bool IsSubmitting { get; set; }
-
-    private async Task HandleKeyPress(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter" && !IsSubmitting)
-        {
-            await OnSubmit.InvokeAsync();
-        }
-    }
 }
