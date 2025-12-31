@@ -40,9 +40,14 @@ public class StudentsController : ControllerBase
             return BadRequest(ApiResponse<StudentDto>.ErrorResponse("Student name is required."));
         }
 
+        if (createDto.Name.Length > 50)
+        {
+            return BadRequest(ApiResponse<StudentDto>.ErrorResponse("Student name must be 50 characters or less."));
+        }
+
         var student = new Student
         {
-            Name = createDto.Name
+            Name = createDto.Name.Trim()
         };
 
         var createdStudent = await _studentService.CreateAsync(student);

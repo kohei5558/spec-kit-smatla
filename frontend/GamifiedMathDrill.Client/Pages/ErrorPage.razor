@@ -1,0 +1,22 @@
+@page "/error"
+@using Microsoft.AspNetCore.Components.Web
+
+<PageTitle>エラー - 計算ドリル</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+    <MudPaper Class="pa-8 text-center" Elevation="3">
+        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Style="font-size: 6rem;" Class="mb-4" />
+        <MudText Typo="Typo.h3" Class="mb-4" Color="Color.Error">エラーが発生しました</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            申し訳ございません。予期しないエラーが発生しました。<br />
+            しばらくしてから再度お試しください。
+        </MudText>
+        <MudButton Variant="Variant.Filled" 
+                  Color="Color.Primary" 
+                  Size="Size.Large"
+                  Href="/"
+                  StartIcon="@Icons.Material.Filled.Home">
+            ホームに戻る
+        </MudButton>
+    </MudPaper>
+</MudContainer>

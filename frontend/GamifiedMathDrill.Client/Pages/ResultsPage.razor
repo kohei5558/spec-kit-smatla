@@ -10,7 +10,10 @@
 
     @if (_isLoading)
     {
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            <MudText Typo="Typo.body1">学習データを読み込み中...</MudText>
+        </MudStack>
     }
     else if (_statistics == null)
     {
