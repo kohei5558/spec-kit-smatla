@@ -31,15 +31,27 @@ public class LearningRecord
     public bool IsCorrect { get; set; }
 
     /// <summary>
+    /// 児童の回答
+    /// </summary>
+    [Required]
+    public int StudentAnswer { get; set; }
+
+    /// <summary>
+    /// 獲得ポイント
+    /// </summary>
+    [Range(0, int.MaxValue)]
+    public int PointsEarned { get; set; }
+
+    /// <summary>
     /// 所要時間（秒）
     /// </summary>
     [Range(0, int.MaxValue)]
-    public int? TimeSpentSeconds { get; set; }
+    public int TimeTakenSeconds { get; set; }
 
     /// <summary>
     /// 解答日時
     /// </summary>
-    public DateTime AnsweredAt { get; set; } = DateTime.UtcNow;
+    public DateTime SolvedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
     public Student Student { get; set; } = null!;

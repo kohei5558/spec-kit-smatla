@@ -65,8 +65,11 @@ public class ProblemService : IProblemService
         {
             StudentId = studentId,
             ProblemId = problemId,
+            StudentAnswer = answer,
             IsCorrect = isCorrect,
-            AnsweredAt = DateTime.UtcNow
+            PointsEarned = pointsEarned,
+            TimeTakenSeconds = 0, // TODO: 実際の所要時間を計測
+            SolvedAt = DateTime.UtcNow
         };
 
         await _learningRecordRepository.AddAsync(learningRecord);

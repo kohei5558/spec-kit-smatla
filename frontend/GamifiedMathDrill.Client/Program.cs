@@ -17,5 +17,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://
 // Register API clients
 builder.Services.AddScoped<ProblemApiClient>();
 builder.Services.AddScoped<StudentApiClient>();
+builder.Services.AddScoped<LearningRecordApiClient>();
 
 await builder.Build().RunAsync();

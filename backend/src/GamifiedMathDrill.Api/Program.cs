@@ -52,6 +52,7 @@ builder.Services.AddScoped<IDailyChallengeRepository, DailyChallengeRepository>(
 // Register services
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IProblemService, ProblemService>();
+builder.Services.AddScoped<ILearningRecordService, LearningRecordService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 
 // Data Protection API (セッショントークン用)

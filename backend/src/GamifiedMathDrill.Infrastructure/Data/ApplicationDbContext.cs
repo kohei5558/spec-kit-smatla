@@ -64,11 +64,14 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.IsCorrect).IsRequired();
-            entity.Property(e => e.AnsweredAt).IsRequired();
+            entity.Property(e => e.StudentAnswer).IsRequired();
+            entity.Property(e => e.PointsEarned).IsRequired();
+            entity.Property(e => e.TimeTakenSeconds).IsRequired();
+            entity.Property(e => e.SolvedAt).IsRequired();
             
             entity.HasIndex(e => e.StudentId);
-            entity.HasIndex(e => e.AnsweredAt);
-            entity.HasIndex(e => new { e.StudentId, e.AnsweredAt });
+            entity.HasIndex(e => e.SolvedAt);
+            entity.HasIndex(e => new { e.StudentId, e.SolvedAt });
 
             entity.HasOne(e => e.Student)
                 .WithMany(s => s.LearningRecords)

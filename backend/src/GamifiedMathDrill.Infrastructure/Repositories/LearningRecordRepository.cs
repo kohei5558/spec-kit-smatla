@@ -19,16 +19,16 @@ public class LearningRecordRepository : Repository<LearningRecord>, ILearningRec
         return await _dbSet
             .Where(lr => lr.StudentId == studentId)
             .Include(lr => lr.Problem)
-            .OrderByDescending(lr => lr.AnsweredAt)
+            .OrderByDescending(lr => lr.SolvedAt)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<LearningRecord>> GetByStudentIdAndDateRangeAsync(int studentId, DateTime startDate, DateTime endDate)
     {
         return await _dbSet
-            .Where(lr => lr.StudentId == studentId && lr.AnsweredAt >= startDate && lr.AnsweredAt <= endDate)
+            .Where(lr => lr.StudentId == studentId && lr.SolvedAt >= startDate && lr.SolvedAt <= endDate)
             .Include(lr => lr.Problem)
-            .OrderByDescending(lr => lr.AnsweredAt)
+            .OrderByDescending(lr => lr.SolvedAt)
             .ToListAsync();
     }
 }
