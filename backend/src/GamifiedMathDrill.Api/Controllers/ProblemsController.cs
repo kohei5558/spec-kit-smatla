@@ -58,6 +58,9 @@ public class ProblemsController : ControllerBase
         [FromQuery] int studentId,
         [FromBody] SubmitAnswerDto answerDto)
     {
+        _logger.LogInformation("SubmitAnswer called: ProblemId={ProblemId}, StudentId={StudentId}, Answer={Answer}", 
+            id, studentId, answerDto.Answer);
+
         if (studentId <= 0)
         {
             return BadRequest(ApiResponse<AnswerResultDto>.ErrorResponse("Valid student ID is required."));
@@ -72,6 +75,9 @@ public class ProblemsController : ControllerBase
         {
             var (isCorrect, pointsEarned, leveledUp, newLevel) = 
                 await _problemService.SubmitAnswerAsync(studentId, id, answerDto.Answer);
+            
+            _logger.LogInformation("Answer result: IsCorrect={IsCorrect}, PointsEarned={PointsEarned}", 
+                isCorrect, pointsEarned);
 
             var result = new AnswerResultDto
             {

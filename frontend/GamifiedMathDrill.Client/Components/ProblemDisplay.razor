@@ -12,7 +12,8 @@
 </div>
 
 <div class="answer-input mt-6">
-    <MudNumericField @bind-Value="Answer"
+    <MudNumericField Value="@Answer"
+                     ValueChanged="@OnAnswerChange"
                      Label="答えを入力してね"
                      Variant="Variant.Outlined"
                      Margin="Margin.Dense"

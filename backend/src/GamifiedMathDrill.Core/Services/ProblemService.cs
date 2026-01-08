@@ -58,6 +58,10 @@ public class ProblemService : IProblemService
 
         // 回答の正誤を判定
         var isCorrect = answer == problem.CorrectAnswer;
+        
+        // デバッグログ: 実際の比較内容を出力
+        Console.WriteLine($"DEBUG: ProblemId={problemId}, UserAnswer={answer}, CorrectAnswer={problem.CorrectAnswer}, IsCorrect={isCorrect}");
+        
         var pointsEarned = isCorrect ? 10 : 0; // 基本ポイント10、不正解は0
 
         // 学習記録の作成
