@@ -94,9 +94,13 @@
 
         try
         {
+            Console.WriteLine($"Loading data for StudentId={StudentId}, Start={_startDate}, End={_endDate}");
+            
             // Load statistics
             _statistics = await LearningRecordClient.GetStatisticsAsync(
                 StudentId, _startDate, _endDate);
+            
+            Console.WriteLine($"Statistics loaded: TotalProblems={_statistics?.TotalProblems ?? 0}");
 
             // Load records
             var response = await LearningRecordClient.GetRecordsAsync(
@@ -111,15 +115,22 @@
             {
                 _records = response.Records;
                 _totalCount = response.TotalCount;
+                Console.WriteLine($"Records loaded: Count={_records.Count}, Total={_totalCount}");
+            }
+            else
+            {
+                Console.WriteLine("Response is null");
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading data: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
         }
         finally
         {
             _isLoading = false;
+            Console.WriteLine($"Loading complete. IsLoading={_isLoading}, Statistics is null={_statistics == null}");
         }
     }
 
