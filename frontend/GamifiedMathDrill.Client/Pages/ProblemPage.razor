@@ -83,7 +83,7 @@
     private StudentDto? student;
     private ProblemDto? currentProblem;
     private AnswerResultDto? answerResult;
-    private int userAnswer;
+    private int? userAnswer;
     private bool isLoading = true;
     private bool isSubmitting = false;
     private bool showFeedback = false;
@@ -120,7 +120,7 @@
 
         isLoading = true;
         showFeedback = false;
-        userAnswer = 0;
+        userAnswer = null;
 
         try
         {
@@ -142,7 +142,7 @@
         }
     }
 
-    private void HandleAnswerChange(int answer)
+    private void HandleAnswerChange(int? answer)
     {
         userAnswer = answer;
     }
@@ -155,7 +155,7 @@
 
         try
         {
-            answerResult = await ProblemApi.SubmitAnswerAsync(currentProblem.Id, student.Id, userAnswer);
+            answerResult = await ProblemApi.SubmitAnswerAsync(currentProblem.Id, student.Id, userAnswer ?? 0);
             
             if (answerResult != null)
             {

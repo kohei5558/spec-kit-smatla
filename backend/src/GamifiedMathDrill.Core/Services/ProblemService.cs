@@ -30,8 +30,32 @@ public class ProblemService : IProblemService
             throw new KeyNotFoundException($"Student with ID {studentId} not found.");
         }
 
-        // 生徒の現在のレベルに基づいて問題の難易度を選択
-        var difficultyLevel = (student.CurrentLevel?.MinDifficulty + student.CurrentLevel?.MaxDifficulty) / 2 ?? 1;
+        // 生徒の現在のレベルに基づいて問題の難易度を選択（ハイブリッド方式）
+        int difficultyLevel;
+        
+        if (student.CurrentLevel != null)
+        {
+            // レベル内の進捗率を計算（0.0～1.0）
+            var progress = student.CurrentLevel.RequiredCorrectAnswers > 0
+                ? Math.Min(1.0, (double)student.CorrectAnswers / student.CurrentLevel.RequiredCorrectAnswers)
+                : 0.0;
+            
+            // 進捗に応じた基準難易度を計算
+            var difficultyRange = student.CurrentLevel.MaxDifficulty - student.CurrentLevel.MinDifficulty;
+            var baseDifficulty = student.CurrentLevel.MinDifficulty + (int)(difficultyRange * progress);
+            
+            // ランダム要素を追加（基準難易度の±1、ただしレベル範囲内）
+            var random = new Random();
+            var minDiff = Math.Max(student.CurrentLevel.MinDifficulty, baseDifficulty - 1);
+            var maxDiff = Math.Min(student.CurrentLevel.MaxDifficulty, baseDifficulty + 1);
+            
+            difficultyLevel = minDiff == maxDiff ? minDiff : random.Next(minDiff, maxDiff + 1);
+        }
+        else
+        {
+            // レベル情報がない場合はデフォルト難易度
+            difficultyLevel = 1;
+        }
 
         return await _problemRepository.GetRandomProblemAsync(
             difficultyLevel,

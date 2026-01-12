@@ -30,10 +30,10 @@ public class RewardsController : ControllerBase
             {
                 Id = r.Id,
                 Name = r.Name,
-                Description = r.Description,
+                Description = r.Description ?? string.Empty,
                 RequiredPoints = r.RequiredPoints,
                 Category = r.Category.ToString(),
-                ImageUrl = r.ImageUrl
+                ImageUrl = r.ImageUrl ?? string.Empty
             });
 
             return Ok(responseDtos);

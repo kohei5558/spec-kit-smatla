@@ -12,16 +12,19 @@
 </div>
 
 <div class="answer-input mt-6">
-    <MudNumericField Value="@Answer"
-                     ValueChanged="@OnAnswerChange"
-                     Label="答えを入力してね"
-                     Variant="Variant.Outlined"
-                     Margin="Margin.Dense"
-                     FullWidth="true"
-                     Class="mud-text-field-large"
-                     Disabled="@IsSubmitting"
-                     Style="font-size: 2rem;"
-                     T="int" />
+    <MudTextField @ref="answerField"
+                  Value="@inputText"
+                  ValueChanged="@((string value) => HandleInput(value))"
+                  Label="答えを入力してね"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  FullWidth="true"
+                  Class="mud-text-field-large"
+                  Disabled="@IsSubmitting"
+                  Style="font-size: 2rem;"
+                  Immediate="true"
+                  InputMode="InputMode.numeric"
+                  Pattern="[0-9]*" />
 </div>
 
 <div class="text-center mt-6">
@@ -29,7 +32,7 @@
                Color="Color.Success"
                Size="Size.Large"
                OnClick="OnSubmit"
-               Disabled="@IsSubmitting"
+               Disabled="@(IsSubmitting || !Answer.HasValue)"
                StartIcon="@Icons.Material.Filled.Check"
                Style="font-size: 1.5rem; padding: 16px 48px;">
         @if (IsSubmitting)
@@ -49,14 +52,81 @@
     public ProblemDto Problem { get; set; } = null!;
 
     [Parameter]
-    public int Answer { get; set; }
+    public int? Answer { get; set; }
 
     [Parameter]
-    public EventCallback<int> OnAnswerChange { get; set; }
+    public EventCallback<int?> OnAnswerChange { get; set; }
 
     [Parameter]
     public EventCallback OnSubmit { get; set; }
 
     [Parameter]
     public bool IsSubmitting { get; set; }
+
+    private string inputText = string.Empty;
+    private MudTextField<string>? answerField;
+
+    protected override void OnParametersSet()
+    {
+        // Answer値が変更された場合（例：新しい問題を読み込んだ時）
+        inputText = Answer?.ToString() ?? string.Empty;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && answerField != null)
+        {
+            await answerField.FocusAsync();
+        }
+    }
+
+    private async Task HandleInput(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            inputText = string.Empty;
+            await OnAnswerChange.InvokeAsync(null);
+            return;
+        }
+
+        // 全角数字を半角に変換
+        var normalized = ConvertFullWidthToHalfWidth(value);
+
+        // 数値のみを抽出（マイナス記号を含む）
+        var numbersOnly = new string(normalized.Where(c => char.IsDigit(c) || c == '-').ToArray());
+
+        // 入力値を更新
+        inputText = numbersOnly;
+
+        // 数値に変換
+        if (int.TryParse(numbersOnly, out var parsedValue))
+        {
+            await OnAnswerChange.InvokeAsync(parsedValue);
+        }
+        else if (string.IsNullOrEmpty(numbersOnly))
+        {
+            await OnAnswerChange.InvokeAsync(null);
+        }
+    }
+
+    private string ConvertFullWidthToHalfWidth(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return input;
+
+        var result = new System.Text.StringBuilder();
+        foreach (var c in input)
+        {
+            // 全角数字（０-９）を半角数字（0-9）に変換
+            if (c >= '０' && c <= '９')
+            {
+                result.Append((char)(c - '０' + '0'));
+            }
+            else
+            {
+                result.Append(c);
+            }
+        }
+        return result.ToString();
+    }
 }
