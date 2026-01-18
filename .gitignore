@@ -6,3 +6,57 @@ obj/
 *.db
 *.db-shm
 *.db-wal
+
+# .NET / C#
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.vsidx
+*.vspscc
+*.v2
+.vs/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db

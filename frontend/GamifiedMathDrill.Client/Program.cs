@@ -21,4 +21,7 @@ builder.Services.AddScoped<LearningRecordApiClient>();
 builder.Services.AddScoped<DailyChallengeApiClient>();
 builder.Services.AddScoped<RewardApiClient>();
 
+// Register state management services
+builder.Services.AddScoped<CategoryStateService>();
+
 await builder.Build().RunAsync();

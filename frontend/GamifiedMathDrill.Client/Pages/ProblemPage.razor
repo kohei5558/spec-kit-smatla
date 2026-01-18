@@ -3,6 +3,7 @@
 @using GamifiedMathDrill.Client.Services
 @inject ProblemApiClient ProblemApi
 @inject StudentApiClient StudentApi
+@inject CategoryStateService CategoryState
 @inject NavigationManager Navigation
 
 <PageTitle>問題を解く - 計算ドリル</PageTitle>
@@ -18,10 +19,22 @@
     else if (currentProblem != null && !showFeedback)
     {
         <MudPaper Class="pa-6" Elevation="3">
-            <MudText Typo="Typo.h4" Class="mb-6 text-center">
+            <MudText Typo="Typo.h4" Class="mb-2 text-center">
                 <MudIcon Icon="@Icons.Material.Filled.Calculate" Color="Color.Primary" />
                 問題 @currentProblem.Id
             </MudText>
+
+            <!-- カテゴリ表示 -->
+            @if (!string.IsNullOrEmpty(currentProblem.CalculationTypeText))
+            {
+                <MudChip T="string" 
+                         Icon="@GetCategoryIcon(currentProblem.CalculationTypeText)" 
+                         Color="@GetCategoryColor(currentProblem.CalculationTypeText)" 
+                         Size="Size.Medium"
+                         Class="mb-4">
+                    @GetCategoryName(currentProblem.CalculationTypeText)
+                </MudChip>
+            }
 
             <ProblemDisplay 
                 Problem="@currentProblem" 
@@ -76,6 +89,15 @@
                 </MudItem>
             </MudGrid>
         </MudPaper>
+
+        <!-- ホーム画面に戻るボタン -->
+        <MudButton Variant="Variant.Outlined" 
+                  Color="Color.Default" 
+                  StartIcon="@Icons.Material.Filled.Home"
+                  Href="/"
+                  Class="mt-4">
+            ホーム画面に戻る
+        </MudButton>
     }
 </MudContainer>
 
@@ -89,9 +111,13 @@
     private bool showFeedback = false;
     private List<int> recentProblemIds = new();
     private const int MaxRecentProblems = 10;
+    private string? selectedCategory;
 
     protected override async Task OnInitializedAsync()
     {
+        // カテゴリ状態を取得
+        selectedCategory = await CategoryState.GetSelectedCategoryAsync();
+        
         // テスト用: Student ID 1を使用（実際にはログイン機能で取得）
         await LoadStudent(1);
         await LoadNextProblem();
@@ -124,7 +150,8 @@
 
         try
         {
-            currentProblem = await ProblemApi.GetNextProblemAsync(student.Id, recentProblemIds);
+            // CategoryStateService から選択されたカテゴリを取得して API に渡す
+            currentProblem = await ProblemApi.GetNextProblemAsync(student.Id, recentProblemIds, selectedCategory);
             
             if (currentProblem != null)
             {
@@ -174,5 +201,41 @@
     private async Task HandleNextProblem()
     {
         await LoadNextProblem();
+    }
+
+    private string GetCategoryIcon(string calculationType)
+    {
+        return calculationType switch
+        {
+            "Addition" => Icons.Material.Filled.Add,
+            "Subtraction" => Icons.Material.Filled.Remove,
+            "Multiplication" => Icons.Material.Filled.Close,
+            "Division" => Icons.Material.Filled.MoreHoriz,
+            _ => Icons.Material.Filled.Calculate
+        };
+    }
+
+    private Color GetCategoryColor(string calculationType)
+    {
+        return calculationType switch
+        {
+            "Addition" => Color.Success,
+            "Subtraction" => Color.Warning,
+            "Multiplication" => Color.Info,
+            "Division" => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private string GetCategoryName(string calculationType)
+    {
+        return calculationType switch
+        {
+            "Addition" => "足し算",
+            "Subtraction" => "引き算",
+            "Multiplication" => "掛け算",
+            "Division" => "割り算",
+            _ => "計算"
+        };
     }
 }

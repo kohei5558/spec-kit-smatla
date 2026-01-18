@@ -18,7 +18,7 @@ public class ProblemApiClient
         };
     }
 
-    public async Task<ProblemDto?> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null)
+    public async Task<ProblemDto?> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null, string? category = null)
     {
         var queryParams = new List<string> { $"studentId={studentId}" };
         
@@ -28,6 +28,11 @@ public class ProblemApiClient
             {
                 queryParams.Add($"excludeRecentIds={id}");
             }
+        }
+
+        if (!string.IsNullOrEmpty(category))
+        {
+            queryParams.Add($"category={category}");
         }
 
         var query = string.Join("&", queryParams);

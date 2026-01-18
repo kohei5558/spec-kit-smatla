@@ -21,7 +21,8 @@ public class ProblemsController : ControllerBase
     [HttpGet("next")]
     public async Task<ActionResult<ApiResponse<ProblemDto>>> GetNext(
         [FromQuery] int studentId,
-        [FromQuery] List<int>? excludeRecentIds = null)
+        [FromQuery] List<int>? excludeRecentIds = null,
+        [FromQuery] Core.Models.CalculationType? category = null)
     {
         if (studentId <= 0)
         {
@@ -30,10 +31,13 @@ public class ProblemsController : ControllerBase
 
         try
         {
-            var problem = await _problemService.GetNextProblemAsync(studentId, excludeRecentIds);
+            var problem = await _problemService.GetNextProblemAsync(studentId, excludeRecentIds, category);
             if (problem == null)
             {
-                return NotFound(ApiResponse<ProblemDto>.ErrorResponse("No available problems found."));
+                var message = category.HasValue 
+                    ? $"No available problems found for category {category.Value}."
+                    : "No available problems found.";
+                return NotFound(ApiResponse<ProblemDto>.ErrorResponse(message));
             }
 
             var problemDto = new ProblemDto

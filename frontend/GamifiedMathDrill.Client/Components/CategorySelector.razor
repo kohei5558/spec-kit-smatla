@@ -1,0 +1,75 @@
+@using MudBlazor
+
+<MudGrid Spacing="3" Justify="Justify.Center">
+    @foreach (var category in Categories)
+    {
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="@GetCardClass(category.Value)" 
+                     Style="@GetCardStyle(category.Value)"
+                     @onclick="() => SelectCategory(category.Value)">
+                <MudCardContent Class="d-flex flex-column align-center py-6">
+                    <MudIcon Icon="@category.Icon" 
+                             Size="Size.Large" 
+                             Color="@(IsSelected(category.Value) ? Color.Primary : Color.Default)"
+                             Style="font-size: 3rem;" />
+                    <MudText Typo="Typo.h5" Class="mt-4">@category.Name</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    [Parameter]
+    public string? SelectedCategory { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> OnCategorySelected { get; set; }
+
+    private class CategoryInfo
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? Value { get; set; }
+        public string Icon { get; set; } = string.Empty;
+    }
+
+    private List<CategoryInfo> Categories = new()
+    {
+        new CategoryInfo { Name = "足し算", Value = "Addition", Icon = Icons.Material.Filled.Add },
+        new CategoryInfo { Name = "引き算", Value = "Subtraction", Icon = Icons.Material.Filled.Remove },
+        new CategoryInfo { Name = "掛け算", Value = "Multiplication", Icon = Icons.Material.Filled.Close },
+        new CategoryInfo { Name = "割り算", Value = "Division", Icon = Icons.Material.Filled.MoreHoriz },
+        new CategoryInfo { Name = "すべて（ミックス）", Value = null, Icon = Icons.Material.Filled.AllInclusive }
+    };
+
+    private bool IsSelected(string? value)
+    {
+        return SelectedCategory == value;
+    }
+
+    private string GetCardClass(string? value)
+    {
+        var baseClass = "mud-elevation-2 hover:mud-elevation-8";
+        if (IsSelected(value))
+        {
+            return $"{baseClass} category-card-selected";
+        }
+        return baseClass;
+    }
+
+    private string GetCardStyle(string? value)
+    {
+        var baseStyle = "cursor: pointer; transition: all 0.3s ease;";
+        if (IsSelected(value))
+        {
+            return $"{baseStyle} background-color: rgba(89, 74, 226, 0.08);";
+        }
+        return baseStyle;
+    }
+
+    private async Task SelectCategory(string? category)
+    {
+        SelectedCategory = category;
+        await OnCategorySelected.InvokeAsync(category);
+    }
+}

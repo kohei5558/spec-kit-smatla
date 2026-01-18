@@ -1,0 +1,5 @@
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="100" cy="100" r="80" fill="#4B0082"/>
+  <polygon points="100,40 120,85 170,90 130,125 140,175 100,150 60,175 70,125 30,90 80,85" fill="#FFD700" stroke="#FFA500" stroke-width="2"/>
+  <text x="100" y="112" font-size="16" fill="white" text-anchor="middle" font-weight="bold">LEGEND</text>
+</svg>

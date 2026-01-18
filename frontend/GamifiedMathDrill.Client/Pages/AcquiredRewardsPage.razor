@@ -53,7 +53,7 @@
             {
                 <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudCard>
-                        <MudCardMedia Image="@(string.IsNullOrEmpty(acquired.RewardImageUrl) ? "/images/placeholder-reward.png" : acquired.RewardImageUrl)" Height="200" />
+                        <MudCardMedia Image="@acquired.RewardImageUrl" Height="200" />
                         <MudCardContent>
                             <MudStack Spacing="2">
                                 <MudText Typo="Typo.h6">@acquired.RewardName</MudText>

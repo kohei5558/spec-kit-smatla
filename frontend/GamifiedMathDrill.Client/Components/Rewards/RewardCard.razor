@@ -1,7 +1,7 @@
 @using GamifiedMathDrill.Client.Models
 
 <MudCard Class="reward-card" Style="height: 100%;">
-    <MudCardMedia Image="@(string.IsNullOrEmpty(Reward.ImageUrl) ? "/images/placeholder-reward.png" : Reward.ImageUrl)" Height="200" />
+    <MudCardMedia Image="@Reward.ImageUrl" Height="200" />
     <MudCardContent>
         <MudStack Spacing="2">
             <MudText Typo="Typo.h6">@Reward.Name</MudText>

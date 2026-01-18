@@ -2,9 +2,12 @@
 @using GamifiedMathDrill.Client.Services
 @using GamifiedMathDrill.Client.Models
 @using GamifiedMathDrill.Client.Components.Home
+@using GamifiedMathDrill.Client.Components
 @inject StudentApiClient StudentApi
 @inject DailyChallengeApiClient DailyChallengeApi
+@inject CategoryStateService CategoryState
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <PageTitle>ホーム - 計算ドリル</PageTitle>
 
@@ -95,12 +98,22 @@
                 </MudItem>
             </MudGrid>
 
+            <!-- カテゴリ選択セクション -->
+            <MudPaper Class="pa-6 mb-6" Elevation="2">
+                <MudText Typo="Typo.h5" Class="mb-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Category" Color="Color.Primary" />
+                    計算のカテゴリを選んでね
+                </MudText>
+                <CategorySelector SelectedCategory="@selectedCategory" 
+                                 OnCategorySelected="OnCategorySelected" />
+            </MudPaper>
+
             <MudButton Variant="Variant.Filled" 
                       Color="Color.Primary" 
                       Size="Size.Large"
                       FullWidth="true"
                       StartIcon="@Icons.Material.Filled.PlayArrow"
-                      Href="/problem"
+                      OnClick="StartProblem"
                       Class="mb-3">
                 問題を解く
             </MudButton>
@@ -123,6 +136,7 @@
     private string studentName = "";
     private string encouragementMessage = "";
     private bool isLoading = true;
+    private string? selectedCategory;
 
     protected override async Task OnInitializedAsync()
     {
@@ -131,7 +145,28 @@
         {
             await LoadDailyChallenge();
             encouragementMessage = GetEncouragementMessage(student.ConsecutiveDays);
+            
+            // sessionStorage からカテゴリ状態を復元
+            selectedCategory = await CategoryState.GetSelectedCategoryAsync();
         }
+    }
+
+    private async Task OnCategorySelected(string? category)
+    {
+        selectedCategory = category;
+        await CategoryState.SetSelectedCategoryAsync(category);
+    }
+
+    private async Task StartProblem()
+    {
+        // カテゴリ未選択時のバリデーション
+        if (!await CategoryState.HasSelectedCategoryAsync())
+        {
+            Snackbar.Add("計算のカテゴリを選んでね！", Severity.Warning);
+            return;
+        }
+
+        Navigation.NavigateTo("/problem");
     }
 
     private async Task LoadStudent()

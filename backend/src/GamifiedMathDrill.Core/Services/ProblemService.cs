@@ -22,7 +22,7 @@ public class ProblemService : IProblemService
         _levelRepository = levelRepository;
     }
 
-    public async Task<Problem?> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null)
+    public async Task<Problem?> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null, CalculationType? category = null)
     {
         var student = await _studentRepository.GetByIdWithDetailsAsync(studentId);
         if (student == null)
@@ -57,9 +57,10 @@ public class ProblemService : IProblemService
             difficultyLevel = 1;
         }
 
+        // カテゴリパラメータを渡す（nullの場合はすべてのカテゴリから選択）
         return await _problemRepository.GetRandomProblemAsync(
             difficultyLevel,
-            null,
+            category,
             excludeRecentIds);
     }
 
