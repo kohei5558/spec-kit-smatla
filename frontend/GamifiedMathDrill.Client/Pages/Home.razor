@@ -5,6 +5,7 @@
 @using GamifiedMathDrill.Client.Components
 @inject StudentApiClient StudentApi
 @inject DailyChallengeApiClient DailyChallengeApi
+@inject RewardApiClient RewardApi
 @inject CategoryStateService CategoryState
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
@@ -126,6 +127,73 @@
                       Href="@($"/results/{student.Id}")">
                 学習結果を見る
             </MudButton>
+
+            <!-- Available Rewards Section -->
+            <MudPaper Class="pa-6 mt-6" Elevation="2">
+                <MudStack Spacing="3">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h5">
+                            <MudIcon Icon="@Icons.Material.Filled.CardGiftcard" Color="Color.Primary" />
+                            交換できる景品
+                        </MudText>
+                        <MudButton Variant="Variant.Text"
+                                  Color="Color.Primary"
+                                  Size="Size.Small"
+                                  Href="/rewards"
+                                  EndIcon="@Icons.Material.Filled.ArrowForward">
+                            もっと見る
+                        </MudButton>
+                    </MudStack>
+
+                    @if (isLoadingRewards)
+                    {
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                    }
+                    else if (availableRewards.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true">
+                            現在交換できる景品がありません
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudGrid Spacing="2">
+                            @foreach (var reward in availableRewards.Take(4))
+                            {
+                                <MudItem xs="6" sm="3">
+                                    <MudCard Elevation="2" Class="cursor-pointer" Style="height: 100%;" @onclick="@(() => NavigateToRewards())">
+                                        @if (!string.IsNullOrEmpty(reward.ImageUrl))
+                                        {
+                                            <MudCardMedia Image="@reward.ImageUrl" Height="120" />
+                                        }
+                                        else
+                                        {
+                                            <div style="height: 120px; display: flex; align-items: center; justify-content: center; background: #f5f5f5;">
+                                                <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" Color="Color.Default" />
+                                            </div>
+                                        }
+                                        <MudCardContent Class="pa-2">
+                                            <MudText Typo="Typo.body2" Class="text-truncate">@reward.Name</MudText>
+                                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mt-1">
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Text">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Stars" Size="Size.Small" />
+                                                    @reward.RequiredPoints
+                                                </MudChip>
+                                                @if (reward.Stock.HasValue)
+                                                {
+                                                    <MudChip T="string" Size="Size.Small" Color="@GetStockColor(reward.Stock.Value)" Variant="Variant.Text">
+                                                        残@(reward.Stock.Value)
+                                                    </MudChip>
+                                                }
+                                            </MudStack>
+                                        </MudCardContent>
+                                    </MudCard>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    }
+                </MudStack>
+            </MudPaper>
         </MudPaper>
     }
 </MudContainer>
@@ -133,9 +201,11 @@
 @code {
     private StudentDto? student;
     private DailyChallengeDto? dailyChallenge;
+    private List<RewardDto> availableRewards = new();
     private string studentName = "";
     private string encouragementMessage = "";
     private bool isLoading = true;
+    private bool isLoadingRewards = false;
     private string? selectedCategory;
 
     protected override async Task OnInitializedAsync()
@@ -144,11 +214,55 @@
         if (student != null)
         {
             await LoadDailyChallenge();
+            await LoadAvailableRewards();
             encouragementMessage = GetEncouragementMessage(student.ConsecutiveDays);
             
             // sessionStorage からカテゴリ状態を復元
             selectedCategory = await CategoryState.GetSelectedCategoryAsync();
         }
+    }
+
+    private async Task LoadAvailableRewards()
+    {
+        isLoadingRewards = true;
+        try
+        {
+            var allRewards = await RewardApi.GetRewardsAsync();
+            
+            // Filter rewards for children:
+            // - Only active rewards
+            // - Hide out-of-stock physical rewards (Stock == 0)
+            // - Sort by required points (cheapest first)
+            availableRewards = allRewards
+                .Where(r => r.IsActive)
+                .Where(r => !r.IsPhysical || !r.Stock.HasValue || r.Stock.Value > 0)
+                .OrderBy(r => r.RequiredPoints)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading rewards: {ex.Message}");
+            availableRewards = new();
+        }
+        finally
+        {
+            isLoadingRewards = false;
+        }
+    }
+
+    private void NavigateToRewards()
+    {
+        Navigation.NavigateTo("/rewards");
+    }
+
+    private Color GetStockColor(int stock)
+    {
+        return stock switch
+        {
+            0 => Color.Error,
+            <= 5 => Color.Warning,
+            _ => Color.Success
+        };
     }
 
     private async Task OnCategorySelected(string? category)

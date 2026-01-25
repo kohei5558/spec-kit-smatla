@@ -164,7 +164,7 @@
 
 - [X] T057 [US1] Create RewardManagement.razor page in frontend/GamifiedMathDrill.Client/Pages/RewardManagement.razor (reward list with MudTable, add/edit/delete buttons, [Authorize(Roles="Parent")])
 - [X] T058 [US1] Create RewardForm.razor page in frontend/GamifiedMathDrill.Client/Pages/RewardForm.razor (form for create/update reward with ImageUploader, MudTextField for name/description/points/stock, MudSelect for category)
-- [ ] T059 [US1] Update Home.razor in frontend/GamifiedMathDrill.Client/Pages/Home.razor (display physical rewards with images from API, show stock count, hide out-of-stock items for children)
+- [X] T059 [US1] Update Home.razor in frontend/GamifiedMathDrill.Client/Pages/Home.razor (display physical rewards with images from API, show stock count, hide out-of-stock items for children)
 
 **Checkpoint**: User Story 1 complete - Parents can manage physical rewards with images, children can see available rewards
 
