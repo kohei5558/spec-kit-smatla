@@ -14,6 +14,7 @@ public class RewardServiceBasicTests
     private readonly Mock<IRewardRepository> _mockRewardRepository;
     private readonly Mock<IAcquiredRewardRepository> _mockAcquiredRewardRepository;
     private readonly Mock<IStudentRepository> _mockStudentRepository;
+    private readonly Mock<IImageStorageService> _mockImageStorageService;
     private readonly RewardService _rewardService;
 
     public RewardServiceBasicTests()
@@ -21,11 +22,13 @@ public class RewardServiceBasicTests
         _mockRewardRepository = new Mock<IRewardRepository>();
         _mockAcquiredRewardRepository = new Mock<IAcquiredRewardRepository>();
         _mockStudentRepository = new Mock<IStudentRepository>();
+        _mockImageStorageService = new Mock<IImageStorageService>();
         
         _rewardService = new RewardService(
             _mockRewardRepository.Object,
             _mockAcquiredRewardRepository.Object,
-            _mockStudentRepository.Object
+            _mockStudentRepository.Object,
+            _mockImageStorageService.Object
         );
     }
 
@@ -35,8 +38,8 @@ public class RewardServiceBasicTests
         // Arrange
         var rewards = new List<Reward>
         {
-            new Reward { Id = 1, Name = "Test Badge", RequiredPoints = 100, Category = RewardCategory.Badge },
-            new Reward { Id = 2, Name = "Test Avatar", RequiredPoints = 200, Category = RewardCategory.Avatar }
+            new Reward { Id = 1, Name = "Test Snack", RequiredPoints = 100, Category = RewardCategory.Snack },
+            new Reward { Id = 2, Name = "Test Card", RequiredPoints = 200, Category = RewardCategory.Card }
         };
         _mockRewardRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(rewards);
 
@@ -58,7 +61,7 @@ public class RewardServiceBasicTests
             Name = "Test Student", 
             TotalPoints = 10
         };
-        var reward = new Reward { Id = 1, Name = "Badge", RequiredPoints = 100, Category = RewardCategory.Badge };
+        var reward = new Reward { Id = 1, Name = "Snack", RequiredPoints = 100, Category = RewardCategory.Snack };
         
         _mockStudentRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(student);
         _mockRewardRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(reward);

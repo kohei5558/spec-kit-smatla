@@ -35,10 +35,11 @@ public class Repository<T> : IRepository<T> where T : class
         return entity;
     }
 
-    public virtual async Task UpdateAsync(T entity)
+    public virtual async Task<T> UpdateAsync(T entity)
     {
         _dbSet.Update(entity);
         await _context.SaveChangesAsync();
+        return entity;
     }
 
     public virtual async Task DeleteAsync(T entity)

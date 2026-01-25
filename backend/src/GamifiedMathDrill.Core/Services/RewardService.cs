@@ -8,15 +8,18 @@ public class RewardService : IRewardService
     private readonly IRewardRepository _rewardRepository;
     private readonly IAcquiredRewardRepository _acquiredRewardRepository;
     private readonly IStudentRepository _studentRepository;
+    private readonly IImageStorageService _imageStorageService;
 
     public RewardService(
         IRewardRepository rewardRepository,
         IAcquiredRewardRepository acquiredRewardRepository,
-        IStudentRepository studentRepository)
+        IStudentRepository studentRepository,
+        IImageStorageService imageStorageService)
     {
         _rewardRepository = rewardRepository;
         _acquiredRewardRepository = acquiredRewardRepository;
         _studentRepository = studentRepository;
+        _imageStorageService = imageStorageService;
     }
 
     public async Task<IEnumerable<Reward>> GetRewardsAsync(string? category = null, int? maxPoints = null)
@@ -36,6 +39,74 @@ public class RewardService : IRewardService
         }
 
         return rewards.OrderBy(r => r.RequiredPoints).ThenBy(r => r.Name);
+    }
+
+    public async Task<Reward?> GetRewardByIdAsync(int id)
+    {
+        return await _rewardRepository.GetByIdAsync(id);
+    }
+
+    public async Task<Reward> CreateRewardAsync(Reward reward, Stream? imageStream, string? fileName, string? contentType, string createdBy)
+    {
+        // 画像アップロード
+        if (imageStream != null && !string.IsNullOrEmpty(fileName) && !string.IsNullOrEmpty(contentType))
+        {
+            reward.ImageUrl = await _imageStorageService.SaveImageAsync(imageStream, fileName, contentType);
+        }
+
+        // 作成情報設定
+        reward.CreatedBy = createdBy;
+        reward.CreatedAt = DateTime.UtcNow;
+        reward.UpdatedAt = DateTime.UtcNow;
+        reward.IsActive = true;
+
+        return await _rewardRepository.AddAsync(reward);
+    }
+
+    public async Task<Reward> UpdateRewardAsync(int id, Reward updatedReward, Stream? imageStream, string? fileName, string? contentType, string updatedBy)
+    {
+        var existingReward = await _rewardRepository.GetByIdAsync(id);
+        if (existingReward == null)
+        {
+            throw new KeyNotFoundException($"景品が見つかりません（ID: {id}）");
+        }
+
+        // 画像更新
+        if (imageStream != null && !string.IsNullOrEmpty(fileName) && !string.IsNullOrEmpty(contentType))
+        {
+            // 既存画像削除
+            await _imageStorageService.DeleteImageAsync(existingReward.ImageUrl);
+
+            // 新しい画像保存
+            existingReward.ImageUrl = await _imageStorageService.SaveImageAsync(imageStream, fileName, contentType);
+        }
+
+        // フィールド更新
+        existingReward.Name = updatedReward.Name;
+        existingReward.Description = updatedReward.Description;
+        existingReward.RequiredPoints = updatedReward.RequiredPoints;
+        existingReward.Category = updatedReward.Category;
+        existingReward.IsPhysical = updatedReward.IsPhysical;
+        existingReward.Stock = updatedReward.Stock;
+        existingReward.IsActive = updatedReward.IsActive;
+        existingReward.UpdatedAt = DateTime.UtcNow;
+        existingReward.RowVersion = updatedReward.RowVersion; // 楽観的同時実行制御
+
+        return await _rewardRepository.UpdateAsync(existingReward);
+    }
+
+    public async Task DeleteRewardAsync(int id)
+    {
+        var reward = await _rewardRepository.GetByIdAsync(id);
+        if (reward == null)
+        {
+            throw new KeyNotFoundException($"景品が見つかりません（ID: {id}）");
+        }
+
+        // 画像削除
+        await _imageStorageService.DeleteImageAsync(reward.ImageUrl);
+
+        await _rewardRepository.DeleteAsync(reward);
     }
 
     public async Task<(bool Success, string Message, AcquiredReward? AcquiredReward)> ExchangeRewardAsync(int studentId, int rewardId)
@@ -61,12 +132,25 @@ public class RewardService : IRewardService
             return (false, $"ポイントが足りません。あと{shortfall}ポイント必要です。", null);
         }
 
+        // Check stock for physical rewards
+        if (reward.IsPhysical && reward.Stock.HasValue && reward.Stock.Value <= 0)
+        {
+            return (false, "在庫がありません。", null);
+        }
+
         // Perform transaction (atomic update)
         try
         {
             // Deduct points from student
             student.TotalPoints -= reward.RequiredPoints;
             await _studentRepository.UpdateAsync(student);
+
+            // Reduce stock for physical rewards
+            if (reward.IsPhysical && reward.Stock.HasValue)
+            {
+                reward.Stock -= 1;
+                await _rewardRepository.UpdateAsync(reward);
+            }
 
             // Create acquired reward record
             var acquiredReward = new AcquiredReward

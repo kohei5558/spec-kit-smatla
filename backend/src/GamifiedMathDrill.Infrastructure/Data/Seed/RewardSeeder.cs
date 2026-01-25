@@ -3,7 +3,7 @@ using GamifiedMathDrill.Core.Models;
 namespace GamifiedMathDrill.Infrastructure.Data.Seed;
 
 /// <summary>
-/// 景品のシードデータ
+/// 景品の初期データ（実物景品）
 /// </summary>
 public static class RewardSeeder
 {
@@ -11,41 +11,37 @@ public static class RewardSeeder
     {
         return new List<Reward>
         {
-            // バッジ (10種類)
-            new Reward { Id = 1, Name = "銅メダル", Description = "最初の一歩！", RequiredPoints = 50, Category = RewardCategory.Badge, ImageUrl = "/images/rewards/bronze-medal.png" },
-            new Reward { Id = 2, Name = "銀メダル", Description = "順調な成長！", RequiredPoints = 100, Category = RewardCategory.Badge, ImageUrl = "/images/rewards/silver-medal.png" },
-            new Reward { Id = 3, Name = "金メダル", Description = "素晴らしい！", RequiredPoints = 200, Category = RewardCategory.Badge, ImageUrl = "/images/rewards/gold-medal.png" },
-            new Reward { Id = 4, Name = "プラチナメダル", Description = "最高の栄誉！", RequiredPoints = 500, Category = RewardCategory.Badge, ImageUrl = "/images/rewards/platinum-medal.png" },
-            new Reward { Id = 5, Name = "星バッジ", Description = "きらきら輝く！", RequiredPoints = 150, Category = RewardCategory.Badge, ImageUrl = "/images/rewards/star-badge.png" },
-            new Reward { Id = 6, Name = "ハートバッジ", Description = "愛と努力の証", RequiredPoints = 150, Category = RewardCategory.Badge, ImageUrl = "/images/rewards/heart-badge.png" },
-            new Reward { Id = 7, Name = "雷バッジ", Description = "スピードマスター", RequiredPoints = 250, Category = RewardCategory.Badge, ImageUrl = "/images/rewards/thunder-badge.png" },
-            new Reward { Id = 8, Name = "王冠バッジ", Description = "計算王の証", RequiredPoints = 400, Category = RewardCategory.Badge, ImageUrl = "/images/rewards/crown-badge.png" },
-            new Reward { Id = 9, Name = "虹バッジ", Description = "全ての計算マスター", RequiredPoints = 600, Category = RewardCategory.Badge, ImageUrl = "/images/rewards/rainbow-badge.png" },
-            new Reward { Id = 10, Name = "伝説バッジ", Description = "伝説の計算名人", RequiredPoints = 1000, Category = RewardCategory.Badge, ImageUrl = "/images/rewards/legend-badge.png" },
+            // お菓子カテゴリー
+            new Reward { Id = 1, Name = "うまい棒 チーズ味", Description = "定番の駄菓子", RequiredPoints = 10, Category = RewardCategory.Snack, ImageUrl = "/images/rewards/umaibo-cheese.jpg", Stock = 20, IsPhysical = true, IsActive = true },
+            new Reward { Id = 2, Name = "チロルチョコ", Description = "小さなチョコレート", RequiredPoints = 15, Category = RewardCategory.Snack, ImageUrl = "/images/rewards/tirol.jpg", Stock = 15, IsPhysical = true, IsActive = true },
+            new Reward { Id = 3, Name = "ブラックサンダー", Description = "ザクザク食感のチョコバー", RequiredPoints = 20, Category = RewardCategory.Snack, ImageUrl = "/images/rewards/black-thunder.jpg", Stock = 10, IsPhysical = true, IsActive = true },
+            new Reward { Id = 4, Name = "ポテロング", Description = "細長いポテトチップス", RequiredPoints = 25, Category = RewardCategory.Snack, ImageUrl = "/images/rewards/potelong.jpg", Stock = 12, IsPhysical = true, IsActive = true },
+            new Reward { Id = 5, Name = "キャベツ太郎", Description = "キャベツ風味のスナック", RequiredPoints = 10, Category = RewardCategory.Snack, ImageUrl = "/images/rewards/cabbage-taro.jpg", Stock = 18, IsPhysical = true, IsActive = true },
 
-            // アバター (10種類)
-            new Reward { Id = 11, Name = "青いアバター", Description = "クールなブルー", RequiredPoints = 80, Category = RewardCategory.Avatar, ImageUrl = "/images/avatars/blue-avatar.png" },
-            new Reward { Id = 12, Name = "赤いアバター", Description = "情熱のレッド", RequiredPoints = 80, Category = RewardCategory.Avatar, ImageUrl = "/images/avatars/red-avatar.png" },
-            new Reward { Id = 13, Name = "緑のアバター", Description = "自然のグリーン", RequiredPoints = 80, Category = RewardCategory.Avatar, ImageUrl = "/images/avatars/green-avatar.png" },
-            new Reward { Id = 14, Name = "黄色いアバター", Description = "元気なイエロー", RequiredPoints = 80, Category = RewardCategory.Avatar, ImageUrl = "/images/avatars/yellow-avatar.png" },
-            new Reward { Id = 15, Name = "紫のアバター", Description = "神秘のパープル", RequiredPoints = 120, Category = RewardCategory.Avatar, ImageUrl = "/images/avatars/purple-avatar.png" },
-            new Reward { Id = 16, Name = "ピンクのアバター", Description = "可愛いピンク", RequiredPoints = 120, Category = RewardCategory.Avatar, ImageUrl = "/images/avatars/pink-avatar.png" },
-            new Reward { Id = 17, Name = "オレンジのアバター", Description = "明るいオレンジ", RequiredPoints = 120, Category = RewardCategory.Avatar, ImageUrl = "/images/avatars/orange-avatar.png" },
-            new Reward { Id = 18, Name = "虹色アバター", Description = "七色の輝き", RequiredPoints = 300, Category = RewardCategory.Avatar, ImageUrl = "/images/avatars/rainbow-avatar.png" },
-            new Reward { Id = 19, Name = "金色アバター", Description = "ゴールデンスター", RequiredPoints = 400, Category = RewardCategory.Avatar, ImageUrl = "/images/avatars/gold-avatar.png" },
-            new Reward { Id = 20, Name = "ダイヤモンドアバター", Description = "最高のきらめき", RequiredPoints = 800, Category = RewardCategory.Avatar, ImageUrl = "/images/avatars/diamond-avatar.png" },
+            // カードカテゴリー
+            new Reward { Id = 6, Name = "ポケモンカード 1パック", Description = "ランダム5枚入り", RequiredPoints = 100, Category = RewardCategory.Card, ImageUrl = "/images/rewards/pokemon-card-pack.jpg", Stock = 5, IsPhysical = true, IsActive = true },
+            new Reward { Id = 7, Name = "遊戯王カード 1パック", Description = "ランダム5枚入り", RequiredPoints = 100, Category = RewardCategory.Card, ImageUrl = "/images/rewards/yugioh-card-pack.jpg", Stock = 5, IsPhysical = true, IsActive = true },
+            new Reward { Id = 8, Name = "デュエルマスターズカード 1パック", Description = "ランダム5枚入り", RequiredPoints = 100, Category = RewardCategory.Card, ImageUrl = "/images/rewards/duelmasters-card-pack.jpg", Stock = 5, IsPhysical = true, IsActive = true },
 
-            // キャラクター (10種類)
-            new Reward { Id = 21, Name = "子猫のミーちゃん", Description = "可愛い子猫", RequiredPoints = 100, Category = RewardCategory.Character, ImageUrl = "/images/characters/cat.png" },
-            new Reward { Id = 22, Name = "子犬のポチ", Description = "元気な子犬", RequiredPoints = 100, Category = RewardCategory.Character, ImageUrl = "/images/characters/dog.png" },
-            new Reward { Id = 23, Name = "ウサギのピョン太", Description = "ぴょんぴょんウサギ", RequiredPoints = 150, Category = RewardCategory.Character, ImageUrl = "/images/characters/rabbit.png" },
-            new Reward { Id = 24, Name = "パンダのパンちゃん", Description = "もふもふパンダ", RequiredPoints = 200, Category = RewardCategory.Character, ImageUrl = "/images/characters/panda.png" },
-            new Reward { Id = 25, Name = "ペンギンのペンペン", Description = "おしゃれペンギン", RequiredPoints = 200, Category = RewardCategory.Character, ImageUrl = "/images/characters/penguin.png" },
-            new Reward { Id = 26, Name = "フクロウのホーホー", Description = "賢いフクロウ", RequiredPoints = 250, Category = RewardCategory.Character, ImageUrl = "/images/characters/owl.png" },
-            new Reward { Id = 27, Name = "ライオンのレオ", Description = "勇敢なライオン", RequiredPoints = 350, Category = RewardCategory.Character, ImageUrl = "/images/characters/lion.png" },
-            new Reward { Id = 28, Name = "ドラゴンのリュウ", Description = "伝説のドラゴン", RequiredPoints = 500, Category = RewardCategory.Character, ImageUrl = "/images/characters/dragon.png" },
-            new Reward { Id = 29, Name = "フェニックスのフェニ", Description = "不死鳥の輝き", RequiredPoints = 700, Category = RewardCategory.Character, ImageUrl = "/images/characters/phoenix.png" },
-            new Reward { Id = 30, Name = "ユニコーンのユニ", Description = "幻の一角獣", RequiredPoints = 1000, Category = RewardCategory.Character, ImageUrl = "/images/characters/unicorn.png" }
+            // おもちゃカテゴリー
+            new Reward { Id = 9, Name = "ミニカー", Description = "かっこいいミニカー", RequiredPoints = 150, Category = RewardCategory.Toy, ImageUrl = "/images/rewards/minicar.jpg", Stock = 3, IsPhysical = true, IsActive = true },
+            new Reward { Id = 10, Name = "スーパーボール", Description = "よく弾むボール", RequiredPoints = 30, Category = RewardCategory.Toy, ImageUrl = "/images/rewards/superball.jpg", Stock = 10, IsPhysical = true, IsActive = true },
+            new Reward { Id = 11, Name = "けん玉", Description = "伝統的な日本のおもちゃ", RequiredPoints = 200, Category = RewardCategory.Toy, ImageUrl = "/images/rewards/kendama.jpg", Stock = 2, IsPhysical = true, IsActive = true },
+            new Reward { Id = 12, Name = "ヨーヨー", Description = "技が楽しめるヨーヨー", RequiredPoints = 180, Category = RewardCategory.Toy, ImageUrl = "/images/rewards/yoyo.jpg", Stock = 3, IsPhysical = true, IsActive = true },
+
+            // 文房具カテゴリー
+            new Reward { Id = 13, Name = "キャラクター鉛筆 3本セット", Description = "人気キャラクターの鉛筆", RequiredPoints = 50, Category = RewardCategory.Stationery, ImageUrl = "/images/rewards/pencil-set.jpg", Stock = 8, IsPhysical = true, IsActive = true },
+            new Reward { Id = 14, Name = "消しゴム", Description = "かわいい消しゴム", RequiredPoints = 30, Category = RewardCategory.Stationery, ImageUrl = "/images/rewards/eraser.jpg", Stock = 12, IsPhysical = true, IsActive = true },
+            new Reward { Id = 15, Name = "シールセット", Description = "キラキラシール50枚", RequiredPoints = 60, Category = RewardCategory.Stationery, ImageUrl = "/images/rewards/sticker-set.jpg", Stock = 10, IsPhysical = true, IsActive = true },
+            new Reward { Id = 16, Name = "ノート", Description = "かわいいノート", RequiredPoints = 80, Category = RewardCategory.Stationery, ImageUrl = "/images/rewards/notebook.jpg", Stock = 6, IsPhysical = true, IsActive = true },
+
+            // 本カテゴリー
+            new Reward { Id = 17, Name = "学習漫画", Description = "楽しく学べる漫画", RequiredPoints = 300, Category = RewardCategory.Book, ImageUrl = "/images/rewards/study-manga.jpg", Stock = 2, IsPhysical = true, IsActive = true },
+            new Reward { Id = 18, Name = "絵本", Description = "面白い絵本", RequiredPoints = 250, Category = RewardCategory.Book, ImageUrl = "/images/rewards/picture-book.jpg", Stock = 3, IsPhysical = true, IsActive = true },
+
+            // その他カテゴリー
+            new Reward { Id = 19, Name = "キーホルダー", Description = "かわいいキーホルダー", RequiredPoints = 120, Category = RewardCategory.Other, ImageUrl = "/images/rewards/keychain.jpg", Stock = 5, IsPhysical = true, IsActive = true },
+            new Reward { Id = 20, Name = "バッジ", Description = "缶バッジ", RequiredPoints = 40, Category = RewardCategory.Other, ImageUrl = "/images/rewards/badge.jpg", Stock = 15, IsPhysical = true, IsActive = true },
         };
     }
 }

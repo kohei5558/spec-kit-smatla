@@ -11,6 +11,18 @@ public class RewardRepository : Repository<Reward>, IRewardRepository
     {
     }
 
+    public override async Task<Reward> UpdateAsync(Reward entity)
+    {
+        try
+        {
+            return await base.UpdateAsync(entity);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new InvalidOperationException("他のユーザーによって景品が更新されました。最新のデータを取得してやり直してください。");
+        }
+    }
+
     public async Task<List<Reward>> GetByCategoryAsync(RewardCategory category)
     {
         return await _context.Set<Reward>()
