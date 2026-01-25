@@ -1,0 +1,156 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<MudStack Spacing="3">
+    <MudFileUpload T="IBrowserFile" 
+                   Accept="image/jpeg,image/png,image/gif"
+                   OnFilesChanged="OnFileSelected"
+                   MaximumFileCount="1">
+        <ActivatorContent>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.CloudUpload">
+                画像を選択
+            </MudButton>
+        </ActivatorContent>
+    </MudFileUpload>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Dense="true">@errorMessage</MudAlert>
+    }
+
+    @if (SelectedFile != null)
+    {
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" />
+                    選択中: @SelectedFile.Name
+                </MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    サイズ: @FormatFileSize(SelectedFile.Size) | タイプ: @SelectedFile.ContentType
+                </MudText>
+
+                @if (!string.IsNullOrEmpty(previewUrl))
+                {
+                    <MudImage Src="@previewUrl" 
+                             Alt="プレビュー" 
+                             Height="200" 
+                             ObjectFit="ObjectFit.Contain"
+                             Class="rounded-lg" />
+                }
+
+                <MudButton OnClick="ClearFile" 
+                          Variant="Variant.Outlined" 
+                          Color="Color.Error" 
+                          Size="Size.Small"
+                          StartIcon="@Icons.Material.Filled.Delete">
+                    削除
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    }
+    else if (!string.IsNullOrEmpty(ExistingImageUrl))
+    {
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">現在の画像:</MudText>
+                <MudImage Src="@ExistingImageUrl" 
+                         Alt="現在の画像" 
+                         Height="200" 
+                         ObjectFit="ObjectFit.Contain"
+                         Class="rounded-lg" />
+            </MudStack>
+        </MudPaper>
+    }
+</MudStack>
+
+@code {
+    private const long MaxFileSize = 5 * 1024 * 1024; // 5MB
+    private static readonly string[] AllowedTypes = { "image/jpeg", "image/png", "image/gif" };
+
+    private string? errorMessage;
+    private string? previewUrl;
+
+    /// <summary>
+    /// 選択された画像ファイル
+    /// </summary>
+    [Parameter]
+    public IBrowserFile? SelectedFile { get; set; }
+
+    /// <summary>
+    /// ファイル選択時のコールバック
+    /// </summary>
+    [Parameter]
+    public EventCallback<IBrowserFile?> SelectedFileChanged { get; set; }
+
+    /// <summary>
+    /// 既存の画像URL（編集時）
+    /// </summary>
+    [Parameter]
+    public string? ExistingImageUrl { get; set; }
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        errorMessage = null;
+        previewUrl = null;
+
+        var file = e.File;
+
+        if (file == null)
+        {
+            SelectedFile = null;
+            await SelectedFileChanged.InvokeAsync(null);
+            return;
+        }
+
+        // ファイルサイズチェック
+        if (file.Size > MaxFileSize)
+        {
+            errorMessage = $"ファイルサイズが大きすぎます。最大 {FormatFileSize(MaxFileSize)} までです。";
+            return;
+        }
+
+        // MIMEタイプチェック
+        if (!AllowedTypes.Contains(file.ContentType.ToLower()))
+        {
+            errorMessage = "対応していないファイル形式です。JPEG、PNG、GIF形式の画像を選択してください。";
+            return;
+        }
+
+        SelectedFile = file;
+        await SelectedFileChanged.InvokeAsync(file);
+
+        // プレビュー生成
+        try
+        {
+            var buffer = new byte[file.Size];
+            await file.OpenReadStream(MaxFileSize).ReadAsync(buffer);
+            var base64 = Convert.ToBase64String(buffer);
+            previewUrl = $"data:{file.ContentType};base64,{base64}";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error generating preview: {ex.Message}");
+            errorMessage = "プレビューの生成に失敗しました。";
+        }
+    }
+
+    private async Task ClearFile()
+    {
+        SelectedFile = null;
+        previewUrl = null;
+        errorMessage = null;
+        await SelectedFileChanged.InvokeAsync(null);
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        if (bytes < 1024)
+            return $"{bytes} B";
+        else if (bytes < 1024 * 1024)
+            return $"{bytes / 1024.0:F1} KB";
+        else
+            return $"{bytes / (1024.0 * 1024.0):F1} MB";
+    }
+}

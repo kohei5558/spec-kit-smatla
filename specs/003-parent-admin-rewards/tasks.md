@@ -149,16 +149,16 @@
 
 ### Frontend Models (US1)
 
-- [X] T053 [P] [US1] Update RewardDto model in frontend/GamifiedMathDrill.Client/Models/RewardDto.cs (add Stock, IsPhysical, ImageUrl, CreatedBy, CreatedAt, UpdatedAt, IsActive)
-- [X] T054 [P] [US1] Update RewardCategory enum in frontend/GamifiedMathDrill.Client/Models/RewardCategory.cs (sync with backend: Snack, Card, Toy, Stationery, Book, Other)
+- [x] T053 [P] [US1] Update RewardDto model in frontend/GamifiedMathDrill.Client/Models/RewardDto.cs (add Stock, IsPhysical, ImageUrl, CreatedBy, CreatedAt, UpdatedAt, IsActive)
+- [x] T054 [P] [US1] Update RewardCategory enum in frontend/GamifiedMathDrill.Client/Models/RewardCategory.cs (sync with backend: Snack, Card, Toy, Stationery, Book, Other)
 
 ### Frontend Services (US1)
 
-- [X] T055 [US1] Update RewardApiClient in frontend/GamifiedMathDrill.Client/Services/RewardApiClient.cs (add CreateRewardAsync with multipart/form-data, UpdateRewardAsync, DeleteRewardAsync methods with JWT token in headers)
+- [x] T055 [US1] Update RewardApiClient in frontend/GamifiedMathDrill.Client/Services/RewardApiClient.cs (add CreateRewardAsync with multipart/form-data, UpdateRewardAsync, DeleteRewardAsync methods with JWT token in headers)
 
 ### Frontend Components (US1)
 
-- [ ] T056 [P] [US1] Create ImageUploader component in frontend/GamifiedMathDrill.Client/Components/ImageUploader.razor (IBrowserFile input, preview, size validation 5MB max, MudFileUpload)
+- [X] T056 [P] [US1] Create ImageUploader component in frontend/GamifiedMathDrill.Client/Components/ImageUploader.razor (IBrowserFile input, preview, size validation 5MB max, MudFileUpload)
 
 ### Frontend Pages (US1)
 
