@@ -94,7 +94,7 @@
     private bool isLoading = false;
     private string? errorMessage;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         // TODO: API endpoint to fetch children list
         // For now, mock data based on seeded users

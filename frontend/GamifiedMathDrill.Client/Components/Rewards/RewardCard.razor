@@ -48,14 +48,17 @@
 
     private bool CanAfford => CurrentPoints >= Reward.RequiredPoints;
 
-    private string GetCategoryText(string category)
+    private string GetCategoryText(RewardCategory category)
     {
         return category switch
         {
-            "Badge" => "バッジ",
-            "Avatar" => "アバター",
-            "Character" => "キャラクター",
-            _ => category
+            RewardCategory.Snack => "お菓子",
+            RewardCategory.Card => "カード",
+            RewardCategory.Toy => "おもちゃ",
+            RewardCategory.Stationery => "文房具",
+            RewardCategory.Book => "本",
+            RewardCategory.Other => "その他",
+            _ => "不明"
         };
     }
 }

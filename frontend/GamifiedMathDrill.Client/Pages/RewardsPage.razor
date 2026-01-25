@@ -43,9 +43,12 @@
         <!-- Category Tabs -->
         <MudTabs ActivePanelIndex="@activeTab" Elevation="2" Rounded="true" Class="mb-4" ActivePanelIndexChanged="OnTabChanged">
             <MudTabPanel Text="すべて" />
-            <MudTabPanel Text="バッジ" />
-            <MudTabPanel Text="アバター" />
-            <MudTabPanel Text="キャラクター" />
+            <MudTabPanel Text="お菓子" />
+            <MudTabPanel Text="カード" />
+            <MudTabPanel Text="おもちゃ" />
+            <MudTabPanel Text="文房具" />
+            <MudTabPanel Text="本" />
+            <MudTabPanel Text="その他" />
         </MudTabs>
 
         <!-- Rewards Grid -->
@@ -179,21 +182,22 @@
 
     private void FilterRewards()
     {
-        var category = activeTab switch
-        {
-            0 => "All",
-            1 => "Badge",
-            2 => "Avatar",
-            3 => "Character",
-            _ => "All"
-        };
-
-        if (category == "All")
+        if (activeTab == 0)
         {
             filteredRewards = allRewards;
         }
         else
         {
+            var category = activeTab switch
+            {
+                1 => RewardCategory.Snack,
+                2 => RewardCategory.Card,
+                3 => RewardCategory.Toy,
+                4 => RewardCategory.Stationery,
+                5 => RewardCategory.Book,
+                6 => RewardCategory.Other,
+                _ => RewardCategory.Other
+            };
             filteredRewards = allRewards.Where(r => r.Category == category).ToList();
         }
     }
@@ -252,13 +256,16 @@
         }
     }
 
-    private string GetCategoryIcon(string category)
+    private string GetCategoryIcon(RewardCategory category)
     {
         return category switch
         {
-            "Badge" => Icons.Material.Filled.EmojiEvents,
-            "Avatar" => Icons.Material.Filled.Face,
-            "Character" => Icons.Material.Filled.Pets,
+            RewardCategory.Snack => Icons.Material.Filled.Cake,
+            RewardCategory.Card => Icons.Material.Filled.Style,
+            RewardCategory.Toy => Icons.Material.Filled.Toys,
+            RewardCategory.Stationery => Icons.Material.Filled.Edit,
+            RewardCategory.Book => Icons.Material.Filled.MenuBook,
+            RewardCategory.Other => Icons.Material.Filled.CardGiftcard,
             _ => Icons.Material.Filled.CardGiftcard
         };
     }
