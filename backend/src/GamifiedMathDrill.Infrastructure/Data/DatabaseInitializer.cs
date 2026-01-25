@@ -1,5 +1,6 @@
 using GamifiedMathDrill.Infrastructure.Data.Seed;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GamifiedMathDrill.Infrastructure.Data;
 
@@ -11,10 +12,16 @@ public static class DatabaseInitializer
     /// <summary>
     /// データベースをマイグレーションしてシードデータを投入
     /// </summary>
-    public static async Task InitializeDatabaseAsync(this ApplicationDbContext context)
+    public static async Task InitializeDatabaseAsync(this ApplicationDbContext context, IServiceProvider? serviceProvider = null)
     {
         // マイグレーションを適用
         await context.Database.MigrateAsync();
+
+        // ユーザーデータを追加（Identity使用のため、serviceProvider経由で呼び出す）
+        if (serviceProvider != null)
+        {
+            await UserSeeder.SeedUsersAsync(serviceProvider);
+        }
 
         // シードデータが既に存在するかチェック
         if (await context.Levels.AnyAsync())

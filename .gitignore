@@ -60,3 +60,6 @@ artifacts/
 
 # OS
 Thumbs.db
+
+# Uploads
+wwwroot/uploads/
