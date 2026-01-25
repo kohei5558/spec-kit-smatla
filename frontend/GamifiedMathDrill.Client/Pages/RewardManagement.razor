@@ -1,0 +1,280 @@
+@page "/parent/rewards"
+@using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Parent")]
+@inject RewardApiClient RewardApi
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>景品管理 - 保護者ダッシュボード</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudStack Spacing="4">
+        <!-- Header -->
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4">
+                <MudIcon Icon="@Icons.Material.Filled.CardGiftcard" Class="mr-2" />
+                景品管理
+            </MudText>
+            <MudButton Variant="Variant.Filled"
+                      Color="Color.Primary"
+                      StartIcon="@Icons.Material.Filled.Add"
+                      OnClick="OpenCreateDialog">
+                景品を追加
+            </MudButton>
+        </MudStack>
+
+        <!-- Statistics Cards -->
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">全景品数</MudText>
+                            <MudText Typo="Typo.h4">@rewards.Count</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">有効な景品</MudText>
+                            <MudText Typo="Typo.h4" Color="Color.Success">@rewards.Count(r => r.IsActive)</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">実物景品</MudText>
+                            <MudText Typo="Typo.h4" Color="Color.Info">@rewards.Count(r => r.IsPhysical)</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">在庫切れ</MudText>
+                            <MudText Typo="Typo.h4" Color="Color.Warning">@rewards.Count(r => r.Stock.HasValue && r.Stock.Value == 0)</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Rewards Table -->
+        <MudPaper Elevation="2">
+            <MudTable Items="@rewards" 
+                     Dense="true" 
+                     Hover="true" 
+                     Loading="@isLoading"
+                     LoadingProgressColor="Color.Primary">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">景品一覧</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString"
+                                 Placeholder="検索..."
+                                 Adornment="Adornment.Start"
+                                 AdornmentIcon="@Icons.Material.Filled.Search"
+                                 IconSize="Size.Medium"
+                                 Class="mt-0"
+                                 Immediate="true"
+                                 Clearable="true" />
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>画像</MudTh>
+                    <MudTh>名前</MudTh>
+                    <MudTh>カテゴリ</MudTh>
+                    <MudTh>必要ポイント</MudTh>
+                    <MudTh>在庫</MudTh>
+                    <MudTh>種類</MudTh>
+                    <MudTh>状態</MudTh>
+                    <MudTh>作成日</MudTh>
+                    <MudTh Style="text-align: right;">操作</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    @{
+                        var reward = context;
+                        if (string.IsNullOrWhiteSpace(searchString) || 
+                            reward.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                            reward.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <MudTd>
+                                @if (!string.IsNullOrEmpty(reward.ImageUrl))
+                                {
+                                    <MudAvatar Size="Size.Medium">
+                                        <MudImage Src="@reward.ImageUrl" Alt="@reward.Name" ObjectFit="ObjectFit.Cover" />
+                                    </MudAvatar>
+                                }
+                                else
+                                {
+                                    <MudAvatar Color="Color.Default" Size="Size.Medium">
+                                        <MudIcon Icon="@Icons.Material.Filled.Image" />
+                                    </MudAvatar>
+                                }
+                            </MudTd>
+                            <MudTd>
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.body2">@reward.Name</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@reward.Description</MudText>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Size="Size.Small" Color="GetCategoryColor(reward.Category)">
+                                    @GetCategoryText(reward.Category)
+                                </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.body2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Stars" Size="Size.Small" Color="Color.Warning" />
+                                    @reward.RequiredPoints
+                                </MudText>
+                            </MudTd>
+                            <MudTd>
+                                @if (reward.Stock.HasValue)
+                                {
+                                    <MudChip T="string" Size="Size.Small" 
+                                            Color="@(reward.Stock.Value == 0 ? Color.Error : reward.Stock.Value < 5 ? Color.Warning : Color.Success)">
+                                        @reward.Stock.Value
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">無制限</MudText>
+                                }
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Size="Size.Small" Color="@(reward.IsPhysical ? Color.Info : Color.Default)">
+                                    @(reward.IsPhysical ? "実物" : "仮想")
+                                </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Size="Size.Small" Color="@(reward.IsActive ? Color.Success : Color.Default)">
+                                    @(reward.IsActive ? "有効" : "無効")
+                                </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.caption">@reward.CreatedAt.ToString("yyyy/MM/dd")</MudText>
+                            </MudTd>
+                            <MudTd Style="text-align: right;">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                             Color="Color.Primary"
+                                             Size="Size.Small"
+                                             OnClick="@(() => OpenEditDialog(reward))"
+                                             title="編集" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                             Color="Color.Error"
+                                             Size="Size.Small"
+                                             OnClick="@(() => DeleteReward(reward))"
+                                             title="削除" />
+                            </MudTd>
+                        }
+                    }
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                        景品が登録されていません
+                    </MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudPaper>
+    </MudStack>
+</MudContainer>
+
+@code {
+    private List<RewardDto> rewards = new();
+    private bool isLoading = true;
+    private string searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRewards();
+    }
+
+    private async Task LoadRewards()
+    {
+        isLoading = true;
+        try
+        {
+            rewards = await RewardApi.GetRewardsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading rewards: {ex.Message}");
+            Snackbar.Add("景品の読み込みに失敗しました", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenCreateDialog()
+    {
+        Navigation.NavigateTo("/parent/rewards/create");
+    }
+
+    private void OpenEditDialog(RewardDto reward)
+    {
+        Navigation.NavigateTo($"/parent/rewards/edit/{reward.Id}");
+    }
+
+    private async Task DeleteReward(RewardDto reward)
+    {
+        var result = await DialogService.ShowMessageBox(
+            "削除確認",
+            $"景品「{reward.Name}」を削除してもよろしいですか？",
+            yesText: "削除", cancelText: "キャンセル");
+
+        if (result == true)
+        {
+            try
+            {
+                await RewardApi.DeleteRewardAsync(reward.Id);
+                Snackbar.Add($"景品「{reward.Name}」を削除しました", Severity.Success);
+                await LoadRewards();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting reward: {ex.Message}");
+                Snackbar.Add("景品の削除に失敗しました", Severity.Error);
+            }
+        }
+    }
+
+    private string GetCategoryText(RewardCategory category)
+    {
+        return category switch
+        {
+            RewardCategory.Snack => "お菓子",
+            RewardCategory.Card => "カード",
+            RewardCategory.Toy => "おもちゃ",
+            RewardCategory.Stationery => "文房具",
+            RewardCategory.Book => "本",
+            RewardCategory.Other => "その他",
+            _ => "不明"
+        };
+    }
+
+    private Color GetCategoryColor(RewardCategory category)
+    {
+        return category switch
+        {
+            RewardCategory.Snack => Color.Warning,
+            RewardCategory.Card => Color.Info,
+            RewardCategory.Toy => Color.Success,
+            RewardCategory.Stationery => Color.Primary,
+            RewardCategory.Book => Color.Secondary,
+            RewardCategory.Other => Color.Default,
+            _ => Color.Default
+        };
+    }
+}
