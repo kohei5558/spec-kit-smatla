@@ -1,0 +1,236 @@
+openapi: 3.0.3
+info:
+  title: Authentication API
+  description: 保護者と子供の認証API（JWT発行）
+  version: 1.0.0
+
+paths:
+  /api/auth/login:
+    post:
+      summary: 保護者ログイン
+      description: メールアドレスとパスワードで保護者を認証し、JWTトークンを発行
+      operationId: loginParent
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: parent@example.com
+              password: SecureP@ss123
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                displayName: 山田太郎
+                role: Parent
+                expiresAt: 2026-01-26T12:00:00Z
+        "400":
+          description: リクエストが不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: ValidationError
+                message: メールアドレスが無効です
+        "401":
+          description: 認証失敗
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Unauthorized
+                message: メールアドレスまたはパスワードが正しくありません
+
+  /api/auth/child-login:
+    post:
+      summary: 子供ログイン
+      description: 子供の名前とPINで認証し、JWTトークンを発行
+      operationId: loginChild
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChildLoginRequest"
+            example:
+              childId: 3fa85f64-5717-4562-b3fc-2c963f66afa7
+              pin: "1234"
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                userId: 3fa85f64-5717-4562-b3fc-2c963f66afa7
+                displayName: 花子
+                role: Child
+                parentId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                expiresAt: 2026-01-26T12:00:00Z
+        "400":
+          description: リクエストが不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: ValidationError
+                message: PINは4桁の数字である必要があります
+        "401":
+          description: 認証失敗
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Unauthorized
+                message: PINが正しくありません
+
+  /api/auth/refresh:
+    post:
+      summary: トークンリフレッシュ（将来対応）
+      description: リフレッシュトークンを使用して新しいJWTを発行
+      operationId: refreshToken
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  description: リフレッシュトークン
+              required:
+                - refreshToken
+      responses:
+        "200":
+          description: トークンリフレッシュ成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: リフレッシュトークンが無効
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: 保護者のメールアドレス
+          example: parent@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          description: パスワード（8文字以上）
+          example: SecureP@ss123
+
+    ChildLoginRequest:
+      type: object
+      required:
+        - childId
+        - pin
+      properties:
+        childId:
+          type: string
+          format: uuid
+          description: 子供のユーザーID
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa7
+        pin:
+          type: string
+          pattern: '^\d{4}$'
+          description: 4桁のPIN
+          example: "1234"
+
+    LoginResponse:
+      type: object
+      required:
+        - token
+        - userId
+        - displayName
+        - role
+        - expiresAt
+      properties:
+        token:
+          type: string
+          description: JWTトークン（Bearerトークンとして使用）
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        userId:
+          type: string
+          format: uuid
+          description: ユーザーID
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        displayName:
+          type: string
+          description: 表示名
+          example: 山田太郎
+        role:
+          type: string
+          enum: [Parent, Child]
+          description: ユーザーロール
+          example: Parent
+        parentId:
+          type: string
+          format: uuid
+          description: 保護者ID（子供の場合のみ）
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        expiresAt:
+          type: string
+          format: date-time
+          description: トークンの有効期限
+          example: 2026-01-26T12:00:00Z
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: エラーコード
+          example: Unauthorized
+        message:
+          type: string
+          description: エラーメッセージ
+          example: メールアドレスまたはパスワードが正しくありません
+        details:
+          type: object
+          description: 追加のエラー詳細（オプション）
+          additionalProperties: true
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

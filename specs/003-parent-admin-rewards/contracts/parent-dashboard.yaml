@@ -1,0 +1,407 @@
+openapi: 3.0.3
+info:
+  title: Parent Dashboard API
+  description: 保護者ダッシュボード用API（子供一覧、未承認申請、統計情報）
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5242/api
+    description: Development server
+
+paths:
+  /api/parent/dashboard:
+    get:
+      summary: ダッシュボードサマリー取得
+      description: 保護者ダッシュボードのサマリー情報（未承認件数、子供一覧、最近の申請）
+      operationId: getDashboardSummary
+      tags:
+        - ParentDashboard
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: ダッシュボードサマリー取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummaryDto'
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限エラー（子供ロールでのアクセス）
+
+  /api/parent/children:
+    get:
+      summary: 子供一覧取得
+      description: 保護者が管理している子供の一覧を取得
+      operationId: getChildren
+      tags:
+        - ParentDashboard
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 子供一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChildDto'
+        '401':
+          description: 認証エラー
+
+  /api/parent/pending-requests:
+    get:
+      summary: 未承認申請一覧取得
+      description: 保護者の子供たちの未承認交換申請を取得（Status=Pending）
+      operationId: getPendingRequests
+      tags:
+        - ParentDashboard
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: 取得件数（デフォルト: 20）
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: オフセット（デフォルト: 0）
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: 未承認申請一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExchangeRequestDto'
+                  total:
+                    type: integer
+                    description: 未承認申請の総件数
+                    example: 5
+        '401':
+          description: 認証エラー
+
+  /api/parent/all-requests:
+    get:
+      summary: 全交換申請履歴取得
+      description: 保護者の子供たちの全交換申請履歴を取得（Status フィルタ可）
+      operationId: getAllRequests
+      tags:
+        - ParentDashboard
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: ステータスフィルタ（オプション）
+          schema:
+            $ref: '#/components/schemas/ExchangeStatus'
+        - name: childId
+          in: query
+          description: 子供IDフィルタ（オプション）
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          description: 取得件数（デフォルト: 20）
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: オフセット（デフォルト: 0）
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: 交換申請履歴取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExchangeRequestDto'
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 25
+        '401':
+          description: 認証エラー
+
+  /api/parent/statistics:
+    get:
+      summary: 統計情報取得
+      description: 保護者の子供たちの学習・交換統計（月間、全期間）
+      operationId: getStatistics
+      tags:
+        - ParentDashboard
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 統計情報取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParentStatisticsDto'
+        '401':
+          description: 認証エラー
+
+components:
+  schemas:
+    DashboardSummaryDto:
+      type: object
+      required:
+        - pendingRequestsCount
+        - children
+        - recentRequests
+      properties:
+        pendingRequestsCount:
+          type: integer
+          description: 未承認申請の件数
+          example: 3
+        children:
+          type: array
+          description: 子供一覧
+          items:
+            $ref: '#/components/schemas/ChildDto'
+        recentRequests:
+          type: array
+          description: 最近の交換申請（最新5件）
+          items:
+            $ref: '#/components/schemas/ExchangeRequestDto'
+        totalRewardsCreated:
+          type: integer
+          description: 作成した景品の総数
+          example: 15
+        activeRewardsCount:
+          type: integer
+          description: 有効な景品の数
+          example: 12
+
+    ChildDto:
+      type: object
+      required:
+        - id
+        - displayName
+        - totalPoints
+        - createdAt
+        - isActive
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 子供のユーザーID
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa7
+        displayName:
+          type: string
+          description: 表示名
+          example: 花子
+        avatarUrl:
+          type: string
+          description: アバター画像URL
+          example: /avatars/child-1.png
+        totalPoints:
+          type: integer
+          description: 現在の保有ポイント
+          example: 350
+        pendingRequestsCount:
+          type: integer
+          description: この子供の未承認申請数
+          example: 2
+        totalProblemsCompleted:
+          type: integer
+          description: 解いた問題の総数
+          example: 150
+        accuracyRate:
+          type: number
+          format: float
+          description: 正答率（0.0〜1.0）
+          example: 0.85
+        createdAt:
+          type: string
+          format: date-time
+          description: アカウント作成日時
+          example: 2026-01-01T10:00:00Z
+        isActive:
+          type: boolean
+          description: アクティブフラグ
+          example: true
+
+    ExchangeRequestDto:
+      type: object
+      required:
+        - id
+        - studentId
+        - studentName
+        - rewardId
+        - rewardName
+        - requiredPoints
+        - status
+        - requestedAt
+      properties:
+        id:
+          type: integer
+          description: 交換申請ID
+          example: 1
+        studentId:
+          type: string
+          format: uuid
+          description: 子供のユーザーID
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa7
+        studentName:
+          type: string
+          description: 子供の名前
+          example: 花子
+        rewardId:
+          type: integer
+          description: 景品ID
+          example: 1
+        rewardName:
+          type: string
+          description: 景品名
+          example: ポケモンカード 1パック
+        rewardImageUrl:
+          type: string
+          description: 景品画像URL
+          example: /uploads/rewards/12345_pokemon.jpg
+        requiredPoints:
+          type: integer
+          description: 必要ポイント
+          example: 200
+        status:
+          $ref: '#/components/schemas/ExchangeStatus'
+        requestedAt:
+          type: string
+          format: date-time
+          description: 申請日時
+          example: 2026-01-25T10:00:00Z
+        approvedAt:
+          type: string
+          format: date-time
+          description: 承認日時
+        rejectedAt:
+          type: string
+          format: date-time
+          description: 却下日時
+        cancelledAt:
+          type: string
+          format: date-time
+          description: キャンセル日時
+        approvedBy:
+          type: string
+          format: uuid
+          description: 承認者（保護者ID）
+        approverName:
+          type: string
+          description: 承認者名
+        rejectionReason:
+          type: string
+          description: 却下理由
+        parentNote:
+          type: string
+          description: 保護者メモ
+
+    ExchangeStatus:
+      type: string
+      enum:
+        - Pending
+        - Approved
+        - Rejected
+        - Cancelled
+      description: 交換申請のステータス
+      example: Pending
+
+    ParentStatisticsDto:
+      type: object
+      required:
+        - totalChildren
+        - totalProblemsCompleted
+        - totalPointsEarned
+        - totalExchangesApproved
+      properties:
+        totalChildren:
+          type: integer
+          description: 子供の総数
+          example: 2
+        totalProblemsCompleted:
+          type: integer
+          description: 全子供の解いた問題の総数
+          example: 350
+        totalPointsEarned:
+          type: integer
+          description: 全子供が獲得したポイントの総数（累計）
+          example: 1500
+        totalExchangesApproved:
+          type: integer
+          description: 承認した交換の総数
+          example: 15
+        monthlyProblemsCompleted:
+          type: integer
+          description: 今月の問題完了数
+          example: 80
+        monthlyPointsEarned:
+          type: integer
+          description: 今月のポイント獲得数
+          example: 400
+        categoryBreakdown:
+          type: array
+          description: カテゴリ別統計
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+                description: カテゴリ名
+                example: Addition
+              problemsCompleted:
+                type: integer
+                description: 完了問題数
+                example: 120
+              accuracyRate:
+                type: number
+                format: float
+                description: 正答率
+                example: 0.88
+        rewardCategoryBreakdown:
+          type: array
+          description: 景品カテゴリ別統計
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+                description: 景品カテゴリ
+                example: Snack
+              exchangeCount:
+                type: integer
+                description: 交換回数
+                example: 8
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,414 @@
+openapi: 3.0.3
+info:
+  title: Exchange Requests API
+  description: 交換申請・承認・却下のAPI（子供の申請、保護者の承認フロー）
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5242/api
+    description: Development server
+
+paths:
+  /api/exchange-requests:
+    post:
+      summary: 交換申請
+      description: 子供がポイントを使って景品の交換を申請（Status=Pending、在庫を予約）
+      operationId: createExchangeRequest
+      tags:
+        - ExchangeRequests
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExchangeRequestRequest'
+            example:
+              rewardId: 1
+      responses:
+        '201':
+          description: 交換申請成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRequestDto'
+        '400':
+          description: バリデーションエラー（ポイント不足、在庫不足等）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                insufficientPoints:
+                  summary: ポイント不足
+                  value:
+                    error: InsufficientPoints
+                    message: ポイントが不足しています（必要: 100pt、現在: 50pt）
+                    details:
+                      requiredPoints: 100
+                      currentPoints: 50
+                insufficientStock:
+                  summary: 在庫不足
+                  value:
+                    error: InsufficientStock
+                    message: 在庫がありません
+                    details:
+                      rewardId: 1
+                      currentStock: 0
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限エラー（保護者ロールでのアクセス）
+
+  /api/exchange-requests/my:
+    get:
+      summary: 自分の交換申請一覧取得
+      description: 子供が自分の交換申請履歴を取得（Status フィルタ可）
+      operationId: getMyExchangeRequests
+      tags:
+        - ExchangeRequests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: ステータスフィルタ（オプション）
+          schema:
+            $ref: '#/components/schemas/ExchangeStatus'
+        - name: limit
+          in: query
+          description: 取得件数（デフォルト: 20）
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: オフセット（デフォルト: 0）
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: 交換申請一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExchangeRequestDto'
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 15
+        '401':
+          description: 認証エラー
+
+  /api/exchange-requests/{id}:
+    get:
+      summary: 交換申請詳細取得
+      description: 指定されたIDの交換申請詳細を取得
+      operationId: getExchangeRequestById
+      tags:
+        - ExchangeRequests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 交換申請ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 交換申請詳細取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRequestDto'
+        '404':
+          description: 交換申請が見つからない
+
+  /api/exchange-requests/{id}/cancel:
+    put:
+      summary: 交換申請キャンセル
+      description: 子供が自分の申請をキャンセル（Status=Cancelled、在庫を戻す）
+      operationId: cancelExchangeRequest
+      tags:
+        - ExchangeRequests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 交換申請ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: キャンセル成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRequestDto'
+        '400':
+          description: キャンセルできない（Status=Pending 以外）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 交換申請が見つからない
+
+  /api/exchange-requests/{id}/approve:
+    put:
+      summary: 交換申請承認
+      description: 保護者が申請を承認（Status=Approved、ポイント消費）
+      operationId: approveExchangeRequest
+      tags:
+        - ExchangeRequests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 交換申請ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveRequestRequest'
+            example:
+              parentNote: リビングの棚に置いておきます
+      responses:
+        '200':
+          description: 承認成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRequestDto'
+        '400':
+          description: 承認できない（Status=Pending 以外、ポイント不足等）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限エラー（子供ロール、他の保護者の申請）
+        '404':
+          description: 交換申請が見つからない
+
+  /api/exchange-requests/{id}/reject:
+    put:
+      summary: 交換申請却下
+      description: 保護者が申請を却下（Status=Rejected、在庫を戻す）
+      operationId: rejectExchangeRequest
+      tags:
+        - ExchangeRequests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 交換申請ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectRequestRequest'
+            example:
+              reason: 今月の交換数が上限に達しています
+              parentNote: 来月また申請してね
+      responses:
+        '200':
+          description: 却下成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRequestDto'
+        '400':
+          description: 却下できない（Status=Pending 以外）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 権限エラー
+        '404':
+          description: 交換申請が見つからない
+
+components:
+  schemas:
+    CreateExchangeRequestRequest:
+      type: object
+      required:
+        - rewardId
+      properties:
+        rewardId:
+          type: integer
+          description: 交換したい景品のID
+          example: 1
+
+    ApproveRequestRequest:
+      type: object
+      properties:
+        parentNote:
+          type: string
+          maxLength: 1000
+          description: 保護者メモ（オプション）
+          example: リビングの棚に置いておきます
+
+    RejectRequestRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: 却下理由
+          example: 今月の交換数が上限に達しています
+        parentNote:
+          type: string
+          maxLength: 1000
+          description: 保護者メモ（オプション）
+          example: 来月また申請してね
+
+    ExchangeRequestDto:
+      type: object
+      required:
+        - id
+        - studentId
+        - studentName
+        - rewardId
+        - rewardName
+        - requiredPoints
+        - status
+        - requestedAt
+      properties:
+        id:
+          type: integer
+          description: 交換申請ID
+          example: 1
+        studentId:
+          type: string
+          format: uuid
+          description: 子供のユーザーID
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa7
+        studentName:
+          type: string
+          description: 子供の名前
+          example: 花子
+        rewardId:
+          type: integer
+          description: 景品ID
+          example: 1
+        rewardName:
+          type: string
+          description: 景品名
+          example: ポケモンカード 1パック
+        rewardImageUrl:
+          type: string
+          description: 景品画像URL
+          example: /uploads/rewards/12345_pokemon.jpg
+        requiredPoints:
+          type: integer
+          description: 必要ポイント
+          example: 200
+        status:
+          $ref: '#/components/schemas/ExchangeStatus'
+        requestedAt:
+          type: string
+          format: date-time
+          description: 申請日時
+          example: 2026-01-25T10:00:00Z
+        approvedAt:
+          type: string
+          format: date-time
+          description: 承認日時
+          example: 2026-01-25T18:30:00Z
+        rejectedAt:
+          type: string
+          format: date-time
+          description: 却下日時
+          example: 2026-01-25T18:30:00Z
+        cancelledAt:
+          type: string
+          format: date-time
+          description: キャンセル日時
+          example: 2026-01-25T12:00:00Z
+        approvedBy:
+          type: string
+          format: uuid
+          description: 承認者（保護者ID）
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        approverName:
+          type: string
+          description: 承認者名
+          example: 山田太郎
+        rejectionReason:
+          type: string
+          description: 却下理由
+          example: 今月の交換数が上限に達しています
+        parentNote:
+          type: string
+          description: 保護者メモ
+          example: リビングの棚に置いておきます
+
+    ExchangeStatus:
+      type: string
+      enum:
+        - Pending    # 申請中
+        - Approved   # 承認済み
+        - Rejected   # 却下
+        - Cancelled  # キャンセル
+      description: 交換申請のステータス
+      example: Pending
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: エラーコード
+          example: InsufficientPoints
+        message:
+          type: string
+          description: エラーメッセージ
+          example: ポイントが不足しています
+        details:
+          type: object
+          description: 追加のエラー詳細
+          additionalProperties: true
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

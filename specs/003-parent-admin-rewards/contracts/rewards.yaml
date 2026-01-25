@@ -1,0 +1,366 @@
+openapi: 3.0.3
+info:
+  title: Rewards API
+  description: 実物景品の管理API（保護者による CRUD + 画像アップロード）
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5242/api
+    description: Development server
+
+paths:
+  /api/rewards:
+    get:
+      summary: 景品一覧取得
+      description: |
+        保護者の場合: 自分が作成した景品一覧
+        子供の場合: 自分の保護者が作成した景品一覧（IsActive=trueのみ）
+      operationId: getRewards
+      tags:
+        - Rewards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category
+          in: query
+          description: カテゴリフィルタ（オプション）
+          schema:
+            $ref: '#/components/schemas/RewardCategory'
+        - name: isActive
+          in: query
+          description: 有効な景品のみ取得（デフォルト: true）
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: 景品一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RewardDto'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: 景品登録
+      description: 保護者が新しい実物景品を登録（画像アップロード含む）
+      operationId: createReward
+      tags:
+        - Rewards
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - requiredPoints
+                - category
+                - isPhysical
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: 景品名
+                  example: うまい棒 コンソメ味
+                description:
+                  type: string
+                  maxLength: 500
+                  description: 説明
+                  example: 定番の駄菓子です
+                requiredPoints:
+                  type: integer
+                  minimum: 1
+                  description: 必要ポイント
+                  example: 10
+                category:
+                  $ref: '#/components/schemas/RewardCategory'
+                isPhysical:
+                  type: boolean
+                  description: 実物景品フラグ
+                  example: true
+                stock:
+                  type: integer
+                  minimum: 0
+                  description: 在庫数（nullの場合は無制限）
+                  example: 50
+                image:
+                  type: string
+                  format: binary
+                  description: 景品画像（JPEG, PNG, GIF, 最大5MB）
+      responses:
+        '201':
+          description: 景品登録成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RewardDto'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限エラー（子供ロールでのアクセス）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/rewards/{id}:
+    get:
+      summary: 景品詳細取得
+      description: 指定されたIDの景品詳細を取得
+      operationId: getRewardById
+      tags:
+        - Rewards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 景品ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 景品詳細取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RewardDto'
+        '404':
+          description: 景品が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: 景品更新
+      description: 保護者が既存の景品を更新（画像の再アップロード可）
+      operationId: updateReward
+      tags:
+        - Rewards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 景品ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: 景品名
+                  example: うまい棒 コンソメ味（増量版）
+                description:
+                  type: string
+                  maxLength: 500
+                  description: 説明
+                requiredPoints:
+                  type: integer
+                  minimum: 1
+                  description: 必要ポイント
+                category:
+                  $ref: '#/components/schemas/RewardCategory'
+                isPhysical:
+                  type: boolean
+                  description: 実物景品フラグ
+                stock:
+                  type: integer
+                  minimum: 0
+                  description: 在庫数
+                image:
+                  type: string
+                  format: binary
+                  description: 新しい景品画像（任意）
+                rowVersion:
+                  type: string
+                  format: byte
+                  description: 楽観的ロック用バージョン（Base64エンコード）
+      responses:
+        '200':
+          description: 景品更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RewardDto'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 景品が見つからない
+        '409':
+          description: 競合エラー（楽観的ロック）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: ConcurrencyError
+                message: 他のユーザーがこの景品を更新しました。再度取得してください。
+
+    delete:
+      summary: 景品削除（論理削除）
+      description: 保護者が景品を削除（IsActive=falseに設定）
+      operationId: deleteReward
+      tags:
+        - Rewards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 景品ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: 景品削除成功
+        '404':
+          description: 景品が見つからない
+        '409':
+          description: 削除できない（未承認の交換申請が存在）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    RewardDto:
+      type: object
+      required:
+        - id
+        - name
+        - requiredPoints
+        - category
+        - isPhysical
+        - createdBy
+        - createdAt
+        - isActive
+      properties:
+        id:
+          type: integer
+          description: 景品ID
+          example: 1
+        name:
+          type: string
+          description: 景品名
+          example: うまい棒 コンソメ味
+        description:
+          type: string
+          description: 説明
+          example: 定番の駄菓子です
+        requiredPoints:
+          type: integer
+          description: 必要ポイント
+          example: 10
+        category:
+          $ref: '#/components/schemas/RewardCategory'
+        isPhysical:
+          type: boolean
+          description: 実物景品フラグ
+          example: true
+        stock:
+          type: integer
+          description: 在庫数（nullの場合は無制限）
+          example: 50
+        imageUrl:
+          type: string
+          description: 画像URL（相対パス）
+          example: /uploads/rewards/12345_umaibo.jpg
+        createdBy:
+          type: string
+          format: uuid
+          description: 作成者（保護者ID）
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+          example: 2026-01-25T10:00:00Z
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+          example: 2026-01-25T15:30:00Z
+        isActive:
+          type: boolean
+          description: 有効フラグ
+          example: true
+        rowVersion:
+          type: string
+          format: byte
+          description: 楽観的ロック用バージョン（Base64エンコード）
+          example: AAAAAAAAB9E=
+
+    RewardCategory:
+      type: string
+      enum:
+        - Snack       # 駄菓子
+        - Card        # カード（ポケカ等）
+        - Toy         # おもちゃ
+        - Stationery  # 文房具
+        - Book        # 本・漫画
+        - Other       # その他
+      description: 景品カテゴリ
+      example: Snack
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: エラーコード
+          example: ValidationError
+        message:
+          type: string
+          description: エラーメッセージ
+          example: 景品名は必須です
+        details:
+          type: object
+          description: 追加のエラー詳細
+          additionalProperties: true
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
