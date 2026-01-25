@@ -1,0 +1,345 @@
+@page "/parent/rewards/create"
+@page "/parent/rewards/edit/{id:int}"
+@using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Services
+@using GamifiedMathDrill.Client.Components
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@attribute [Authorize(Roles = "Parent")]
+@inject RewardApiClient RewardApi
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@(IsEditMode ? "景品編集" : "景品追加") - 保護者ダッシュボード</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+    <MudPaper Elevation="3" Class="pa-6">
+        <MudStack Spacing="4">
+            <!-- Header -->
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h4">
+                    <MudIcon Icon="@(IsEditMode ? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)" Class="mr-2" />
+                    @(IsEditMode ? "景品編集" : "景品追加")
+                </MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                              Color="Color.Default"
+                              OnClick="Cancel" />
+            </MudStack>
+
+            <MudDivider />
+
+            @if (isLoading)
+            {
+                <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                    <MudText Typo="Typo.body1">読み込み中...</MudText>
+                </MudStack>
+            }
+            else
+            {
+                <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <MudStack Spacing="3">
+                        <!-- Image Upload -->
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.h6">景品画像</MudText>
+                            <ImageUploader @bind-SelectedFile="selectedImageFile"
+                                          ExistingImageUrl="@(IsEditMode ? model.ImageUrl : null)" />
+                        </MudStack>
+
+                        <MudDivider />
+
+                        <!-- Basic Information -->
+                        <MudText Typo="Typo.h6">基本情報</MudText>
+
+                        <MudTextField Label="景品名"
+                                     @bind-Value="model.Name"
+                                     For="@(() => model.Name)"
+                                     Required="true"
+                                     MaxLength="100"
+                                     Counter="100"
+                                     Variant="Variant.Outlined" />
+
+                        <MudTextField Label="説明"
+                                     @bind-Value="model.Description"
+                                     For="@(() => model.Description)"
+                                     Required="true"
+                                     MaxLength="500"
+                                     Counter="500"
+                                     Lines="3"
+                                     Variant="Variant.Outlined" />
+
+                        <MudNumericField Label="必要ポイント"
+                                        @bind-Value="model.RequiredPoints"
+                                        For="@(() => model.RequiredPoints)"
+                                        Required="true"
+                                        Min="1"
+                                        Max="10000"
+                                        Variant="Variant.Outlined"
+                                        Adornment="Adornment.Start"
+                                        AdornmentIcon="@Icons.Material.Filled.Stars"
+                                        AdornmentColor="Color.Warning" />
+
+                        <MudSelect T="RewardCategory"
+                                  Label="カテゴリ"
+                                  @bind-Value="model.Category"
+                                  For="@(() => model.Category)"
+                                  Required="true"
+                                  Variant="Variant.Outlined"
+                                  AnchorOrigin="Origin.BottomCenter">
+                            @foreach (RewardCategory category in Enum.GetValues(typeof(RewardCategory)))
+                            {
+                                <MudSelectItem T="RewardCategory" Value="@category">
+                                    @GetCategoryText(category)
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudDivider />
+
+                        <!-- Stock Management -->
+                        <MudText Typo="Typo.h6">在庫管理</MudText>
+
+                        <MudSwitch @bind-Value="model.IsPhysical"
+                                  Label="実物景品"
+                                  Color="Color.Info"
+                                  For="@(() => model.IsPhysical)" />
+
+                        @if (model.IsPhysical)
+                        {
+                            <MudStack Spacing="2">
+                                <MudSwitch @bind-Value="hasStock"
+                                          Label="在庫数を設定する"
+                                          Color="Color.Primary" />
+
+                                @if (hasStock)
+                                {
+                                    <MudNumericField Label="在庫数"
+                                                    @bind-Value="model.Stock"
+                                                    Min="0"
+                                                    Max="1000"
+                                                    Variant="Variant.Outlined"
+                                                    HelperText="0に設定すると在庫切れとして表示されます" />
+                                }
+                                else
+                                {
+                                    <MudAlert Severity="Severity.Info" Dense="true">
+                                        在庫数を無制限に設定します
+                                    </MudAlert>
+                                }
+                            </MudStack>
+                        }
+
+                        @if (IsEditMode)
+                        {
+                            <MudSwitch @bind-Value="model.IsActive"
+                                      Label="有効"
+                                      Color="Color.Success"
+                                      For="@(() => model.IsActive)" />
+                        }
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+                        }
+
+                        <MudDivider />
+
+                        <!-- Action Buttons -->
+                        <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2">
+                            <MudButton Variant="Variant.Outlined"
+                                      Color="Color.Default"
+                                      OnClick="Cancel"
+                                      Disabled="isSaving">
+                                キャンセル
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled"
+                                      Color="Color.Primary"
+                                      ButtonType="ButtonType.Submit"
+                                      Disabled="isSaving"
+                                      StartIcon="@Icons.Material.Filled.Save">
+                                @if (isSaving)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                    <MudText Class="ml-2">保存中...</MudText>
+                                }
+                                else
+                                {
+                                    <text>保存</text>
+                                }
+                            </MudButton>
+                        </MudStack>
+                    </MudStack>
+                </EditForm>
+            }
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    private bool IsEditMode => Id.HasValue;
+    private bool isLoading = false;
+    private bool isSaving = false;
+    private bool hasStock = true;
+    private string? errorMessage;
+    private IBrowserFile? selectedImageFile;
+
+    private RewardFormModel model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEditMode && Id.HasValue)
+        {
+            await LoadReward();
+        }
+        else
+        {
+            // Default values for new reward
+            model.IsPhysical = true;
+            model.IsActive = true;
+            model.Stock = 10;
+        }
+    }
+
+    private async Task LoadReward()
+    {
+        isLoading = true;
+        try
+        {
+            var reward = await RewardApi.GetRewardByIdAsync(Id!.Value);
+            if (reward != null)
+            {
+                model = new RewardFormModel
+                {
+                    Name = reward.Name,
+                    Description = reward.Description,
+                    RequiredPoints = reward.RequiredPoints,
+                    Category = reward.Category,
+                    Stock = reward.Stock,
+                    IsPhysical = reward.IsPhysical,
+                    IsActive = reward.IsActive,
+                    ImageUrl = reward.ImageUrl,
+                    RowVersion = reward.RowVersion
+                };
+                hasStock = reward.Stock.HasValue;
+            }
+            else
+            {
+                Snackbar.Add("景品が見つかりません", Severity.Error);
+                Navigation.NavigateTo("/parent/rewards");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading reward: {ex.Message}");
+            errorMessage = "景品の読み込みに失敗しました";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            // Set stock to null if unlimited
+            if (!hasStock)
+            {
+                model.Stock = null;
+            }
+
+            if (IsEditMode && Id.HasValue)
+            {
+                // Update existing reward
+                var result = await RewardApi.UpdateRewardAsync(
+                    Id.Value,
+                    model.Name,
+                    model.Description,
+                    model.RequiredPoints,
+                    model.Category,
+                    model.Stock,
+                    model.IsPhysical,
+                    model.IsActive,
+                    model.RowVersion,
+                    selectedImageFile
+                );
+
+                if (result != null)
+                {
+                    Snackbar.Add("景品を更新しました", Severity.Success);
+                    Navigation.NavigateTo("/parent/rewards");
+                }
+            }
+            else
+            {
+                // Create new reward
+                var result = await RewardApi.CreateRewardAsync(
+                    model.Name,
+                    model.Description,
+                    model.RequiredPoints,
+                    model.Category,
+                    model.Stock,
+                    model.IsPhysical,
+                    selectedImageFile
+                );
+
+                if (result != null)
+                {
+                    Snackbar.Add("景品を追加しました", Severity.Success);
+                    Navigation.NavigateTo("/parent/rewards");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving reward: {ex.Message}");
+            errorMessage = ex.Message.Contains("concurrency") 
+                ? "他のユーザーによって更新されています。ページを再読み込みしてください。"
+                : "保存に失敗しました。入力内容を確認してください。";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/parent/rewards");
+    }
+
+    private string GetCategoryText(RewardCategory category)
+    {
+        return category switch
+        {
+            RewardCategory.Snack => "お菓子",
+            RewardCategory.Card => "カード",
+            RewardCategory.Toy => "おもちゃ",
+            RewardCategory.Stationery => "文房具",
+            RewardCategory.Book => "本",
+            RewardCategory.Other => "その他",
+            _ => "不明"
+        };
+    }
+
+    private class RewardFormModel
+    {
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public int RequiredPoints { get; set; } = 10;
+        public RewardCategory Category { get; set; } = RewardCategory.Snack;
+        public int? Stock { get; set; }
+        public bool IsPhysical { get; set; } = true;
+        public bool IsActive { get; set; } = true;
+        public string? ImageUrl { get; set; }
+        public byte[]? RowVersion { get; set; }
+    }
+}
