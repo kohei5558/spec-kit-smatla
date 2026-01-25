@@ -2,6 +2,18 @@
   "version": 3,
   "targets": {
     "net8.0": {
+      "Blazored.LocalStorage/4.3.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Components.Web": "7.0.0"
+        },
+        "compile": {
+          "lib/net7.0/Blazored.LocalStorage.dll": {}
+        },
+        "runtime": {
+          "lib/net7.0/Blazored.LocalStorage.dll": {}
+        }
+      },
       "Microsoft.AspNetCore.Authorization/8.0.22": {
         "type": "package",
         "dependencies": {
@@ -509,6 +521,18 @@
       }
     },
     "net8.0/browser-wasm": {
+      "Blazored.LocalStorage/4.3.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Components.Web": "7.0.0"
+        },
+        "compile": {
+          "lib/net7.0/Blazored.LocalStorage.dll": {}
+        },
+        "runtime": {
+          "lib/net7.0/Blazored.LocalStorage.dll": {}
+        }
+      },
       "Microsoft.AspNetCore.Authorization/8.0.22": {
         "type": "package",
         "dependencies": {
@@ -1017,6 +1041,20 @@
     }
   },
   "libraries": {
+    "Blazored.LocalStorage/4.3.0": {
+      "sha512": "CfHp9SWN45cM/TM8uw4pELQBfCRtMssCMSOjsEXVWibeYBn36TLpzw+J1vsC2Su2BEQ3Et19A5+GqK1S3kHbTQ==",
+      "type": "package",
+      "path": "blazored.localstorage/4.3.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "blazored.localstorage.4.3.0.nupkg.sha512",
+        "blazored.localstorage.nuspec",
+        "icon.png",
+        "lib/net6.0/Blazored.LocalStorage.dll",
+        "lib/net7.0/Blazored.LocalStorage.dll"
+      ]
+    },
     "Microsoft.AspNetCore.Authorization/8.0.22": {
       "sha512": "D7GY8e30UCkjQO9z2cQ1XT/+T1CSAae+KxojcI5SRb8iKmhVjMrAyspdslGMVhS5zOnPgObUp1666BriQmzv3g==",
       "type": "package",
@@ -2013,6 +2051,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
+      "Blazored.LocalStorage >= 4.3.0",
       "Microsoft.AspNetCore.Components.WebAssembly >= 8.0.22",
       "Microsoft.AspNetCore.Components.WebAssembly.DevServer >= 8.0.22",
       "Microsoft.NET.ILLink.Tasks >= 8.0.22",
@@ -2062,6 +2101,10 @@
       "net8.0": {
         "targetAlias": "net8.0",
         "dependencies": {
+          "Blazored.LocalStorage": {
+            "target": "Package",
+            "version": "[4.3.0, )"
+          },
           "Microsoft.AspNetCore.Components.WebAssembly": {
             "target": "Package",
             "version": "[8.0.22, )"

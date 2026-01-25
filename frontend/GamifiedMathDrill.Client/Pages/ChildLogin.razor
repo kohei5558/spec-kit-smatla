@@ -1,0 +1,339 @@
+@page "/child-login"
+@using GamifiedMathDrill.Client.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject HttpClient Http
+
+<PageTitle>子供ログイン</PageTitle>
+
+<div class="child-login-container">
+    <div class="child-login-card">
+        <h2>子供ログイン</h2>
+        
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">
+                @errorMessage
+            </div>
+        }
+
+        @if (!showPinInput)
+        {
+            <p class="instruction">ログインする子供を選んでね！</p>
+            
+            @if (children == null)
+            {
+                <p>読み込み中...</p>
+            }
+            else if (children.Count == 0)
+            {
+                <p>子供アカウントがありません</p>
+            }
+            else
+            {
+                <div class="child-selection">
+                    @foreach (var child in children)
+                    {
+                        <button class="child-button" @onclick="() => SelectChild(child)">
+                            <div class="child-avatar">
+                                @if (!string.IsNullOrEmpty(child.AvatarUrl))
+                                {
+                                    <img src="@child.AvatarUrl" alt="@child.DisplayName" />
+                                }
+                                else
+                                {
+                                    <span class="avatar-initial">@child.DisplayName[0]</span>
+                                }
+                            </div>
+                            <div class="child-name">@child.DisplayName</div>
+                        </button>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <p class="instruction">@selectedChild?.DisplayName さん、PINを入力してね！</p>
+            
+            <div class="pin-input-container">
+                <input type="password" 
+                       maxlength="4" 
+                       class="pin-input" 
+                       @bind="pinInput" 
+                       @bind:event="oninput"
+                       placeholder="••••"
+                       autofocus />
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" @onclick="BackToSelection">戻る</button>
+                <button class="btn btn-primary" @onclick="HandleLogin" disabled="@(pinInput.Length != 4 || isLoading)">
+                    @if (isLoading)
+                    {
+                        <span>ログイン中...</span>
+                    }
+                    else
+                    {
+                        <span>ログイン</span>
+                    }
+                </button>
+            </div>
+        }
+
+        <div class="parent-login-link">
+            <a href="/login">保護者のログインはこちら</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ChildInfo>? children;
+    private ChildInfo? selectedChild;
+    private bool showPinInput = false;
+    private string pinInput = string.Empty;
+    private bool isLoading = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // TODO: API endpoint to fetch children list
+        // For now, mock data based on seeded users
+        children = new List<ChildInfo>
+        {
+            new ChildInfo { Id = "child1-id", DisplayName = "花子", AvatarUrl = "/images/avatars/girl1.png" },
+            new ChildInfo { Id = "child2-id", DisplayName = "次郎", AvatarUrl = "/images/avatars/boy1.png" }
+        };
+    }
+
+    private void SelectChild(ChildInfo child)
+    {
+        selectedChild = child;
+        showPinInput = true;
+        pinInput = string.Empty;
+        errorMessage = null;
+    }
+
+    private void BackToSelection()
+    {
+        showPinInput = false;
+        selectedChild = null;
+        pinInput = string.Empty;
+        errorMessage = null;
+    }
+
+    private async Task HandleLogin()
+    {
+        if (selectedChild == null || pinInput.Length != 4)
+        {
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var (success, error) = await AuthService.ChildLoginAsync(selectedChild.Id, pinInput);
+
+            if (success)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "PINが間違っています";
+                pinInput = string.Empty;
+            }
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private class ChildInfo
+    {
+        public string Id { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string? AvatarUrl { get; set; }
+    }
+}
+
+<style>
+    .child-login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .child-login-card {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        max-width: 600px;
+        width: 100%;
+    }
+
+    .child-login-card h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+        font-size: 28px;
+    }
+
+    .instruction {
+        text-align: center;
+        font-size: 18px;
+        color: #666;
+        margin-bottom: 30px;
+    }
+
+    .child-selection {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .child-button {
+        background: #f8f9fa;
+        border: 3px solid transparent;
+        border-radius: 15px;
+        padding: 20px 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .child-button:hover {
+        border-color: #667eea;
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .child-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .child-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-initial {
+        color: white;
+        font-size: 36px;
+        font-weight: bold;
+    }
+
+    .child-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .pin-input-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+    }
+
+    .pin-input {
+        width: 200px;
+        padding: 20px;
+        font-size: 32px;
+        text-align: center;
+        border: 3px solid #ddd;
+        border-radius: 10px;
+        letter-spacing: 10px;
+    }
+
+    .pin-input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .btn {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    .alert {
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .parent-login-link {
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .parent-login-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .parent-login-link a:hover {
+        text-decoration: underline;
+    }
+</style>

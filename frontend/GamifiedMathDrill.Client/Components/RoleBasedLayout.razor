@@ -1,0 +1,132 @@
+@using GamifiedMathDrill.Client.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+@if (isLoading)
+{
+    <p>読み込み中...</p>
+}
+else if (isParent)
+{
+    <div class="parent-layout">
+        <nav class="parent-nav">
+            <a href="/">ホーム</a>
+            <a href="/reward-management">景品管理</a>
+            <a href="/exchange-requests">交換申請一覧</a>
+            <a href="/children-management">子供管理</a>
+            <button class="logout-btn" @onclick="HandleLogout">ログアウト</button>
+        </nav>
+        <div class="user-info">
+            <span>ようこそ、@userName さん</span>
+        </div>
+        @ChildContent
+    </div>
+}
+else
+{
+    <div class="child-layout">
+        <nav class="child-nav">
+            <a href="/">ホーム</a>
+            <a href="/problem">問題に挑戦</a>
+            <a href="/rewards">景品一覧</a>
+            <a href="/my-rewards">交換した景品</a>
+            <button class="logout-btn" @onclick="HandleLogout">ログアウト</button>
+        </nav>
+        <div class="user-info">
+            <span>@userName さん</span>
+        </div>
+        @ChildContent
+    </div>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool isLoading = true;
+    private bool isParent = false;
+    private string userName = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var role = await AuthService.GetCurrentUserRoleAsync();
+        userName = await AuthService.GetCurrentUserNameAsync() ?? "ゲスト";
+        isParent = role == "Parent";
+        isLoading = false;
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/login");
+    }
+}
+
+<style>
+    .parent-layout, .child-layout {
+        min-height: 100vh;
+    }
+
+    .parent-nav {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        padding: 15px 20px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .child-nav {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 15px 20px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .parent-nav a, .child-nav a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 8px 15px;
+        border-radius: 5px;
+        transition: background 0.3s;
+    }
+
+    .parent-nav a:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .child-nav a:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .logout-btn {
+        margin-left: auto;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.3s;
+    }
+
+    .logout-btn:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    .user-info {
+        padding: 10px 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        text-align: right;
+    }
+
+    .user-info span {
+        color: #333;
+        font-weight: 500;
+    }
+</style>

@@ -1,0 +1,44 @@
+@using GamifiedMathDrill.Client.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+@if (isAuthenticated)
+{
+    @ChildContent
+}
+else
+{
+    <p>リダイレクト中...</p>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? RequiredRole { get; set; }
+
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isAuthenticated = await AuthService.IsAuthenticatedAsync();
+
+        if (!isAuthenticated)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        // Check role if required
+        if (!string.IsNullOrEmpty(RequiredRole))
+        {
+            var userRole = await AuthService.GetCurrentUserRoleAsync();
+            if (userRole != RequiredRole)
+            {
+                Navigation.NavigateTo("/");
+                return;
+            }
+        }
+    }
+}
