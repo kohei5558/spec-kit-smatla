@@ -149,12 +149,12 @@
 
 ### Frontend Models (US1)
 
-- [ ] T053 [P] [US1] Update RewardDto model in frontend/GamifiedMathDrill.Client/Models/RewardDto.cs (add Stock, IsPhysical, ImageUrl, CreatedBy, CreatedAt, UpdatedAt, IsActive)
-- [ ] T054 [P] [US1] Update RewardCategory enum in frontend/GamifiedMathDrill.Client/Models/RewardCategory.cs (sync with backend: Snack, Card, Toy, Stationery, Book, Other)
+- [X] T053 [P] [US1] Update RewardDto model in frontend/GamifiedMathDrill.Client/Models/RewardDto.cs (add Stock, IsPhysical, ImageUrl, CreatedBy, CreatedAt, UpdatedAt, IsActive)
+- [X] T054 [P] [US1] Update RewardCategory enum in frontend/GamifiedMathDrill.Client/Models/RewardCategory.cs (sync with backend: Snack, Card, Toy, Stationery, Book, Other)
 
 ### Frontend Services (US1)
 
-- [ ] T055 [US1] Update RewardApiClient in frontend/GamifiedMathDrill.Client/Services/RewardApiClient.cs (add CreateRewardAsync with multipart/form-data, UpdateRewardAsync, DeleteRewardAsync methods with JWT token in headers)
+- [X] T055 [US1] Update RewardApiClient in frontend/GamifiedMathDrill.Client/Services/RewardApiClient.cs (add CreateRewardAsync with multipart/form-data, UpdateRewardAsync, DeleteRewardAsync methods with JWT token in headers)
 
 ### Frontend Components (US1)
 

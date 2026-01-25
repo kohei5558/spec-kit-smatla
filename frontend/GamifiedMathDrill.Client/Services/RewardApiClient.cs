@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using GamifiedMathDrill.Client.Models;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace GamifiedMathDrill.Client.Services;
 
@@ -86,6 +87,132 @@ public class RewardApiClient
         catch (Exception ex)
         {
             Console.WriteLine($"Error fetching acquired rewards: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 景品を新規作成します（保護者専用）
+    /// </summary>
+    public async Task<RewardDto?> CreateRewardAsync(string name, string description, int requiredPoints, 
+        RewardCategory category, int? stock, bool isPhysical, IBrowserFile? imageFile)
+    {
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            
+            content.Add(new StringContent(name), "Name");
+            content.Add(new StringContent(description), "Description");
+            content.Add(new StringContent(requiredPoints.ToString()), "RequiredPoints");
+            content.Add(new StringContent(((int)category).ToString()), "Category");
+            
+            if (stock.HasValue)
+            {
+                content.Add(new StringContent(stock.Value.ToString()), "Stock");
+            }
+            
+            content.Add(new StringContent(isPhysical.ToString()), "IsPhysical");
+            
+            if (imageFile != null)
+            {
+                var fileContent = new StreamContent(imageFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024)); // 5MB max
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(imageFile.ContentType);
+                content.Add(fileContent, "Image", imageFile.Name);
+            }
+            
+            var response = await _httpClient.PostAsync("api/Rewards", content);
+            response.EnsureSuccessStatusCode();
+            
+            return await response.Content.ReadFromJsonAsync<RewardDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating reward: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 景品を更新します（保護者専用）
+    /// </summary>
+    public async Task<RewardDto?> UpdateRewardAsync(int id, string name, string description, int requiredPoints, 
+        RewardCategory category, int? stock, bool isPhysical, bool isActive, byte[]? rowVersion, IBrowserFile? imageFile)
+    {
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            
+            content.Add(new StringContent(name), "Name");
+            content.Add(new StringContent(description), "Description");
+            content.Add(new StringContent(requiredPoints.ToString()), "RequiredPoints");
+            content.Add(new StringContent(((int)category).ToString()), "Category");
+            
+            if (stock.HasValue)
+            {
+                content.Add(new StringContent(stock.Value.ToString()), "Stock");
+            }
+            
+            content.Add(new StringContent(isPhysical.ToString()), "IsPhysical");
+            content.Add(new StringContent(isActive.ToString()), "IsActive");
+            
+            if (rowVersion != null)
+            {
+                content.Add(new StringContent(Convert.ToBase64String(rowVersion)), "RowVersion");
+            }
+            
+            if (imageFile != null)
+            {
+                var fileContent = new StreamContent(imageFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024)); // 5MB max
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(imageFile.ContentType);
+                content.Add(fileContent, "Image", imageFile.Name);
+            }
+            
+            var response = await _httpClient.PutAsync($"api/Rewards/{id}", content);
+            response.EnsureSuccessStatusCode();
+            
+            return await response.Content.ReadFromJsonAsync<RewardDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating reward: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 景品を削除します（保護者専用）
+    /// </summary>
+    public async Task<bool> DeleteRewardAsync(int id)
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync($"api/Rewards/{id}");
+            response.EnsureSuccessStatusCode();
+            
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting reward: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 景品の詳細を取得します
+    /// </summary>
+    public async Task<RewardDto?> GetRewardByIdAsync(int id)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"api/Rewards/{id}");
+            response.EnsureSuccessStatusCode();
+            
+            return await response.Content.ReadFromJsonAsync<RewardDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching reward: {ex.Message}");
             throw;
         }
     }
