@@ -28,6 +28,8 @@ builder.Services.AddScoped<StudentApiClient>();
 builder.Services.AddScoped<LearningRecordApiClient>();
 builder.Services.AddScoped<DailyChallengeApiClient>();
 builder.Services.AddScoped<RewardApiClient>();
+builder.Services.AddScoped<ExchangeRequestApiClient>();
+builder.Services.AddScoped<ParentDashboardApiClient>();
 
 // Register state management services
 builder.Services.AddScoped<CategoryStateService>();
