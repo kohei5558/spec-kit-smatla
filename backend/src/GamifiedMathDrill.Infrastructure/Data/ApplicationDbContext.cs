@@ -21,6 +21,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<LearningRecord> LearningRecords => Set<LearningRecord>();
     public DbSet<Reward> Rewards => Set<Reward>();
     public DbSet<AcquiredReward> AcquiredRewards => Set<AcquiredReward>();
+    public DbSet<ExchangeRequest> ExchangeRequests => Set<ExchangeRequest>();
     public DbSet<DailyChallenge> DailyChallenges => Set<DailyChallenge>();
     public DbSet<Level> Levels => Set<Level>();
 
@@ -148,6 +149,29 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.MaxDifficulty).IsRequired();
             
             entity.HasIndex(e => e.LevelNumber).IsUnique();
+        });
+
+        // ExchangeRequest
+        modelBuilder.Entity<ExchangeRequest>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.RequestedAt).IsRequired();
+            entity.Property(e => e.RequiredPoints).IsRequired();
+            
+            entity.HasIndex(e => e.StudentId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.RequestedAt);
+
+            entity.HasOne(e => e.Student)
+                .WithMany()
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Reward)
+                .WithMany()
+                .HasForeignKey(e => e.RewardId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

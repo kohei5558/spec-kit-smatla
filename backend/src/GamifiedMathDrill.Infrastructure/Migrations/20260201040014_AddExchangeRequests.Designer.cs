@@ -3,6 +3,7 @@ using System;
 using GamifiedMathDrill.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GamifiedMathDrill.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260201040014_AddExchangeRequests")]
+    partial class AddExchangeRequests
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
@@ -294,12 +297,6 @@ namespace GamifiedMathDrill.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal?>("AccuracyRate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AvatarUrl")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("ConsecutiveDays")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
@@ -326,9 +323,6 @@ namespace GamifiedMathDrill.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ParentUserId")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("TotalPoints")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
@@ -338,9 +332,6 @@ namespace GamifiedMathDrill.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(0);
-
-                    b.Property<int?>("TotalProblemsCompleted")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
