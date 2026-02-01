@@ -54,6 +54,7 @@ builder.Services.AddScoped<ILearningRecordRepository, LearningRecordRepository>(
 builder.Services.AddScoped<ILevelRepository, LevelRepository>();
 builder.Services.AddScoped<IRewardRepository, RewardRepository>();
 builder.Services.AddScoped<IAcquiredRewardRepository, AcquiredRewardRepository>();
+builder.Services.AddScoped<IExchangeRequestRepository, ExchangeRequestRepository>();
 builder.Services.AddScoped<IDailyChallengeRepository, DailyChallengeRepository>();
 
 // Register services
@@ -62,9 +63,11 @@ builder.Services.AddScoped<IProblemService, ProblemService>();
 builder.Services.AddScoped<ILearningRecordService, LearningRecordService>();
 builder.Services.AddScoped<IDailyChallengeService, DailyChallengeService>();
 builder.Services.AddScoped<IRewardService, RewardService>();
+builder.Services.AddScoped<IExchangeRequestService, ExchangeRequestService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IAuthService, GamifiedMathDrill.Infrastructure.Services.AuthService>();
 builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
+builder.Services.AddScoped<IParentDashboardService, ParentDashboardService>();
 
 // Background services
 builder.Services.AddHostedService<DailyChallengeJob>();
