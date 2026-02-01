@@ -1,11 +1,13 @@
 @page "/exchange-requests"
 @using GamifiedMathDrill.Client.Services
 @using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Components
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Parent")]
 @inject ExchangeRequestApiClient ExchangeRequestApi
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>交換申請一覧 - 保護者管理画面</PageTitle>
 
@@ -182,17 +184,13 @@
 
     private async Task ApproveRequest(ExchangeRequestDto request)
     {
-        var parameters = new DialogParameters
-        {
-            ["ContentText"] = $"「{request.RewardName}」の交換申請を承認しますか？\n子供: {request.StudentName}\n必要ポイント: {request.RequiredPoints}",
-            ["ButtonText"] = "承認する",
-            ["Color"] = Color.Success
-        };
+        bool? result = await DialogService.ShowMessageBox(
+            "承認の確認",
+            $"「{request.RewardName}」の交換申請を承認しますか？\n子供: {request.StudentName}\n必要ポイント: {request.RequiredPoints}",
+            yesText: "承認する",
+            cancelText: "キャンセル");
 
-        var dialog = await DialogService.ShowAsync<MudDialog>("承認の確認", parameters);
-        var result = await dialog.Result;
-
-        if (!result.Canceled)
+        if (result == true)
         {
             var response = await ExchangeRequestApi.ApproveRequestAsync(request.Id);
             if (response.Success)
@@ -217,7 +215,8 @@
             ["Lines"] = 3
         };
 
-        var dialog = await DialogService.ShowAsync<RejectReasonDialog>("交換申請の却下", parameters);
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small };
+        var dialog = DialogService.Show<RejectReasonDialog>("交換申請の却下", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled && result.Data is string reason && !string.IsNullOrWhiteSpace(reason))

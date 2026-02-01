@@ -237,6 +237,23 @@
             {
                 var accuracy = _statistics.AccuracyByType.TryGetValue(category, out var acc) ? acc : 0;
                 var correctCount = (int)(count * accuracy / 100);
+                
+                // ポイント計算: 正解数 × 10ポイント（基本）
+                var points = correctCount * 10;
+
+                _categoryStatistics.Add(new CategoryStatistic
+                {
+                    Category = category,
+                    CategoryName = name,
+                    CategoryOrder = order,
+                    TotalProblems = count,
+                    CorrectAnswers = correctCount,
+                    AccuracyRate = accuracy,
+                    TotalPoints = points
+                });
+            }
+        }
+    }
 
     private Color GetCategoryColor(string category)
     {
@@ -296,23 +313,6 @@
         else
         {
             return "全体的にバランスよく学習できています。この調子で続けましょう！";
-        }
-    }
-                
-                // ポイント計算: 正解数 × 10ポイント（基本）
-                var points = correctCount * 10;
-
-                _categoryStatistics.Add(new CategoryStatistic
-                {
-                    Category = category,
-                    CategoryName = name,
-                    CategoryOrder = order,
-                    TotalProblems = count,
-                    CorrectAnswers = correctCount,
-                    AccuracyRate = accuracy,
-                    TotalPoints = points
-                });
-            }
         }
     }
 
