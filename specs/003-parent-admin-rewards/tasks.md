@@ -22,15 +22,15 @@
 
 **Estimated Time**: 2 hours
 
-- [ ] T001 Create branch `003-parent-admin-rewards` from main
-- [ ] T002 Delete existing virtual reward data (Rewards table) using SQL or EF migration
-- [ ] T003 Delete existing exchange history data (AcquiredRewards table)
-- [ ] T004 [P] Add NuGet package Microsoft.AspNetCore.Identity.EntityFrameworkCore to backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj
-- [ ] T005 [P] Add NuGet package Microsoft.AspNetCore.Authentication.JwtBearer to backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj
-- [ ] T006 [P] Add NuGet package System.IdentityModel.Tokens.Jwt to backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj
-- [ ] T007 Add JWT configuration to backend/src/GamifiedMathDrill.Api/appsettings.Development.json (SecretKey, Issuer, Audience, ExpiryMinutes)
-- [ ] T008 Create uploads directory at frontend/GamifiedMathDrill.Client/wwwroot/uploads/rewards/
-- [ ] T009 Update .gitignore to exclude wwwroot/uploads/
+- [x] T001 Create branch `003-parent-admin-rewards` from main
+- [x] T002 Delete existing virtual reward data (Rewards table) using SQL or EF migration (N/A - no existing database)
+- [x] T003 Delete existing exchange history data (AcquiredRewards table) (N/A - no existing database)
+- [x] T004 [P] Add NuGet package Microsoft.AspNetCore.Identity.EntityFrameworkCore to backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj
+- [x] T005 [P] Add NuGet package Microsoft.AspNetCore.Authentication.JwtBearer to backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj
+- [x] T006 [P] Add NuGet package System.IdentityModel.Tokens.Jwt to backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj
+- [x] T007 Add JWT configuration to backend/src/GamifiedMathDrill.Api/appsettings.Development.json (SecretKey, Issuer, Audience, ExpiryMinutes)
+- [x] T008 Create uploads directory at frontend/GamifiedMathDrill.Client/wwwroot/uploads/rewards/
+- [x] T009 Update .gitignore to exclude wwwroot/uploads/
 
 **Checkpoint**: Environment ready - Foundation phase can begin
 
@@ -46,31 +46,31 @@
 
 ### Identity Framework Setup
 
-- [ ] T010 [P] Create UserRole enum in backend/src/GamifiedMathDrill.Core/Models/UserRole.cs (Parent=0, Child=1)
-- [ ] T011 Create ApplicationUser class extending IdentityUser in backend/src/GamifiedMathDrill.Infrastructure/Identity/ApplicationUser.cs (Role, PIN, ParentId, DisplayName, AvatarUrl, CreatedAt, IsActive)
-- [ ] T012 Update ApplicationDbContext to extend IdentityDbContext<ApplicationUser> in backend/src/GamifiedMathDrill.Infrastructure/Data/ApplicationDbContext.cs
-- [ ] T013 Create EF migration for Identity tables using `dotnet ef migrations add AddIdentityTables`
-- [ ] T014 Apply migration to database using `dotnet ef database update`
+- [x] T010 [P] Create UserRole enum in backend/src/GamifiedMathDrill.Core/Models/UserRole.cs (Parent=0, Child=1)
+- [x] T011 Create ApplicationUser class extending IdentityUser in backend/src/GamifiedMathDrill.Infrastructure/Identity/ApplicationUser.cs (Role, PIN, ParentId, DisplayName, AvatarUrl, CreatedAt, IsActive)
+- [x] T012 Update ApplicationDbContext to extend IdentityDbContext<ApplicationUser> in backend/src/GamifiedMathDrill.Infrastructure/Data/ApplicationDbContext.cs
+- [x] T013 Create EF migration for Identity tables using `dotnet ef migrations add AddIdentityTables`
+- [x] T014 Apply migration to database using `dotnet ef database update`
 
 ### Authentication Services
 
-- [ ] T015 [P] Create LoginRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/LoginRequest.cs (Email, Password)
-- [ ] T016 [P] Create LoginResponse DTO in backend/src/GamifiedMathDrill.Api/DTOs/LoginResponse.cs (Token, UserId, DisplayName, Role, ParentId, ExpiresAt)
-- [ ] T017 [P] Create ChildLoginRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/ChildLoginRequest.cs (ChildId, PIN)
-- [ ] T018 Create IAuthService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs (LoginAsync, ChildLoginAsync, GenerateJwtToken)
-- [ ] T019 Create AuthService implementation in backend/src/GamifiedMathDrill.Core/Services/AuthService.cs (JWT generation, PIN verification using UserManager)
-- [ ] T020 Create AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs (POST /api/auth/login, POST /api/auth/child-login)
+- [x] T015 [P] Create LoginRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/LoginRequest.cs (Email, Password)
+- [x] T016 [P] Create LoginResponse DTO in backend/src/GamifiedMathDrill.Api/DTOs/LoginResponse.cs (Token, UserId, DisplayName, Role, ParentId, ExpiresAt)
+- [x] T017 [P] Create ChildLoginRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/ChildLoginRequest.cs (ChildId, PIN)
+- [x] T018 Create IAuthService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs (LoginAsync, ChildLoginAsync, GenerateJwtToken)
+- [x] T019 Create AuthService implementation in backend/src/GamifiedMathDrill.Core/Services/AuthService.cs (JWT generation, PIN verification using UserManager)
+- [x] T020 Create AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs (POST /api/auth/login, POST /api/auth/child-login)
 
 ### Program.cs Configuration
 
-- [ ] T021 Configure ASP.NET Core Identity in backend/src/GamifiedMathDrill.Api/Program.cs (AddIdentity<ApplicationUser, IdentityRole>)
-- [ ] T022 Configure JWT authentication in backend/src/GamifiedMathDrill.Api/Program.cs (AddAuthentication, AddJwtBearer with validation parameters)
-- [ ] T023 Add authentication middleware to request pipeline in backend/src/GamifiedMathDrill.Api/Program.cs (UseAuthentication, UseAuthorization)
+- [x] T021 Configure ASP.NET Core Identity in backend/src/GamifiedMathDrill.Api/Program.cs (AddIdentity<ApplicationUser, IdentityRole>)
+- [x] T022 Configure JWT authentication in backend/src/GamifiedMathDrill.Api/Program.cs (AddAuthentication, AddJwtBearer with validation parameters)
+- [x] T023 Add authentication middleware to request pipeline in backend/src/GamifiedMathDrill.Api/Program.cs (UseAuthentication, UseAuthorization)
 
 ### Seed Data
 
-- [ ] T024 Create UserSeeder class in backend/src/GamifiedMathDrill.Infrastructure/Data/Seed/UserSeeder.cs (default parent with email "parent@example.com", 2 child accounts with PINs)
-- [ ] T025 Update ApplicationDbContext to call UserSeeder in OnModelCreating or separate seed method
+- [x] T024 Create UserSeeder class in backend/src/GamifiedMathDrill.Infrastructure/Data/Seed/UserSeeder.cs (default parent with email "parent@example.com", 2 child accounts with PINs)
+- [x] T025 Update ApplicationDbContext to call UserSeeder in OnModelCreating or separate seed method
 
 **Checkpoint**: Foundation ready - User Story 4 (Authentication) and all other user stories can now begin
 
@@ -86,28 +86,28 @@
 
 ### Backend Models & DTOs (US4)
 
-- [ ] T026 [P] [US4] Create ErrorResponse DTO in backend/src/GamifiedMathDrill.Api/DTOs/ErrorResponse.cs (Error, Message, Details)
+- [x] T026 [P] [US4] Create ErrorResponse DTO in backend/src/GamifiedMathDrill.Api/DTOs/ErrorResponse.cs (Error, Message, Details)
 
 ### Frontend Services (US4)
 
-- [ ] T027 [P] [US4] Create UserRole enum in frontend/GamifiedMathDrill.Client/Models/UserRole.cs (Parent, Child - sync with backend)
-- [ ] T028 [P] [US4] Create LoginRequest model in frontend/GamifiedMathDrill.Client/Models/LoginRequest.cs
-- [ ] T029 [P] [US4] Create LoginResponse model in frontend/GamifiedMathDrill.Client/Models/LoginResponse.cs
-- [ ] T030 [P] [US4] Create ChildLoginRequest model in frontend/GamifiedMathDrill.Client/Models/ChildLoginRequest.cs
-- [ ] T031 Create TokenService in frontend/GamifiedMathDrill.Client/Services/TokenService.cs (SaveToken, GetToken, RemoveToken using localStorage or sessionStorage)
-- [ ] T032 Create AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs (LoginAsync calling POST /api/auth/login, ChildLoginAsync calling POST /api/auth/child-login)
+- [x] T027 [P] [US4] Create UserRole enum in frontend/GamifiedMathDrill.Client/Models/UserRole.cs (Parent, Child - sync with backend)
+- [x] T028 [P] [US4] Create LoginRequest model in frontend/GamifiedMathDrill.Client/Models/LoginRequest.cs
+- [x] T029 [P] [US4] Create LoginResponse model in frontend/GamifiedMathDrill.Client/Models/LoginResponse.cs
+- [x] T030 [P] [US4] Create ChildLoginRequest model in frontend/GamifiedMathDrill.Client/Models/ChildLoginRequest.cs
+- [x] T031 Create TokenService in frontend/GamifiedMathDrill.Client/Services/TokenService.cs (SaveToken, GetToken, RemoveToken using localStorage or sessionStorage)
+- [x] T032 Create AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs (LoginAsync calling POST /api/auth/login, ChildLoginAsync calling POST /api/auth/child-login)
 
 ### Frontend Pages (US4)
 
-- [ ] T033 [P] [US4] Create Login.razor page in frontend/GamifiedMathDrill.Client/Pages/Login.razor (parent login form with email/password, MudTextField, MudButton)
-- [ ] T034 [P] [US4] Create ChildLogin.razor page in frontend/GamifiedMathDrill.Client/Pages/ChildLogin.razor (child selection with avatar/name buttons, PIN input dialog)
-- [ ] T035 Create AuthGuard component in frontend/GamifiedMathDrill.Client/Components/AuthGuard.razor (redirect to /login if not authenticated)
-- [ ] T036 Create RoleBasedLayout component in frontend/GamifiedMathDrill.Client/Components/RoleBasedLayout.razor (different navigation for Parent vs Child role)
+- [x] T033 [P] [US4] Create Login.razor page in frontend/GamifiedMathDrill.Client/Pages/Login.razor (parent login form with email/password, MudTextField, MudButton)
+- [x] T034 [P] [US4] Create ChildLogin.razor page in frontend/GamifiedMathDrill.Client/Pages/ChildLogin.razor (child selection with avatar/name buttons, PIN input dialog)
+- [x] T035 Create AuthGuard component in frontend/GamifiedMathDrill.Client/Components/AuthGuard.razor (redirect to /login if not authenticated)
+- [x] T036 Create RoleBasedLayout component in frontend/GamifiedMathDrill.Client/Components/RoleBasedLayout.razor (different navigation for Parent vs Child role)
 
 ### Frontend Navigation & Layout (US4)
 
-- [ ] T037 [US4] Update MainLayout.razor in frontend/GamifiedMathDrill.Client/Layout/MainLayout.razor (integrate RoleBasedLayout, show logout button)
-- [ ] T038 [US4] Update App.razor in frontend/GamifiedMathDrill.Client/App.razor (add authentication state provider if needed)
+- [x] T037 [US4] Update MainLayout.razor in frontend/GamifiedMathDrill.Client/Layout/MainLayout.razor (integrate RoleBasedLayout, show logout button)
+- [x] T038 [US4] Update App.razor in frontend/GamifiedMathDrill.Client/App.razor (add authentication state provider if needed)
 
 **Checkpoint**: User Story 4 complete - Authentication system functional, Parent and Child can log in with different credentials
 
@@ -123,29 +123,29 @@
 
 ### Backend Models (US1)
 
-- [ ] T039 [P] [US1] Update RewardCategory enum in backend/src/GamifiedMathDrill.Core/Models/RewardCategory.cs (remove Badge/Avatar/Character, add Snack=0, Card=1, Toy=2, Stationery=3, Book=4, Other=5)
-- [ ] T040 [US1] Update Reward model in backend/src/GamifiedMathDrill.Core/Models/Reward.cs (add Stock int?, IsPhysical bool, CreatedBy string, CreatedAt DateTime, UpdatedAt DateTime?, IsActive bool, RowVersion byte[], remove Category references to old enums)
-- [ ] T041 [US1] Create EF migration for Reward table schema changes using `dotnet ef migrations add UpdateRewardForPhysicalItems`
-- [ ] T042 [US1] Apply migration to database using `dotnet ef database update`
-- [ ] T043 [US1] Update RewardSeeder in backend/src/GamifiedMathDrill.Infrastructure/Data/Seed/RewardSeeder.cs (seed 10-20 physical rewards: dagashi, Pokemon cards, toys with images, stock, categories)
+- [x] T039 [P] [US1] Update RewardCategory enum in backend/src/GamifiedMathDrill.Core/Models/RewardCategory.cs (remove Badge/Avatar/Character, add Snack=0, Card=1, Toy=2, Stationery=3, Book=4, Other=5)
+- [x] T040 [US1] Update Reward model in backend/src/GamifiedMathDrill.Core/Models/Reward.cs (add Stock int?, IsPhysical bool, CreatedBy string, CreatedAt DateTime, UpdatedAt DateTime?, IsActive bool, RowVersion byte[], remove Category references to old enums)
+- [x] T041 [US1] Create EF migration for Reward table schema changes using `dotnet ef migrations add UpdateRewardForPhysicalItems`
+- [x] T042 [US1] Apply migration to database using `dotnet ef database update`
+- [x] T043 [US1] Update RewardSeeder in backend/src/GamifiedMathDrill.Infrastructure/Data/Seed/RewardSeeder.cs (seed 10-20 physical rewards: dagashi, Pokemon cards, toys with images, stock, categories)
 
 ### Backend DTOs (US1)
 
-- [ ] T044 [P] [US1] Update RewardDto in backend/src/GamifiedMathDrill.Api/DTOs/RewardDto.cs (add Stock, IsPhysical, ImageUrl, CreatedBy, CreatedAt, UpdatedAt, IsActive, RowVersion)
-- [ ] T045 [P] [US1] Create CreateRewardRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/CreateRewardRequest.cs (Name, Description, RequiredPoints, Category, IsPhysical, Stock, IFormFile Image)
-- [ ] T046 [P] [US1] Create UpdateRewardRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/UpdateRewardRequest.cs (Name, Description, RequiredPoints, Category, IsPhysical, Stock, IFormFile? Image, byte[] RowVersion)
+- [x] T044 [P] [US1] Update RewardDto in backend/src/GamifiedMathDrill.Api/DTOs/RewardDto.cs (add Stock, IsPhysical, ImageUrl, CreatedBy, CreatedAt, UpdatedAt, IsActive, RowVersion)
+- [x] T045 [P] [US1] Create CreateRewardRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/CreateRewardRequest.cs (Name, Description, RequiredPoints, Category, IsPhysical, Stock, IFormFile Image)
+- [x] T046 [P] [US1] Create UpdateRewardRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/UpdateRewardRequest.cs (Name, Description, RequiredPoints, Category, IsPhysical, Stock, IFormFile? Image, byte[] RowVersion)
 
 ### Backend Services (US1)
 
-- [ ] T047 [P] [US1] Create IImageStorageService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IImageStorageService.cs (SaveImageAsync, DeleteImageAsync)
-- [ ] T048 [US1] Create ImageStorageService implementation in backend/src/GamifiedMathDrill.Core/Services/ImageStorageService.cs (save to wwwroot/uploads/rewards/ with GUID filename, validate MIME type and size 5MB max)
-- [ ] T049 [US1] Update IRewardService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IRewardService.cs (add CreateRewardAsync, UpdateRewardAsync, DeleteRewardAsync methods)
-- [ ] T050 [US1] Update RewardService in backend/src/GamifiedMathDrill.Core/Services/RewardService.cs (implement CRUD with image storage, optimistic locking using RowVersion, catch DbUpdateConcurrencyException)
+- [x] T047 [P] [US1] Create IImageStorageService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IImageStorageService.cs (SaveImageAsync, DeleteImageAsync)
+- [x] T048 [US1] Create ImageStorageService implementation in backend/src/GamifiedMathDrill.Core/Services/ImageStorageService.cs (save to wwwroot/uploads/rewards/ with GUID filename, validate MIME type and size 5MB max)
+- [x] T049 [US1] Update IRewardService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IRewardService.cs (add CreateRewardAsync, UpdateRewardAsync, DeleteRewardAsync methods)
+- [x] T050 [US1] Update RewardService in backend/src/GamifiedMathDrill.Core/Services/RewardService.cs (implement CRUD with image storage, optimistic locking using RowVersion, catch DbUpdateConcurrencyException)
 
 ### Backend Controllers (US1)
 
-- [ ] T051 [US1] Update RewardsController in backend/src/GamifiedMathDrill.Api/Controllers/RewardsController.cs (add POST /api/rewards [Authorize(Roles="Parent")], PUT /api/rewards/{id} [Authorize(Roles="Parent")], DELETE /api/rewards/{id} [Authorize(Roles="Parent")])
-- [ ] T052 [US1] Update GET /api/rewards endpoint in backend/src/GamifiedMathDrill.Api/Controllers/RewardsController.cs (filter by IsActive=true for Child role, return all for Parent role)
+- [x] T051 [US1] Update RewardsController in backend/src/GamifiedMathDrill.Api/Controllers/RewardsController.cs (add POST /api/rewards [Authorize(Roles="Parent")], PUT /api/rewards/{id} [Authorize(Roles="Parent")], DELETE /api/rewards/{id} [Authorize(Roles="Parent")])
+- [x] T052 [US1] Update GET /api/rewards endpoint in backend/src/GamifiedMathDrill.Api/Controllers/RewardsController.cs (filter by IsActive=true for Child role, return all for Parent role)
 
 ### Frontend Models (US1)
 
@@ -180,46 +180,46 @@
 
 ### Backend Models (US2)
 
-- [ ] T060 [P] [US2] Create ExchangeStatus enum in backend/src/GamifiedMathDrill.Core/Models/ExchangeStatus.cs (Pending=0, Approved=1, Rejected=2, Cancelled=3)
-- [ ] T061 [US2] Create ExchangeRequest model (rename from AcquiredReward) in backend/src/GamifiedMathDrill.Core/Models/ExchangeRequest.cs (Id, StudentId, RewardId, Status, RequestedAt, ApprovedAt, RejectedAt, CancelledAt, ApprovedBy, RejectionReason, ParentNote)
-- [ ] T062 [US2] Create EF migration to rename AcquiredRewards to ExchangeRequests and add new columns using `dotnet ef migrations add RenameToExchangeRequests`
-- [ ] T063 [US2] Apply migration to database using `dotnet ef database update`
+- [x] T060 [P] [US2] Create ExchangeStatus enum in backend/src/GamifiedMathDrill.Core/Models/ExchangeStatus.cs (Pending=0, Approved=1, Rejected=2, Cancelled=3)
+- [x] T061 [US2] Create ExchangeRequest model (rename from AcquiredReward) in backend/src/GamifiedMathDrill.Core/Models/ExchangeRequest.cs (Id, StudentId, RewardId, Status, RequestedAt, ApprovedAt, RejectedAt, CancelledAt, ApprovedBy, RejectionReason, ParentNote)
+- [x] T062 [US2] Create EF migration to rename AcquiredRewards to ExchangeRequests and add new columns using `dotnet ef migrations add RenameToExchangeRequests`
+- [x] T063 [US2] Apply migration to database using `dotnet ef database update`
 
 ### Backend DTOs (US2)
 
-- [ ] T064 [P] [US2] Create ExchangeRequestDto in backend/src/GamifiedMathDrill.Api/DTOs/ExchangeRequestDto.cs (Id, StudentId, StudentName, RewardId, RewardName, RewardImageUrl, RequiredPoints, Status, RequestedAt, ApprovedAt, RejectedAt, CancelledAt, ApprovedBy, ApproverName, RejectionReason, ParentNote)
-- [ ] T065 [P] [US2] Create CreateExchangeRequestRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/CreateExchangeRequestRequest.cs (RewardId)
+- [x] T064 [P] [US2] Create ExchangeRequestDto in backend/src/GamifiedMathDrill.Api/DTOs/ExchangeRequestDto.cs (Id, StudentId, StudentName, RewardId, RewardName, RewardImageUrl, RequiredPoints, Status, RequestedAt, ApprovedAt, RejectedAt, CancelledAt, ApprovedBy, ApproverName, RejectionReason, ParentNote)
+- [x] T065 [P] [US2] Create CreateExchangeRequestRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/CreateExchangeRequestRequest.cs (RewardId)
 
 ### Backend Services (US2)
 
-- [ ] T066 [P] [US2] Create IExchangeRequestService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IExchangeRequestService.cs (CreateRequestAsync, GetRequestsByStudentAsync, CancelRequestAsync)
-- [ ] T067 [US2] Create ExchangeRequestService in backend/src/GamifiedMathDrill.Core/Services/ExchangeRequestService.cs (implement CreateRequestAsync with transaction: check points, check stock, decrement stock with optimistic lock, create ExchangeRequest with Status=Pending)
-- [ ] T068 [US2] Implement GetRequestsByStudentAsync in backend/src/GamifiedMathDrill.Core/Services/ExchangeRequestService.cs (query by StudentId with Include Reward, order by RequestedAt DESC)
-- [ ] T069 [US2] Implement CancelRequestAsync in backend/src/GamifiedMathDrill.Core/Services/ExchangeRequestService.cs (set Status=Cancelled, increment stock back, validate Status=Pending only)
+- [x] T066 [P] [US2] Create IExchangeRequestService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IExchangeRequestService.cs (CreateRequestAsync, GetRequestsByStudentAsync, CancelRequestAsync)
+- [x] T067 [US2] Create ExchangeRequestService in backend/src/GamifiedMathDrill.Core/Services/ExchangeRequestService.cs (implement CreateRequestAsync with transaction: check points, check stock, decrement stock with optimistic lock, create ExchangeRequest with Status=Pending)
+- [x] T068 [US2] Implement GetRequestsByStudentAsync in backend/src/GamifiedMathDrill.Core/Services/ExchangeRequestService.cs (query by StudentId with Include Reward, order by RequestedAt DESC)
+- [x] T069 [US2] Implement CancelRequestAsync in backend/src/GamifiedMathDrill.Core/Services/ExchangeRequestService.cs (set Status=Cancelled, increment stock back, validate Status=Pending only)
 
 ### Backend Repositories (US2)
 
-- [ ] T070 [P] [US2] Create IExchangeRequestRepository interface in backend/src/GamifiedMathDrill.Core/Interfaces/IExchangeRequestRepository.cs (standard CRUD methods)
-- [ ] T071 [US2] Create ExchangeRequestRepository in backend/src/GamifiedMathDrill.Infrastructure/Repositories/ExchangeRequestRepository.cs (implement CRUD with EF Core)
+- [x] T070 [P] [US2] Create IExchangeRequestRepository interface in backend/src/GamifiedMathDrill.Core/Interfaces/IExchangeRequestRepository.cs (standard CRUD methods)
+- [x] T071 [US2] Create ExchangeRequestRepository in backend/src/GamifiedMathDrill.Infrastructure/Repositories/ExchangeRequestRepository.cs (implement CRUD with EF Core)
 
 ### Backend Controllers (US2)
 
-- [ ] T072 [US2] Create ExchangeRequestsController in backend/src/GamifiedMathDrill.Api/Controllers/ExchangeRequestsController.cs (POST /api/exchange-requests [Authorize(Roles="Child")], GET /api/exchange-requests/my [Authorize(Roles="Child")], PUT /api/exchange-requests/{id}/cancel [Authorize(Roles="Child")])
+- [x] T072 [US2] Create ExchangeRequestsController in backend/src/GamifiedMathDrill.Api/Controllers/ExchangeRequestsController.cs (POST /api/exchange-requests [Authorize(Roles="Child")], GET /api/exchange-requests/my [Authorize(Roles="Child")], PUT /api/exchange-requests/{id}/cancel [Authorize(Roles="Child")])
 
 ### Frontend Models (US2)
 
-- [ ] T073 [P] [US2] Create ExchangeStatus enum in frontend/GamifiedMathDrill.Client/Models/ExchangeStatus.cs (Pending, Approved, Rejected, Cancelled)
-- [ ] T074 [P] [US2] Create ExchangeRequestDto model in frontend/GamifiedMathDrill.Client/Models/ExchangeRequestDto.cs (sync with backend DTO)
-- [ ] T075 [P] [US2] Create CreateExchangeRequestRequest model in frontend/GamifiedMathDrill.Client/Models/CreateExchangeRequestRequest.cs
+- [x] T073 [P] [US2] Create ExchangeStatus enum in frontend/GamifiedMathDrill.Client/Models/ExchangeStatus.cs (Pending, Approved, Rejected, Cancelled)
+- [x] T074 [P] [US2] Create ExchangeRequestDto model in frontend/GamifiedMathDrill.Client/Models/ExchangeRequestDto.cs (sync with backend DTO)
+- [x] T075 [P] [US2] Create CreateExchangeRequestRequest model in frontend/GamifiedMathDrill.Client/Models/CreateExchangeRequestRequest.cs
 
 ### Frontend Services (US2)
 
-- [ ] T076 [US2] Create ExchangeRequestApiClient in frontend/GamifiedMathDrill.Client/Services/ExchangeRequestApiClient.cs (CreateRequestAsync, GetMyRequestsAsync, CancelRequestAsync with JWT token in headers)
+- [x] T076 [US2] Create ExchangeRequestApiClient in frontend/GamifiedMathDrill.Client/Services/ExchangeRequestApiClient.cs (CreateRequestAsync, GetMyRequestsAsync, CancelRequestAsync with JWT token in headers)
 
 ### Frontend Pages (US2)
 
-- [ ] T077 [US2] Update Home.razor in frontend/GamifiedMathDrill.Client/Pages/Home.razor (add exchange request button on reward cards, show confirmation dialog with points/stock check before submitting)
-- [ ] T078 [US2] Update AcquiredRewardsPage.razor (rename to ExchangeRequestsPage) in frontend/GamifiedMathDrill.Client/Pages/AcquiredRewardsPage.razor (display Status badge with color coding: Pending=yellow, Approved=green, Rejected=red, Cancelled=gray, show cancel button for Pending status)
+- [x] T077 [US2] Update Home.razor in frontend/GamifiedMathDrill.Client/Pages/Home.razor (add exchange request button on reward cards, show confirmation dialog with points/stock check before submitting)
+- [x] T078 [US2] Update AcquiredRewardsPage.razor (rename to ExchangeRequestsPage) in frontend/GamifiedMathDrill.Client/Pages/AcquiredRewardsPage.razor (display Status badge with color coding: Pending=yellow, Approved=green, Rejected=red, Cancelled=gray, show cancel button for Pending status)
 
 **Checkpoint**: User Story 2 complete - Children can request reward exchanges, see their request status
 
@@ -235,18 +235,18 @@
 
 ### Backend DTOs (US3)
 
-- [ ] T079 [P] [US3] Create ApproveRequestRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/ApproveRequestRequest.cs (ParentNote optional)
-- [ ] T080 [P] [US3] Create RejectRequestRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/RejectRequestRequest.cs (Reason required, ParentNote optional)
+- [x] T079 [P] [US3] Create ApproveRequestRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/ApproveRequestRequest.cs (ParentNote optional)
+- [x] T080 [P] [US3] Create RejectRequestRequest DTO in backend/src/GamifiedMathDrill.Api/DTOs/RejectRequestRequest.cs (Reason required, ParentNote optional)
 
 ### Backend Services (US3)
 
-- [ ] T081 [US3] Update IExchangeRequestService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IExchangeRequestService.cs (add ApproveRequestAsync, RejectRequestAsync)
-- [ ] T082 [US3] Implement ApproveRequestAsync in backend/src/GamifiedMathDrill.Core/Services/ExchangeRequestService.cs (transaction: validate Status=Pending, recheck student points, deduct points, set Status=Approved, set ApprovedAt/ApprovedBy, commit transaction)
-- [ ] T083 [US3] Implement RejectRequestAsync in backend/src/GamifiedMathDrill.Core/Services/ExchangeRequestService.cs (validate Status=Pending, increment stock back, set Status=Rejected, set RejectedAt/RejectionReason, no point deduction since not deducted on request)
+- [x] T081 [US3] Update IExchangeRequestService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IExchangeRequestService.cs (add ApproveRequestAsync, RejectRequestAsync)
+- [x] T082 [US3] Implement ApproveRequestAsync in backend/src/GamifiedMathDrill.Core/Services/ExchangeRequestService.cs (transaction: validate Status=Pending, recheck student points, deduct points, set Status=Approved, set ApprovedAt/ApprovedBy, commit transaction)
+- [x] T083 [US3] Implement RejectRequestAsync in backend/src/GamifiedMathDrill.Core/Services/ExchangeRequestService.cs (validate Status=Pending, increment stock back, set Status=Rejected, set RejectedAt/RejectionReason, no point deduction since not deducted on request)
 
 ### Backend Controllers (US3)
 
-- [ ] T084 [US3] Update ExchangeRequestsController in backend/src/GamifiedMathDrill.Api/Controllers/ExchangeRequestsController.cs (add PUT /api/exchange-requests/{id}/approve [Authorize(Roles="Parent")], PUT /api/exchange-requests/{id}/reject [Authorize(Roles="Parent")])
+- [x] T084 [US3] Update ExchangeRequestsController in backend/src/GamifiedMathDrill.Api/Controllers/ExchangeRequestsController.cs (add PUT /api/exchange-requests/{id}/approve [Authorize(Roles="Parent")], PUT /api/exchange-requests/{id}/reject [Authorize(Roles="Parent")])
 
 ### Frontend Services (US3)
 
