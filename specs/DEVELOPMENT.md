@@ -13,6 +13,7 @@
 - 実装中もこまめにコミットし、進捗を記録する
 
 **理由**:
+
 - 変更履歴の追跡が容易になる
 - レビューが簡単になる
 - 問題が発生した際のロールバックが容易
@@ -29,6 +30,7 @@
 ```
 
 #### Type（必須）
+
 - `feat`: 新機能の追加
 - `fix`: バグ修正
 - `docs`: ドキュメントのみの変更
@@ -39,22 +41,27 @@
 - `chore`: ビルドプロセスやツールの変更
 
 #### Scope（推奨）
+
 - 影響を受ける機能やUser Story（例：US1, US2, US3, US4, US5）
 - または影響を受けるモジュール名
 
 #### Task IDs（推奨）
+
 - タスクIDを記載（例：T001, T002-T003）
 
 #### Subject（必須）
+
 - 変更内容の簡潔な説明（50文字以内）
 - 現在形で記述（"Add" not "Added"）
 
 #### Body（任意）
+
 - 変更の詳細説明
 - 実装したファイルのリスト
 - 技術的な決定事項
 
 #### Footer（任意）
+
 - Breaking changes
 - 関連Issue番号
 
@@ -110,15 +117,18 @@ git commit -m "docs: Update task completion status
 
 ```markdown
 # 完了前
+
 - [ ] T001 Create branch `003-parent-admin-rewards` from main
 
 # 完了後
-- [X] T001 Create branch `003-parent-admin-rewards` from main
+
+- [x] T001 Create branch `003-parent-admin-rewards` from main
 ```
 
 ### フェーズ完了の確認
 
 各Phaseのすべてのタスクが完了したら：
+
 1. tasks.mdのチェックボックスをすべて更新
 2. 動作確認を実施
 3. テストを実行（該当する場合）
@@ -131,7 +141,7 @@ git commit -m "docs: Update task completion status
 - **命名規則**:
   - クラス・メソッド: PascalCase
   - 変数・パラメータ: camelCase
-  - プライベートフィールド: _camelCase
+  - プライベートフィールド: \_camelCase
   - 定数: UPPER_SNAKE_CASE
 
 - **コメント**:
@@ -150,17 +160,19 @@ git commit -m "docs: Update task completion status
 
 ### データベースマイグレーション
 
-- **命名規則**: 
+- **命名規則**:
   - 説明的な名前を使用（例：`AddExchangeRequests`, `AddParentDashboardFields`）
   - 日付プレフィックスは自動生成に任せる
 
 - **作成手順**:
+
   ```bash
   cd backend/src/GamifiedMathDrill.Infrastructure
   dotnet ef migrations add {MigrationName} --startup-project ../GamifiedMathDrill.Api
   ```
 
 - **適用手順**:
+
   ```bash
   dotnet ef database update --startup-project ../GamifiedMathDrill.Api
   ```
@@ -187,6 +199,7 @@ git commit -m "docs: Update task completion status
 ```
 
 例：
+
 ```
 [Feature-003] Parent Admin Rewards - Phase 5-7 Implementation
 ```
@@ -197,26 +210,32 @@ git commit -m "docs: Update task completion status
 
 ```markdown
 ## 概要
+
 このPRで実装した機能の概要
 
 ## 実装内容
+
 - Phase 5: 交換申請機能（US2）
 - Phase 6: 承認/却下機能（US3）
 - Phase 7: ダッシュボード（US5）
 
 ## 完了タスク
+
 T066-T098 (33 tasks)
 
 ## 動作確認
+
 - [ ] 保護者ログイン → 景品管理
 - [ ] 子供ログイン → 交換申請
 - [ ] 保護者 → 承認/却下
 - [ ] ダッシュボード表示
 
 ## スクリーンショット
+
 （該当する場合）
 
 ## 注意事項
+
 特記事項があれば記載
 ```
 

@@ -360,11 +360,101 @@ Serilogを使用した構造化ログを実装。ログは以下に出力され�
 
 ## 今後の改善予定
 
-- [ ] 認証・認可の実装 (JWT)
-- [ ] 親アカウント機能
+- [x] 認証・認可の実装 (JWT) - ✅ 完了 (Feature 003)
+- [x] 親アカウント機能 - ✅ 完了 (Feature 003)
 - [ ] リアルタイムランキング
 - [ ] より高度な適応的学習アルゴリズム
 - [ ] GraphQL対応
+
+## 認証・認可
+
+### セットアップ
+
+#### JWT設定
+
+`appsettings.Development.json` に以下の設定を追加：
+
+```json
+{
+  "Jwt": {
+    "SecretKey": "ThisIsAVerySecureSecretKeyForJwtToken2024!@#$%",
+    "Issuer": "GamifiedMathDrill.Api",
+    "Audience": "GamifiedMathDrill.Client",
+    "ExpiryMinutes": 60
+  }
+}
+```
+
+**重要**: 本番環境では環境変数または Azure Key Vault 等のシークレット管理サービスを使用してください。
+
+#### デフォルトユーザー
+
+初回起動時に以下のテストユーザーが自動作成されます：
+
+**保護者アカウント:**
+
+- Email: `parent@example.com`
+- Password: `Parent123!`
+- Role: `Parent`
+
+**子供アカウント:**
+
+- DisplayName: `太郎`
+- PIN: `1234`
+- Role: `Child`
+- ParentId: 保護者アカウントに紐付け
+
+### 認証フロー
+
+1. **保護者ログイン**: POST `/api/auth/login`
+
+   ```json
+   {
+     "email": "parent@example.com",
+     "password": "Parent123!"
+   }
+   ```
+
+2. **子供ログイン**: POST `/api/auth/child-login`
+
+   ```json
+   {
+     "displayName": "太郎",
+     "pin": "1234"
+   }
+   ```
+
+3. **レスポンス**:
+
+   ```json
+   {
+     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+     "userId": "user-guid",
+     "userName": "parent@example.com",
+     "role": "Parent",
+     "parentId": null,
+     "expiresAt": "2026-02-01T12:00:00Z"
+   }
+   ```
+
+4. **API呼び出し**: `Authorization: Bearer {token}` ヘッダーを含める
+
+### ロールベース認可
+
+- **Parent**: 景品管理、交換申請の承認/却下、ダッシュボード閲覧
+- **Child**: 問題を解く、景品一覧閲覧、交換申請
+
+### エンドポイント認可
+
+| エンドポイント                           | 必要なロール  |
+| ---------------------------------------- | ------------- |
+| GET `/api/rewards`                       | Parent, Child |
+| POST `/api/rewards`                      | Parent        |
+| GET `/api/exchangerequests/my`           | Child         |
+| POST `/api/exchangerequests`             | Child         |
+| PUT `/api/exchangerequests/{id}/approve` | Parent        |
+| PUT `/api/exchangerequests/{id}/reject`  | Parent        |
+| GET `/api/parent/dashboard`              | Parent        |
 
 ## ライセンス
 
