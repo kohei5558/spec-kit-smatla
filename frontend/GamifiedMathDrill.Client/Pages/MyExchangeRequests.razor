@@ -1,0 +1,194 @@
+@page "/my-exchange-requests"
+@using GamifiedMathDrill.Client.Services
+@using GamifiedMathDrill.Client.Models
+@inject ExchangeRequestApiClient ExchangeRequestApi
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>交換申請一覧 - 計算ドリル</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-6">
+        <MudIcon Icon="@Icons.Material.Filled.RequestPage" Color="Color.Primary" />
+        交換申請一覧
+    </MudText>
+
+    @if (isLoading)
+    {
+        <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            <MudText Typo="Typo.body1">読み込み中...</MudText>
+        </MudStack>
+    }
+    else if (exchangeRequests.Count == 0)
+    {
+        <MudPaper Class="pa-8 text-center" Elevation="3">
+            <MudIcon Icon="@Icons.Material.Filled.Inbox" Size="Size.Large" Color="Color.Default" Style="font-size: 5rem;" Class="mb-4" />
+            <MudText Typo="Typo.h5" Class="mb-4">交換申請がありません</MudText>
+            <MudText Typo="Typo.body1" Class="mb-6">
+                景品一覧から交換したい景品を選んでね！
+            </MudText>
+            <MudButton Variant="Variant.Filled"
+                      Color="Color.Primary"
+                      Size="Size.Large"
+                      Href="/rewards"
+                      StartIcon="@Icons.Material.Filled.CardGiftcard">
+                景品一覧を見る
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudTable Items="@exchangeRequests" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
+            <HeaderContent>
+                <MudTh>景品</MudTh>
+                <MudTh>ポイント</MudTh>
+                <MudTh>ステータス</MudTh>
+                <MudTh>申請日時</MudTh>
+                <MudTh>アクション</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="景品">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        @if (!string.IsNullOrEmpty(context.RewardImageUrl))
+                        {
+                            <MudImage Src="@context.RewardImageUrl" Width="50" Height="50" ObjectFit="ObjectFit.Cover" Class="rounded" />
+                        }
+                        <MudText Typo="Typo.body2">@context.RewardName</MudText>
+                    </MudStack>
+                </MudTd>
+                <MudTd DataLabel="ポイント">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning">
+                        <MudIcon Icon="@Icons.Material.Filled.Stars" Size="Size.Small" />
+                        @context.RequiredPoints
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="ステータス">
+                    <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                        @GetStatusText(context.Status)
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="申請日時">
+                    <MudText Typo="Typo.body2">@context.RequestedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</MudText>
+                </MudTd>
+                <MudTd DataLabel="アクション">
+                    @if (context.Status == ExchangeStatus.Pending)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                  Color="Color.Error"
+                                  Size="Size.Small"
+                                  OnClick="@(() => CancelRequest(context.Id))">
+                            キャンセル
+                        </MudButton>
+                    }
+                    else if (context.Status == ExchangeStatus.Approved)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Success">
+                            承認済み
+                            @if (context.ApprovedAt.HasValue)
+                            {
+                                <text>(@context.ApprovedAt.Value.ToLocalTime().ToString("MM/dd HH:mm"))</text>
+                            }
+                        </MudText>
+                    }
+                    else if (context.Status == ExchangeStatus.Rejected)
+                    {
+                        <MudTooltip Text="@context.RejectionReason">
+                            <MudText Typo="Typo.caption" Color="Color.Error">
+                                却下
+                            </MudText>
+                        </MudTooltip>
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    private List<ExchangeRequestDto> exchangeRequests = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadExchangeRequests();
+    }
+
+    private async Task LoadExchangeRequests()
+    {
+        isLoading = true;
+        try
+        {
+            var response = await ExchangeRequestApi.GetMyRequestsAsync();
+            if (response.Success && response.Data != null)
+            {
+                exchangeRequests = response.Data.OrderByDescending(r => r.RequestedAt).ToList();
+            }
+            else
+            {
+                exchangeRequests = new();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading exchange requests: {ex.Message}");
+            Snackbar.Add("交換申請の読み込みに失敗しました。", Severity.Error);
+            exchangeRequests = new();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CancelRequest(int requestId)
+    {
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = "この交換申請をキャンセルしますか？在庫が戻ります。",
+            ["ButtonText"] = "キャンセルする",
+            ["Color"] = Color.Error
+        };
+
+        var dialog = await DialogService.ShowAsync<MudDialog>("キャンセルの確認", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var response = await ExchangeRequestApi.CancelRequestAsync(requestId);
+            if (response.Success)
+            {
+                Snackbar.Add("交換申請をキャンセルしました。", Severity.Success);
+                await LoadExchangeRequests();
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "キャンセルに失敗しました。", Severity.Error);
+            }
+        }
+    }
+
+    private Color GetStatusColor(ExchangeStatus status)
+    {
+        return status switch
+        {
+            ExchangeStatus.Pending => Color.Warning,
+            ExchangeStatus.Approved => Color.Success,
+            ExchangeStatus.Rejected => Color.Error,
+            ExchangeStatus.Cancelled => Color.Default,
+            _ => Color.Default
+        };
+    }
+
+    private string GetStatusText(ExchangeStatus status)
+    {
+        return status switch
+        {
+            ExchangeStatus.Pending => "申請中",
+            ExchangeStatus.Approved => "承認済み",
+            ExchangeStatus.Rejected => "却下",
+            ExchangeStatus.Cancelled => "キャンセル",
+            _ => "不明"
+        };
+    }
+}

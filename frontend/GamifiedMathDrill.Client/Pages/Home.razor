@@ -6,9 +6,11 @@
 @inject StudentApiClient StudentApi
 @inject DailyChallengeApiClient DailyChallengeApi
 @inject RewardApiClient RewardApi
+@inject ExchangeRequestApiClient ExchangeRequestApi
 @inject CategoryStateService CategoryState
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>ホーム - 計算ドリル</PageTitle>
 
@@ -161,7 +163,7 @@
                             @foreach (var reward in availableRewards.Take(4))
                             {
                                 <MudItem xs="6" sm="3">
-                                    <MudCard Elevation="2" Class="cursor-pointer" Style="height: 100%;" @onclick="@(() => NavigateToRewards())">
+                                    <MudCard Elevation="2" Style="height: 100%;">
                                         @if (!string.IsNullOrEmpty(reward.ImageUrl))
                                         {
                                             <MudCardMedia Image="@reward.ImageUrl" Height="120" />
@@ -187,6 +189,27 @@
                                                 }
                                             </MudStack>
                                         </MudCardContent>
+                                        <MudCardActions Class="pa-2">
+                                            <MudButton Variant="Variant.Filled"
+                                                      Color="Color.Primary"
+                                                      Size="Size.Small"
+                                                      FullWidth="true"
+                                                      OnClick="@(() => RequestExchange(reward))"
+                                                      Disabled="@(student == null || student.TotalPoints < reward.RequiredPoints || (reward.Stock.HasValue && reward.Stock.Value <= 0))">
+                                                @if (student != null && student.TotalPoints < reward.RequiredPoints)
+                                                {
+                                                    <text>ポイント不足</text>
+                                                }
+                                                else if (reward.Stock.HasValue && reward.Stock.Value <= 0)
+                                                {
+                                                    <text>在庫なし</text>
+                                                }
+                                                else
+                                                {
+                                                    <text>申請する</text>
+                                                }
+                                            </MudButton>
+                                        </MudCardActions>
                                     </MudCard>
                                 </MudItem>
                             }
@@ -253,6 +276,47 @@
     private void NavigateToRewards()
     {
         Navigation.NavigateTo("/rewards");
+    }
+
+    private async Task RequestExchange(RewardDto reward)
+    {
+        if (student == null || student.TotalPoints < reward.RequiredPoints)
+        {
+            Snackbar.Add("ポイントが不足しています。", Severity.Warning);
+            return;
+        }
+
+        if (reward.Stock.HasValue && reward.Stock.Value <= 0)
+        {
+            Snackbar.Add("在庫がありません。", Severity.Warning);
+            return;
+        }
+
+        // 確認ダイアログを表示
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = $"「{reward.Name}」を交換申請しますか？\n必要ポイント: {reward.RequiredPoints}\n所持ポイント: {student.TotalPoints}",
+            ["ButtonText"] = "申請する",
+            ["Color"] = Color.Primary
+        };
+
+        var dialog = await DialogService.ShowAsync<MudDialog>("交換申請の確認", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            // 交換申請を送信
+            var response = await ExchangeRequestApi.CreateRequestAsync(reward.Id);
+            if (response.Success)
+            {
+                Snackbar.Add("交換申請を送信しました。保護者の承認をお待ちください。", Severity.Success);
+                await LoadAvailableRewards(); // 在庫を更新
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "交換申請に失敗しました。", Severity.Error);
+            }
+        }
     }
 
     private Color GetStockColor(int stock)
