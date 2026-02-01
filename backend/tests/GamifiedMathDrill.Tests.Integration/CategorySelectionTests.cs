@@ -69,7 +69,8 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
     public async Task GetNextProblem_WithoutCategory_ShouldReturnRandomProblem()
     {
         // Arrange - Authenticate as parent
-        var token = await AuthenticationHelper.LoginAsParentAsync(_client);
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
         
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
@@ -113,7 +114,11 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
     [InlineData("Division")]
     public async Task GetNextProblem_WithSpecificCategory_ShouldReturnOnlyThatCategory(string category)
     {
-        // Arrange
+        // Arrange - Authenticate as parent
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_{category[..3]}_{Guid.NewGuid().ToString()[..8]}",
@@ -141,7 +146,11 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task GetStatistics_WithCategoryFilter_ShouldOnlyCountThatCategory()
     {
-        // Arrange
+        // Arrange - Authenticate as parent
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_Stats_{Guid.NewGuid().ToString()[..8]}",
@@ -171,7 +180,11 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task GetStatistics_WithoutCategoryFilter_ShouldCountAllCategories()
     {
-        // Arrange
+        // Arrange - Authenticate as parent
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_All_{Guid.NewGuid().ToString()[..8]}",
@@ -204,7 +217,11 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task GetRecords_WithCategoryFilter_ShouldOnlyReturnThatCategory()
     {
-        // Arrange
+        // Arrange - Authenticate as parent
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_Rec_{Guid.NewGuid().ToString()[..8]}",
@@ -234,7 +251,11 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task CategoryStatistics_ShouldShowAccuracyByCategory()
     {
-        // Arrange
+        // Arrange - Authenticate as parent
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_Acc_{Guid.NewGuid().ToString()[..8]}",
@@ -268,7 +289,11 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task GetNextProblem_WithInvalidCategory_ShouldReturnBadRequest()
     {
-        // Arrange
+        // Arrange - Authenticate as parent
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_Inv_{Guid.NewGuid().ToString()[..8]}",
@@ -288,7 +313,11 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task CategoryFlow_SelectToSolveMultipleProblems_ShouldMaintainCategory()
     {
-        // Arrange
+        // Arrange - Authenticate as parent
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_Flow_{Guid.NewGuid().ToString()[..8]}",

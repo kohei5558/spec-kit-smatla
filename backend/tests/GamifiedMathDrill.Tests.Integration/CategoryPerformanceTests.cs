@@ -36,7 +36,8 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
     public async Task GetNextProblem_WithCategory_ShouldReturnInLessThan100Ms(string category)
     {
         // Arrange - Authenticate as parent
-        var token = await AuthenticationHelper.LoginAsParentAsync(_client);
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
         
         // Create student first
@@ -70,7 +71,12 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task GetStatistics_WithCategoryFilter_ShouldReturnInLessThan200Ms()
     {
-        // Arrange - Create student and learning records
+        // Arrange - Authenticate as parent
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
+        // Create student and learning records
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Perf_Stats_{Guid.NewGuid().ToString()[..8]}",
@@ -119,7 +125,12 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task CategorySelectionToDisplayFlow_ShouldCompleteInLessThan2Seconds()
     {
-        // Arrange - Create student
+        // Arrange - Authenticate as parent
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
+        // Create student
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Perf_Flow_{Guid.NewGuid().ToString()[..8]}",
@@ -154,7 +165,12 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task ConcurrentCategoryRequests_ShouldHandleLoadEfficiently()
     {
-        // Arrange - Create student
+        // Arrange - Authenticate as parent
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
+        // Create student
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Perf_Conc_{Guid.NewGuid().ToString()[..8]}",

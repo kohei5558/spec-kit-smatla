@@ -171,8 +171,11 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// レート制限ミドルウェア
-app.UseRateLimiting();
+// レート制限ミドルウェア（テスト環境では無効化）
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.UseRateLimiting();
+}
 
 if (app.Environment.IsDevelopment())
 {
