@@ -156,7 +156,7 @@ public class LearningRecordsController : ControllerBase
             }
 
             var statistics = await _learningRecordService.GetStatisticsAsync(
-                studentId, startDate, endDate);
+                studentId, startDate, endDate, calculationType);
 
             var dto = new StatisticsDto
             {

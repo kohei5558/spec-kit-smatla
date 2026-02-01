@@ -15,7 +15,8 @@ public interface ILearningRecordService
     Task<LearningStatistics> GetStatisticsAsync(
         int studentId, 
         DateTime? startDate = null, 
-        DateTime? endDate = null);
+        DateTime? endDate = null,
+        CalculationType? calculationType = null);
 }
 
 public class LearningStatistics

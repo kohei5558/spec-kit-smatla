@@ -75,7 +75,8 @@ public class LearningRecordService : ILearningRecordService
     public async Task<LearningStatistics> GetStatisticsAsync(
         int studentId,
         DateTime? startDate = null,
-        DateTime? endDate = null)
+        DateTime? endDate = null,
+        CalculationType? calculationType = null)
     {
         // Verify student exists
         var student = await _studentRepository.GetByIdAsync(studentId);
@@ -107,6 +108,12 @@ public class LearningRecordService : ILearningRecordService
         }
 
         var recordsList = records.ToList();
+        
+        // Apply calculation type filter if specified
+        if (calculationType.HasValue)
+        {
+            recordsList = recordsList.Where(r => r.Problem.CalculationType == calculationType.Value).ToList();
+        }
 
         if (!recordsList.Any())
         {

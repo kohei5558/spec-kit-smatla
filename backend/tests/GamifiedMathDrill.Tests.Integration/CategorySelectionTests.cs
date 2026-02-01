@@ -54,6 +54,14 @@ public class TestLearningRecordDto
     public DateTime SolvedAt { get; set; }
 }
 
+public class TestAnswerResultDto
+{
+    public bool IsCorrect { get; set; }
+    public int CorrectAnswer { get; set; }
+    public int PointsEarned { get; set; }
+    public bool LeveledUp { get; set; }
+}
+
 public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
 {
     private readonly HttpClient _client;
@@ -131,7 +139,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         for (int i = 0; i < 5; i++)
         {
             var response = await _client.GetAsync(
-                $"/api/problems/next?studentId={student.Id}&calculationType={category}");
+                $"/api/problems/next?studentId={student.Id}&category={category}");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -304,7 +312,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
 
         // Act
         var response = await _client.GetAsync(
-            $"/api/problems/next?studentId={student.Id}&calculationType=InvalidCategory");
+            $"/api/problems/next?studentId={student.Id}&category=InvalidCategory");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -333,7 +341,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         {
             // Get problem
             var problemApiResponse = await _client.GetAsync(
-                $"/api/problems/next?studentId={student.Id}&calculationType={selectedCategory}");
+                $"/api/problems/next?studentId={student.Id}&category={selectedCategory}");
             problemApiResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var problemResponse = await problemApiResponse.Content.ReadFromJsonAsync<ApiResponse<TestProblemDto>>();
@@ -343,13 +351,8 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
 
             // Submit answer (固定値を使用)
             var answerResponse = await _client.PostAsJsonAsync(
-                "/api/problems/answer",
-                new
-                {
-                    StudentId = student.Id,
-                    ProblemId = problem.Id,
-                    Answer = 1
-                });
+                $"/api/problems/{problem.Id}/answer?studentId={student.Id}",
+                new { Answer = 1 });
             answerResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
@@ -368,23 +371,42 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         for (int i = 0; i < count; i++)
         {
             var problemApiResponse = await _client.GetAsync(
-                $"/api/problems/next?studentId={studentId}&calculationType={category}");
+                $"/api/problems/next?studentId={studentId}&category={category}");
             var problemResponse = await problemApiResponse.Content.ReadFromJsonAsync<ApiResponse<TestProblemDto>>();
             var problem = problemResponse?.Data;
 
             if (problem == null) continue;
 
-            // ProblemDtoには問題文のみが含まれているため、正答を計算できない
-            // テストのため、正解時は1、不正解時は999を送信
-            var answer = correct ? 1 : 999;
+            // Parse the question to calculate the correct answer
+            // Question format: "5 + 3 = ?" or "10 - 2 = ?" or "4 × 3 = ?" or "12 ÷ 3 = ?"
+            var correctAnswer = ParseQuestionForAnswer(problem.Question);
 
-            await _client.PostAsJsonAsync("/api/problems/answer", new
-            {
-                StudentId = studentId,
-                ProblemId = problem.Id,
-                Answer = answer
-            });
+            // Submit correct or incorrect answer based on test requirement
+            var answer = correct ? correctAnswer : (correctAnswer + 999);
+            await _client.PostAsJsonAsync(
+                $"/api/problems/{problem.Id}/answer?studentId={studentId}",
+                new { Answer = answer });
         }
+    }
+    
+    private int ParseQuestionForAnswer(string question)
+    {
+        // Remove "= ?" from the end
+        var parts = question.Replace(" = ?", "").Trim().Split(' ');
+        if (parts.Length != 3) return 0;
+
+        if (!int.TryParse(parts[0], out var num1)) return 0;
+        if (!int.TryParse(parts[2], out var num2)) return 0;
+        
+        var op = parts[1];
+        return op switch
+        {
+            "+" => num1 + num2,
+            "-" => num1 - num2,
+            "×" or "*" => num1 * num2,
+            "÷" or "/" => num2 != 0 ? num1 / num2 : 0,
+            _ => 0
+        };
     }
 }
 

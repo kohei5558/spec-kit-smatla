@@ -50,11 +50,11 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         var student = studentResponse!.Data!;
 
         // Warm-up call to exclude cold start time
-        await _client.GetAsync($"/api/problems/next?studentId={student.Id}&calculationType={category}");
+        await _client.GetAsync($"/api/problems/next?studentId={student.Id}&category={category}");
 
         // Act - Measure performance
         var stopwatch = Stopwatch.StartNew();
-        var response = await _client.GetAsync($"/api/problems/next?studentId={student.Id}&calculationType={category}");
+        var response = await _client.GetAsync($"/api/problems/next?studentId={student.Id}&category={category}");
         stopwatch.Stop();
 
         // Assert
@@ -89,26 +89,26 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         for (int i = 0; i < 10; i++)
         {
             var problemApiResponse = await _client.GetAsync(
-                $"/api/problems/next?studentId={student.Id}&calculationType=Addition");
+                $"/api/problems/next?studentId={student.Id}&category=Addition");
             var problemResponse = await problemApiResponse.Content.ReadFromJsonAsync<ApiResponse<TestProblemDto>>();
             var problem = problemResponse!.Data;
 
-            await _client.PostAsJsonAsync("/api/problems/answer", new
-            {
-                StudentId = student.Id,
-                ProblemId = problem!.Id,
-                Answer = 1  // ProblemDtoに計算値がないため固定値を使用
-            });
+            // Parse the question to calculate the correct answer
+            var correctAnswer = ParseQuestionForAnswer(problem!.Question);
+
+            await _client.PostAsJsonAsync(
+                $"/api/problems/{problem.Id}/answer?studentId={student.Id}",
+                new { Answer = correctAnswer });
         }
 
         // Warm-up call
         await _client.GetAsync(
-            $"/api/learning-records/statistics?studentId={student.Id}&calculationType=Addition");
+            $"/api/learning-records/statistics?studentId={student.Id}&category=Addition");
 
         // Act - Measure performance
         var stopwatch = Stopwatch.StartNew();
         var response = await _client.GetAsync(
-            $"/api/learning-records/statistics?studentId={student.Id}&calculationType=Addition");
+            $"/api/learning-records/statistics?studentId={student.Id}&category=Addition");
         stopwatch.Stop();
 
         // Assert
@@ -140,14 +140,14 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         var student = studentResponse!.Data!;
 
         // Warm-up
-        await _client.GetAsync($"/api/problems/next?studentId={student.Id}&calculationType=Addition");
+        await _client.GetAsync($"/api/problems/next?studentId={student.Id}&category=Addition");
 
         // Act - Measure end-to-end flow
         var stopwatch = Stopwatch.StartNew();
         
         // 1. Get problem with category
         var problemApiResponse = await _client.GetAsync(
-            $"/api/problems/next?studentId={student.Id}&calculationType=Multiplication");
+            $"/api/problems/next?studentId={student.Id}&category=Multiplication");
         var problemResponse = await problemApiResponse.Content.ReadFromJsonAsync<ApiResponse<TestProblemDto>>();
         var problem = problemResponse!.Data;
 
@@ -185,7 +185,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         var stopwatch = Stopwatch.StartNew();
         
         var tasks = categories.Select(category => 
-            _client.GetAsync($"/api/problems/next?studentId={student.Id}&calculationType={category}")
+            _client.GetAsync($"/api/problems/next?studentId={student.Id}&category={category}")
         ).ToArray();
 
         var responses = await Task.WhenAll(tasks);
@@ -199,4 +199,23 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         avgTimePerRequest.Should().BeLessThan(150,
             $"並行リクエストの平均応答時間は150ms以内であるべき (実測: {avgTimePerRequest:F1}ms)");
     }
-}
+    
+    private int ParseQuestionForAnswer(string question)
+    {
+        // Remove "= ?" from the end
+        var parts = question.Replace(" = ?", "").Trim().Split(' ');
+        if (parts.Length != 3) return 0;
+
+        if (!int.TryParse(parts[0], out var num1)) return 0;
+        if (!int.TryParse(parts[2], out var num2)) return 0;
+        
+        var op = parts[1];
+        return op switch
+        {
+            "+" => num1 + num2,
+            "-" => num1 - num2,
+            "×" or "*" => num1 * num2,
+            "÷" or "/" => num2 != 0 ? num1 / num2 : 0,
+            _ => 0
+        };
+    }}
