@@ -250,12 +250,12 @@
 
 ### Frontend Services (US3)
 
-- [ ] T085 [US3] Update ExchangeRequestApiClient in frontend/GamifiedMathDrill.Client/Services/ExchangeRequestApiClient.cs (add ApproveRequestAsync, RejectRequestAsync methods)
+- [x] T085 [US3] Update ExchangeRequestApiClient in frontend/GamifiedMathDrill.Client/Services/ExchangeRequestApiClient.cs (add ApproveRequestAsync, RejectRequestAsync methods)
 
 ### Frontend Pages (US3)
 
-- [ ] T086 [P] [US3] Create ExchangeRequestList.razor page in frontend/GamifiedMathDrill.Client/Pages/ExchangeRequestList.razor (list all requests with MudTable, filter by Status, show child name/reward/status/date, [Authorize(Roles="Parent")])
-- [ ] T087 [US3] Create ExchangeRequestDetail.razor page in frontend/GamifiedMathDrill.Client/Pages/ExchangeRequestDetail.razor (display full request details, approve button with confirmation, reject button with reason input dialog, [Authorize(Roles="Parent")])
+- [x] T086 [P] [US3] Create ExchangeRequestList.razor page in frontend/GamifiedMathDrill.Client/Pages/ExchangeRequestList.razor (list all requests with MudTable, filter by Status, show child name/reward/status/date, [Authorize(Roles="Parent")])
+- [x] T087 [US3] Create ExchangeRequestDetail.razor page in frontend/GamifiedMathDrill.Client/Pages/ExchangeRequestDetail.razor (display full request details, approve button with confirmation, reject button with reason input dialog, [Authorize(Roles="Parent")])
 
 **Checkpoint**: User Story 3 complete - Parents can approve/reject exchange requests, points and stock are correctly managed
 
@@ -271,32 +271,32 @@
 
 ### Backend DTOs (US5)
 
-- [ ] T088 [P] [US5] Create DashboardSummaryDto in backend/src/GamifiedMathDrill.Api/DTOs/DashboardSummaryDto.cs (PendingRequestsCount, Children list, RecentRequests, TotalRewardsCreated, ActiveRewardsCount)
-- [ ] T089 [P] [US5] Create ChildDto in backend/src/GamifiedMathDrill.Api/DTOs/ChildDto.cs (Id, DisplayName, AvatarUrl, TotalPoints, PendingRequestsCount, TotalProblemsCompleted, AccuracyRate, CreatedAt, IsActive)
-- [ ] T090 [P] [US5] Create ParentStatisticsDto in backend/src/GamifiedMathDrill.Api/DTOs/ParentStatisticsDto.cs (TotalChildren, TotalProblemsCompleted, TotalPointsEarned, TotalExchangesApproved, MonthlyStats, CategoryBreakdown, RewardCategoryBreakdown)
+- [x] T088 [P] [US5] Create DashboardSummaryDto in backend/src/GamifiedMathDrill.Api/DTOs/DashboardSummaryDto.cs (PendingRequestsCount, Children list, RecentRequests, TotalRewardsCreated, ActiveRewardsCount)
+- [x] T089 [P] [US5] Create ChildDto in backend/src/GamifiedMathDrill.Api/DTOs/ChildDto.cs (Id, DisplayName, AvatarUrl, TotalPoints, PendingRequestsCount, TotalProblemsCompleted, AccuracyRate, CreatedAt, IsActive)
+- [x] T090 [P] [US5] Create ParentStatisticsDto in backend/src/GamifiedMathDrill.Api/DTOs/ParentStatisticsDto.cs (TotalChildren, TotalProblemsCompleted, TotalPointsEarned, TotalExchangesApproved, MonthlyStats, CategoryBreakdown, RewardCategoryBreakdown)
 
 ### Backend Services (US5)
 
-- [ ] T091 [P] [US5] Create IParentDashboardService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IParentDashboardService.cs (GetDashboardSummaryAsync, GetPendingRequestsAsync, GetChildrenAsync, GetStatisticsAsync)
-- [ ] T092 [US5] Create ParentDashboardService in backend/src/GamifiedMathDrill.Core/Services/ParentDashboardService.cs (query pending requests count, children with their points/stats, recent requests with Include navigation)
+- [x] T091 [P] [US5] Create IParentDashboardService interface in backend/src/GamifiedMathDrill.Core/Interfaces/IParentDashboardService.cs (GetDashboardSummaryAsync, GetPendingRequestsAsync, GetChildrenAsync, GetStatisticsAsync)
+- [x] T092 [US5] Create ParentDashboardService in backend/src/GamifiedMathDrill.Core/Services/ParentDashboardService.cs (query pending requests count, children with their points/stats, recent requests with Include navigation)
 
 ### Backend Controllers (US5)
 
-- [ ] T093 [US5] Create ParentDashboardController in backend/src/GamifiedMathDrill.Api/Controllers/ParentDashboardController.cs (GET /api/parent/dashboard [Authorize(Roles="Parent")], GET /api/parent/pending-requests [Authorize(Roles="Parent")], GET /api/parent/children [Authorize(Roles="Parent")], GET /api/parent/statistics [Authorize(Roles="Parent")])
+- [x] T093 [US5] Create ParentDashboardController in backend/src/GamifiedMathDrill.Api/Controllers/ParentDashboardController.cs (GET /api/parent/dashboard [Authorize(Roles="Parent")], GET /api/parent/pending-requests [Authorize(Roles="Parent")], GET /api/parent/children [Authorize(Roles="Parent")], GET /api/parent/statistics [Authorize(Roles="Parent")])
 
 ### Frontend Services (US5)
 
-- [ ] T094 [P] [US5] Create PollingService in frontend/GamifiedMathDrill.Client/Services/PollingService.cs (30-second interval polling for pending requests count, IDisposable for cleanup)
-- [ ] T095 [US5] Create ParentDashboardApiClient in frontend/GamifiedMathDrill.Client/Services/ParentDashboardApiClient.cs (GetDashboardSummaryAsync, GetPendingRequestsAsync, GetChildrenAsync, GetStatisticsAsync)
+- [x] T094 [P] [US5] Create PollingService in frontend/GamifiedMathDrill.Client/Services/PollingService.cs (30-second interval polling for pending requests count, IDisposable for cleanup)
+- [x] T095 [US5] Create ParentDashboardApiClient in frontend/GamifiedMathDrill.Client/Services/ParentDashboardApiClient.cs (GetDashboardSummaryAsync, GetPendingRequestsAsync, GetChildrenAsync, GetStatisticsAsync)
 
 ### Frontend Components (US5)
 
-- [ ] T096 [US5] Create PendingRequestsBadge component in frontend/GamifiedMathDrill.Client/Components/PendingRequestsBadge.razor (display pending count with MudBadge, integrate PollingService for auto-refresh every 30 seconds)
+- [x] T096 [US5] Create PendingRequestsBadge component in frontend/GamifiedMathDrill.Client/Components/PendingRequestsBadge.razor (display pending count with MudBadge, integrate PollingService for auto-refresh every 30 seconds)
 
 ### Frontend Pages (US5)
 
-- [ ] T097 [US5] Create ParentDashboard.razor page in frontend/GamifiedMathDrill.Client/Pages/ParentDashboard.razor (display summary cards: pending requests with PendingRequestsBadge, children list with stats, recent requests, link to full lists, [Authorize(Roles="Parent")])
-- [ ] T098 [US5] Update MainLayout.razor in frontend/GamifiedMathDrill.Client/Layout/MainLayout.razor (add PendingRequestsBadge to parent navigation menu)
+- [x] T097 [US5] Create ParentDashboard.razor page in frontend/GamifiedMathDrill.Client/Pages/ParentDashboard.razor (display summary cards: pending requests with PendingRequestsBadge, children list with stats, recent requests, link to full lists, [Authorize(Roles="Parent")])
+- [x] T098 [US5] Update MainLayout.razor in frontend/GamifiedMathDrill.Client/Layout/MainLayout.razor (add PendingRequestsBadge to parent navigation menu)
 
 **Checkpoint**: User Story 5 complete - Parents can see dashboard with real-time pending request updates, child learning statistics
 
