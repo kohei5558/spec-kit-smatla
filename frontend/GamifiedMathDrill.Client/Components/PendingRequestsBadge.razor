@@ -1,0 +1,46 @@
+@using GamifiedMathDrill.Client.Services
+@implements IDisposable
+@inject ParentDashboardApiClient DashboardApi
+
+<MudBadge Content="@pendingCount" 
+          Color="@(pendingCount > 0 ? Color.Error : Color.Default)" 
+          Overlap="true" 
+          Visible="@(pendingCount > 0)">
+    @ChildContent
+</MudBadge>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private int pendingCount = 0;
+    private PollingService? pollingService;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 初回ロード
+        await LoadPendingCount();
+
+        // ポーリングサービスを開始
+        pollingService = new PollingService(LoadPendingCount);
+        pollingService.OnTick += (sender, args) => InvokeAsync(StateHasChanged);
+        pollingService.Start();
+    }
+
+    private async Task LoadPendingCount()
+    {
+        try
+        {
+            pendingCount = await DashboardApi.GetPendingRequestsCountAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading pending count: {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        pollingService?.Dispose();
+    }
+}

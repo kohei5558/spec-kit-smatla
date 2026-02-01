@@ -1,14 +1,51 @@
-﻿<MudNavMenu>
-    <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">
-        ホーム
-    </MudNavLink>
-    <MudNavLink Href="/problem" Icon="@Icons.Material.Filled.Calculate">
-        問題を解く
-    </MudNavLink>
-    <MudNavLink Href="/results/1" Icon="@Icons.Material.Filled.Assessment">
-        学習結果
-    </MudNavLink>
-    <MudNavLink Href="/rewards" Icon="@Icons.Material.Filled.EmojiEvents">
-        景品交換
-    </MudNavLink>
-</MudNavMenu>
+﻿@using GamifiedMathDrill.Client.Services
+@using GamifiedMathDrill.Client.Models
+@inject TokenService TokenService
+
+@if (_isParent)
+{
+    <MudNavMenu>
+        <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">
+            ホーム
+        </MudNavLink>
+        <MudNavLink Href="/reward-management" Icon="@Icons.Material.Filled.CardGiftcard">
+            景品管理
+        </MudNavLink>
+        <MudNavLink Href="/exchange-requests" Icon="@Icons.Material.Filled.RequestPage">
+            交換申請一覧
+        </MudNavLink>
+        <MudNavLink Href="/parent-dashboard" Icon="@Icons.Material.Filled.Dashboard">
+            ダッシュボード
+        </MudNavLink>
+    </MudNavMenu>
+}
+else
+{
+    <MudNavMenu>
+        <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">
+            ホーム
+        </MudNavLink>
+        <MudNavLink Href="/problem" Icon="@Icons.Material.Filled.Calculate">
+            問題を解く
+        </MudNavLink>
+        <MudNavLink Href="/results/1" Icon="@Icons.Material.Filled.Assessment">
+            学習結果
+        </MudNavLink>
+        <MudNavLink Href="/rewards" Icon="@Icons.Material.Filled.EmojiEvents">
+            景品一覧
+        </MudNavLink>
+        <MudNavLink Href="/my-exchange-requests" Icon="@Icons.Material.Filled.Redeem">
+            交換申請
+        </MudNavLink>
+    </MudNavMenu>
+}
+
+@code {
+    private bool _isParent = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var roleStr = await TokenService.GetUserRoleAsync();
+        _isParent = roleStr == "Parent";
+    }
+}

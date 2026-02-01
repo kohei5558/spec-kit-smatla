@@ -1,53 +1,99 @@
 ﻿@inherits LayoutComponentBase
+@using GamifiedMathDrill.Client.Services
+@using GamifiedMathDrill.Client.Models
+@inject TokenService TokenService
+@inject NavigationManager Navigation
 
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudLayout>
-    <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
-        <MudText Typo="Typo.h5" Class="ml-3">計算ドリル</MudText>
-        <MudSpacer />
-    </MudAppBar>
+@if (_isAuthenticated)
+{
+    <MudLayout>
+        <MudAppBar Elevation="1" Color="@(_userRole == UserRole.Parent ? Color.Success : Color.Primary)">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+            <MudText Typo="Typo.h5" Class="ml-3">計算ドリル</MudText>
+            <MudSpacer />
+            <MudText Typo="Typo.body1" Class="mr-4">@_userName さん</MudText>
+            <MudButton OnClick="HandleLogout" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.Logout">
+                ログアウト
+            </MudButton>
+        </MudAppBar>
 
-    <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
-        <NavMenu />
-    </MudDrawer>
+        <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+            <NavMenu />
+        </MudDrawer>
 
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
-            <ErrorBoundary>
-                <ChildContent>
-                    @Body
-                </ChildContent>
-                <ErrorContent>
-                    <MudPaper Class="pa-8 text-center" Elevation="3">
-                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Style="font-size: 6rem;" Class="mb-4" />
-                        <MudText Typo="Typo.h3" Class="mb-4" Color="Color.Error">エラーが発生しました</MudText>
-                        <MudText Typo="Typo.body1" Class="mb-6">
-                            申し訳ございません。予期しないエラーが発生しました。
-                        </MudText>
-                        <MudButton Variant="Variant.Filled" 
-                                  Color="Color.Primary" 
-                                  Size="Size.Large"
-                                  Href="/"
-                                  StartIcon="@Icons.Material.Filled.Home">
-                            ホームに戻る
-                        </MudButton>
-                    </MudPaper>
-                </ErrorContent>
-            </ErrorBoundary>
-        </MudContainer>
-    </MudMainContent>
-</MudLayout>
+        <MudMainContent>
+            <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+                <ErrorBoundary>
+                    <ChildContent>
+                        @Body
+                    </ChildContent>
+                    <ErrorContent>
+                        <MudPaper Class="pa-8 text-center" Elevation="3">
+                            <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Style="font-size: 6rem;" Class="mb-4" />
+                            <MudText Typo="Typo.h3" Class="mb-4" Color="Color.Error">エラーが発生しました</MudText>
+                            <MudText Typo="Typo.body1" Class="mb-6">
+                                申し訳ございません。予期しないエラーが発生しました。
+                            </MudText>
+                            <MudButton Variant="Variant.Filled" 
+                                      Color="Color.Primary" 
+                                      Size="Size.Large"
+                                      Href="/"
+                                      StartIcon="@Icons.Material.Filled.Home">
+                                ホームに戻る
+                            </MudButton>
+                        </MudPaper>
+                    </ErrorContent>
+                </ErrorBoundary>
+            </MudContainer>
+        </MudMainContent>
+    </MudLayout>
+}
+else
+{
+    <MudLayout>
+        <MudMainContent>
+            @Body
+        </MudMainContent>
+    </MudLayout>
+}
 
 @code {
     private bool _drawerOpen = true;
+    private bool _isAuthenticated = false;
+    private string _userName = string.Empty;
+    private UserRole _userRole = UserRole.Child;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAuthenticationAsync();
+    }
+
+    private async Task CheckAuthenticationAsync()
+    {
+        var token = await TokenService.GetTokenAsync();
+        _isAuthenticated = !string.IsNullOrEmpty(token);
+        
+        if (_isAuthenticated)
+        {
+            _userName = await TokenService.GetUserNameAsync() ?? "ゲスト";
+            var roleStr = await TokenService.GetUserRoleAsync();
+            _userRole = Enum.TryParse<UserRole>(roleStr, out var role) ? role : UserRole.Child;
+        }
+    }
 
     private void ToggleDrawer()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    private async Task HandleLogout()
+    {
+        await TokenService.RemoveTokenAsync();
+        Navigation.NavigateTo("/login", forceLoad: true);
     }
 }

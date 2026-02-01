@@ -1,0 +1,273 @@
+@page "/parent-dashboard"
+@using GamifiedMathDrill.Client.Services
+@using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Components
+@attribute [Authorize(Roles = "Parent")]
+@inject ParentDashboardApiClient DashboardApi
+@inject NavigationManager Navigation
+
+<PageTitle>保護者ダッシュボード</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8">
+    <MudText Typo="Typo.h3" Class="mb-6">
+        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" />
+        保護者ダッシュボード
+    </MudText>
+
+    @if (isLoading)
+    {
+        <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            <MudText Typo="Typo.body1">読み込み中...</MudText>
+        </MudStack>
+    }
+    else if (summary == null)
+    {
+        <MudAlert Severity="Severity.Error">ダッシュボード情報の取得に失敗しました。</MudAlert>
+    }
+    else
+    {
+        <!-- サマリーカード -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="2">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.PendingActions" Color="Color.Warning" Size="Size.Large" />
+                                <PendingRequestsBadge>
+                                    <MudText Typo="Typo.h4">@summary.PendingRequestsCount</MudText>
+                                </PendingRequestsBadge>
+                            </MudStack>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">未承認申請</MudText>
+                            <MudButton Variant="Variant.Text" 
+                                      Color="Color.Primary" 
+                                      Size="Size.Small"
+                                      Href="/exchange-requests"
+                                      EndIcon="@Icons.Material.Filled.ArrowForward">
+                                確認する
+                            </MudButton>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="2">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.ChildCare" Color="Color.Info" Size="Size.Large" />
+                                <MudText Typo="Typo.h4">@summary.Children.Count</MudText>
+                            </MudStack>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">登録中の子供</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="2">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.CardGiftcard" Color="Color.Success" Size="Size.Large" />
+                                <MudText Typo="Typo.h4">@summary.ActiveRewardsCount</MudText>
+                            </MudStack>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">有効な景品</MudText>
+                            <MudButton Variant="Variant.Text" 
+                                      Color="Color.Primary" 
+                                      Size="Size.Small"
+                                      Href="/reward-management"
+                                      EndIcon="@Icons.Material.Filled.ArrowForward">
+                                管理する
+                            </MudButton>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="2">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.Inventory" Color="Color.Default" Size="Size.Large" />
+                                <MudText Typo="Typo.h4">@summary.TotalRewardsCreated</MudText>
+                            </MudStack>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">総景品数</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- 子供一覧 -->
+        <MudPaper Class="pa-6 mb-6" Elevation="2">
+            <MudText Typo="Typo.h5" Class="mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.ChildCare" Class="mr-2" />
+                子供の学習状況
+            </MudText>
+            
+            @if (summary.Children.Count == 0)
+            {
+                <MudText Typo="Typo.body1" Color="Color.Secondary">登録されている子供はいません。</MudText>
+            }
+            else
+            {
+                <MudGrid>
+                    @foreach (var child in summary.Children)
+                    {
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudCard Outlined="true">
+                                <MudCardContent>
+                                    <MudStack Spacing="2">
+                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                            @if (!string.IsNullOrEmpty(child.AvatarUrl))
+                                            {
+                                                <MudAvatar Image="@child.AvatarUrl" Size="Size.Large" />
+                                            }
+                                            else
+                                            {
+                                                <MudAvatar Color="Color.Primary" Size="Size.Large">
+                                                    @child.DisplayName.Substring(0, 1)
+                                                </MudAvatar>
+                                            }
+                                            <MudText Typo="Typo.h6">@child.DisplayName</MudText>
+                                        </MudStack>
+
+                                        <MudDivider />
+
+                                        <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">所持ポイント:</MudText>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">
+                                                <MudIcon Icon="@Icons.Material.Filled.Stars" Size="Size.Small" />
+                                                @child.TotalPoints
+                                            </MudChip>
+                                        </MudStack>
+
+                                        <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">問題完了数:</MudText>
+                                            <MudText Typo="Typo.body2">@child.TotalProblemsCompleted</MudText>
+                                        </MudStack>
+
+                                        <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">正答率:</MudText>
+                                            <MudText Typo="Typo.body2">@child.AccuracyRate.ToString("F1")%</MudText>
+                                        </MudStack>
+                                    </MudStack>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+        </MudPaper>
+
+        <!-- 最近の交換申請 -->
+        <MudPaper Class="pa-6" Elevation="2">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                <MudText Typo="Typo.h5">
+                    <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
+                    最近の交換申請
+                </MudText>
+                <MudButton Variant="Variant.Text" 
+                          Color="Color.Primary"
+                          Href="/exchange-requests"
+                          EndIcon="@Icons.Material.Filled.ArrowForward">
+                    すべて表示
+                </MudButton>
+            </MudStack>
+
+            @if (summary.RecentRequests.Count == 0)
+            {
+                <MudText Typo="Typo.body1" Color="Color.Secondary">最近の交換申請はありません。</MudText>
+            }
+            else
+            {
+                <MudTable Items="@summary.RecentRequests" Hover="true" Dense="true" Elevation="0">
+                    <HeaderContent>
+                        <MudTh>子供</MudTh>
+                        <MudTh>景品</MudTh>
+                        <MudTh>ステータス</MudTh>
+                        <MudTh>申請日時</MudTh>
+                        <MudTh>アクション</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="子供">@context.StudentName</MudTd>
+                        <MudTd DataLabel="景品">@context.RewardName</MudTd>
+                        <MudTd DataLabel="ステータス">
+                            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                @GetStatusText(context.Status)
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="申請日時">@context.RequestedAt.ToLocalTime().ToString("MM/dd HH:mm")</MudTd>
+                        <MudTd DataLabel="アクション">
+                            <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                          Color="Color.Info"
+                                          Size="Size.Small"
+                                          OnClick="@(() => ViewDetails(context.Id))"
+                                          Title="詳細" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private DashboardSummaryDto? summary;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboard();
+    }
+
+    private async Task LoadDashboard()
+    {
+        isLoading = true;
+        try
+        {
+            summary = await DashboardApi.GetDashboardSummaryAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading dashboard: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ViewDetails(int requestId)
+    {
+        Navigation.NavigateTo($"/exchange-request/{requestId}");
+    }
+
+    private Color GetStatusColor(ExchangeStatus status)
+    {
+        return status switch
+        {
+            ExchangeStatus.Pending => Color.Warning,
+            ExchangeStatus.Approved => Color.Success,
+            ExchangeStatus.Rejected => Color.Error,
+            ExchangeStatus.Cancelled => Color.Default,
+            _ => Color.Default
+        };
+    }
+
+    private string GetStatusText(ExchangeStatus status)
+    {
+        return status switch
+        {
+            ExchangeStatus.Pending => "申請中",
+            ExchangeStatus.Approved => "承認済み",
+            ExchangeStatus.Rejected => "却下",
+            ExchangeStatus.Cancelled => "キャンセル",
+            _ => "不明"
+        };
+    }
+}
