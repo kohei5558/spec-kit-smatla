@@ -2,12 +2,14 @@ using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Core.Models.DTOs;
 using GamifiedMathDrill.Core.Models.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GamifiedMathDrill.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Parent,Child")]
 public class StudentsController : ControllerBase
 {
     private readonly IStudentService _studentService;

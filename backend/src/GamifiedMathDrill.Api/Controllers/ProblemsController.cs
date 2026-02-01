@@ -1,6 +1,7 @@
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models.DTOs;
 using GamifiedMathDrill.Core.Models.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -12,6 +13,7 @@ namespace GamifiedMathDrill.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[Authorize(Roles = "Parent,Child")]
 public class ProblemsController : ControllerBase
 {
     private readonly IProblemService _problemService;
