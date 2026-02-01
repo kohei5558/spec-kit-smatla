@@ -58,6 +58,26 @@ public class Student
     /// </summary>
     public DateTime? LastLoginAt { get; set; }
 
+    /// <summary>
+    /// 親アカウントのユーザーID (ASP.NET Core Identity)
+    /// </summary>
+    public string? ParentUserId { get; set; }
+
+    /// <summary>
+    /// アバターURL
+    /// </summary>
+    public string? AvatarUrl { get; set; }
+
+    /// <summary>
+    /// 完了した問題数（計算プロパティ代替）
+    /// </summary>
+    public int? TotalProblemsCompleted { get; set; }
+
+    /// <summary>
+    /// 正答率（計算プロパティ代替）
+    /// </summary>
+    public decimal? AccuracyRate { get; set; }
+
     // Navigation properties
     public Level CurrentLevel { get; set; } = null!;
     public ICollection<LearningRecord> LearningRecords { get; set; } = new List<LearningRecord>();
