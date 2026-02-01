@@ -308,14 +308,14 @@
 
 **Estimated Time**: 8 hours
 
-- [ ] T099 [P] Add authorization checks to all API endpoints (verify correct [Authorize] attributes with roles)
-- [ ] T100 [P] Add input validation to all DTOs using Data Annotations (Required, StringLength, Range attributes)
-- [ ] T101 [P] Add error handling middleware to backend/src/GamifiedMathDrill.Api/Middleware/ for consistent error responses
-- [ ] T102 [P] Add logging to all service methods using ILogger for troubleshooting
-- [ ] T103 Update README.md in repository root with setup instructions for authentication (JWT SecretKey configuration, default user credentials)
-- [ ] T104 Update quickstart.md in specs/003-parent-admin-rewards/ with validation checklist
-- [ ] T105 [P] Add CORS configuration to backend/src/GamifiedMathDrill.Api/Program.cs for production (restrict to specific frontend domain)
-- [ ] T106 [P] Add security headers to API responses (X-Content-Type-Options, X-Frame-Options, etc.)
+- [x] T099 [P] Add authorization checks to all API endpoints (verify correct [Authorize] attributes with roles)
+- [x] T100 [P] Add input validation to all DTOs using Data Annotations (Required, StringLength, Range attributes)
+- [x] T101 [P] Add error handling middleware to backend/src/GamifiedMathDrill.Api/Middleware/ for consistent error responses
+- [x] T102 [P] Add logging to all service methods using ILogger for troubleshooting
+- [x] T103 Update README.md in repository root with setup instructions for authentication (JWT SecretKey configuration, default user credentials)
+- [x] T104 Update quickstart.md in specs/003-parent-admin-rewards/ with validation checklist
+- [x] T105 [P] Add CORS configuration to backend/src/GamifiedMathDrill.Api/Program.cs for production (restrict to specific frontend domain)
+- [x] T106 [P] Add security headers to API responses (X-Content-Type-Options, X-Frame-Options, etc.)
 - [ ] T107 Verify all image uploads are validated for MIME type and size across all upload points
 - [ ] T108 Test optimistic locking behavior with concurrent reward updates (manual or automated concurrency test)
 - [ ] T109 Review and test all edge cases from spec.md (stock management, point insufficiency, image upload failures, multi-device login, child deletion, request cancellation)
