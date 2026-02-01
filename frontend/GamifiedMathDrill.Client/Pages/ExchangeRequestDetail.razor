@@ -2,6 +2,7 @@
 @using GamifiedMathDrill.Client.Services
 @using GamifiedMathDrill.Client.Models
 @using GamifiedMathDrill.Client.Components
+@using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Parent")]
 @inject ExchangeRequestApiClient ExchangeRequestApi
 @inject NavigationManager Navigation

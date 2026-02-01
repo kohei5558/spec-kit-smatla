@@ -1,8 +1,7 @@
 @page "/parent-dashboard"
 @using GamifiedMathDrill.Client.Services
 @using GamifiedMathDrill.Client.Models
-@using GamifiedMathDrill.Client.Components
-@attribute [Authorize(Roles = "Parent")]
+@using GamifiedMathDrill.Client.Components@using Microsoft.AspNetCore.Authorization@attribute [Authorize(Roles = "Parent")]
 @inject ParentDashboardApiClient DashboardApi
 @inject NavigationManager Navigation
 
