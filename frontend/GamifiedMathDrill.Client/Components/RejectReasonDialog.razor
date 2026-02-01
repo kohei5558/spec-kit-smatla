@@ -1,0 +1,37 @@
+@using GamifiedMathDrill.Client.Models
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="reason"
+                     Label="@Label"
+                     Required="@Required"
+                     Lines="@Lines"
+                     Variant="Variant.Outlined"
+                     HelperText="却下する理由を入力してください" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">キャンセル</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="Submit" Disabled="@(string.IsNullOrWhiteSpace(reason))">
+            却下する
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    MudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public string Label { get; set; } = "理由";
+
+    [Parameter]
+    public bool Required { get; set; } = false;
+
+    [Parameter]
+    public int Lines { get; set; } = 1;
+
+    private string reason = string.Empty;
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(reason));
+    void Cancel() => MudDialog.Cancel();
+}

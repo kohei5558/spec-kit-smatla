@@ -1,0 +1,277 @@
+@page "/exchange-request/{id:int}"
+@using GamifiedMathDrill.Client.Services
+@using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Components
+@attribute [Authorize(Roles = "Parent")]
+@inject ExchangeRequestApiClient ExchangeRequestApi
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>交換申請詳細 - 保護者管理画面</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+    <MudButton Variant="Variant.Text"
+              Color="Color.Default"
+              StartIcon="@Icons.Material.Filled.ArrowBack"
+              Href="/exchange-requests"
+              Class="mb-4">
+        一覧に戻る
+    </MudButton>
+
+    @if (isLoading)
+    {
+        <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            <MudText Typo="Typo.body1">読み込み中...</MudText>
+        </MudStack>
+    }
+    else if (request == null)
+    {
+        <MudPaper Class="pa-8 text-center" Elevation="3">
+            <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Style="font-size: 5rem;" Class="mb-4" />
+            <MudText Typo="Typo.h5" Class="mb-4">交換申請が見つかりません</MudText>
+            <MudButton Variant="Variant.Filled"
+                      Color="Color.Primary"
+                      Href="/exchange-requests"
+                      StartIcon="@Icons.Material.Filled.ArrowBack">
+                一覧に戻る
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Class="pa-6" Elevation="3">
+            <MudStack Spacing="4">
+                <!-- ステータスバッジ -->
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.h4">交換申請詳細</MudText>
+                    <MudChip T="string" Size="Size.Large" Color="@GetStatusColor(request.Status)">
+                        @GetStatusText(request.Status)
+                    </MudChip>
+                </MudStack>
+
+                <MudDivider />
+
+                <!-- 子供情報 -->
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.h6">申請者</MudText>
+                    <MudText Typo="Typo.body1">@request.StudentName</MudText>
+                </MudStack>
+
+                <!-- 景品情報 -->
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.h6">景品</MudText>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                        @if (!string.IsNullOrEmpty(request.RewardImageUrl))
+                        {
+                            <MudImage Src="@request.RewardImageUrl" Width="100" Height="100" ObjectFit="ObjectFit.Cover" Class="rounded" />
+                        }
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.h6">@request.RewardName</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">
+                                <MudIcon Icon="@Icons.Material.Filled.Stars" Size="Size.Small" />
+                                @request.RequiredPoints ポイント
+                            </MudChip>
+                        </MudStack>
+                    </MudStack>
+                </MudStack>
+
+                <!-- 日時情報 -->
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.h6">日時</MudText>
+                    <MudSimpleTable Dense="true" Elevation="0">
+                        <tbody>
+                            <tr>
+                                <td><MudText Typo="Typo.body2" Color="Color.Default">申請日時:</MudText></td>
+                                <td><MudText Typo="Typo.body2">@request.RequestedAt.ToLocalTime().ToString("yyyy年MM月dd日 HH:mm")</MudText></td>
+                            </tr>
+                            @if (request.ApprovedAt.HasValue)
+                            {
+                                <tr>
+                                    <td><MudText Typo="Typo.body2" Color="Color.Success">承認日時:</MudText></td>
+                                    <td><MudText Typo="Typo.body2">@request.ApprovedAt.Value.ToLocalTime().ToString("yyyy年MM月dd日 HH:mm")</MudText></td>
+                                </tr>
+                            }
+                            @if (request.RejectedAt.HasValue)
+                            {
+                                <tr>
+                                    <td><MudText Typo="Typo.body2" Color="Color.Error">却下日時:</MudText></td>
+                                    <td><MudText Typo="Typo.body2">@request.RejectedAt.Value.ToLocalTime().ToString("yyyy年MM月dd日 HH:mm")</MudText></td>
+                                </tr>
+                            }
+                            @if (request.CancelledAt.HasValue)
+                            {
+                                <tr>
+                                    <td><MudText Typo="Typo.body2" Color="Color.Default">キャンセル日時:</MudText></td>
+                                    <td><MudText Typo="Typo.body2">@request.CancelledAt.Value.ToLocalTime().ToString("yyyy年MM月dd日 HH:mm")</MudText></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudStack>
+
+                <!-- 却下理由 -->
+                @if (!string.IsNullOrEmpty(request.RejectionReason))
+                {
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h6">却下理由</MudText>
+                        <MudAlert Severity="Severity.Error" Dense="true">
+                            @request.RejectionReason
+                        </MudAlert>
+                    </MudStack>
+                }
+
+                <!-- 保護者メモ -->
+                @if (!string.IsNullOrEmpty(request.ParentNote))
+                {
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h6">保護者メモ</MudText>
+                        <MudPaper Class="pa-3" Elevation="0">
+                            <MudText Typo="Typo.body2">@request.ParentNote</MudText>
+                        </MudPaper>
+                    </MudStack>
+                }
+
+                <!-- アクションボタン -->
+                @if (request.Status == ExchangeStatus.Pending)
+                {
+                    <MudDivider />
+                    <MudStack Row="true" Spacing="2" Justify="Justify.FlexEnd">
+                        <MudButton Variant="Variant.Outlined"
+                                  Color="Color.Error"
+                                  OnClick="RejectRequestAction">
+                            却下
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                  Color="Color.Success"
+                                  OnClick="ApproveRequestAction">
+                            承認
+                        </MudButton>
+                    </MudStack>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ExchangeRequestDto? request;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRequest();
+    }
+
+    private async Task LoadRequest()
+    {
+        isLoading = true;
+        try
+        {
+            var response = await ExchangeRequestApi.GetRequestByIdAsync(Id);
+            if (response.Success && response.Data != null)
+            {
+                request = response.Data;
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "交換申請の読み込みに失敗しました。", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading exchange request: {ex.Message}");
+            Snackbar.Add("交換申請の読み込みに失敗しました。", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ApproveRequestAction()
+    {
+        if (request == null) return;
+
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = $"「{request.RewardName}」の交換申請を承認しますか？\n子供: {request.StudentName}\n必要ポイント: {request.RequiredPoints}",
+            ["ButtonText"] = "承認する",
+            ["Color"] = Color.Success
+        };
+
+        var dialog = await DialogService.ShowAsync<MudDialog>("承認の確認", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var response = await ExchangeRequestApi.ApproveRequestAsync(request.Id);
+            if (response.Success)
+            {
+                Snackbar.Add("交換申請を承認しました。", Severity.Success);
+                Navigation.NavigateTo("/exchange-requests");
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "承認に失敗しました。", Severity.Error);
+            }
+        }
+    }
+
+    private async Task RejectRequestAction()
+    {
+        if (request == null) return;
+
+        var parameters = new DialogParameters
+        {
+            ["Label"] = "却下理由",
+            ["Required"] = true,
+            ["Lines"] = 3
+        };
+
+        var dialog = await DialogService.ShowAsync<RejectReasonDialog>("交換申請の却下", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is string reason && !string.IsNullOrWhiteSpace(reason))
+        {
+            var response = await ExchangeRequestApi.RejectRequestAsync(request.Id, reason);
+            if (response.Success)
+            {
+                Snackbar.Add("交換申請を却下しました。", Severity.Success);
+                Navigation.NavigateTo("/exchange-requests");
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "却下に失敗しました。", Severity.Error);
+            }
+        }
+    }
+
+    private Color GetStatusColor(ExchangeStatus status)
+    {
+        return status switch
+        {
+            ExchangeStatus.Pending => Color.Warning,
+            ExchangeStatus.Approved => Color.Success,
+            ExchangeStatus.Rejected => Color.Error,
+            ExchangeStatus.Cancelled => Color.Default,
+            _ => Color.Default
+        };
+    }
+
+    private string GetStatusText(ExchangeStatus status)
+    {
+        return status switch
+        {
+            ExchangeStatus.Pending => "申請中",
+            ExchangeStatus.Approved => "承認済み",
+            ExchangeStatus.Rejected => "却下",
+            ExchangeStatus.Cancelled => "キャンセル",
+            _ => "不明"
+        };
+    }
+}
