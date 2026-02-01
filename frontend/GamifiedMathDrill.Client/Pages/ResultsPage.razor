@@ -53,6 +53,72 @@
         <!-- Statistics Summary -->
         <StatisticsSummary Statistics="_statistics" Class="mb-4" />
 
+        <!-- Category Statistics Section -->
+        @if (_categoryStatistics.Any())
+        {
+            <MudPaper Class="pa-6 mb-4" Elevation="3">
+                <MudText Typo="Typo.h5" Class="mb-4">
+                    <MudIcon Icon="@Icons.Material.Filled.PieChart" Color="Color.Primary" />
+                    カテゴリ別の学習状況
+                </MudText>
+
+                <MudSimpleTable Hover="true" Dense="true" Bordered="true">
+                    <thead>
+                        <tr>
+                            <th>カテゴリ</th>
+                            <th>問題数</th>
+                            <th>正答率</th>
+                            <th>正解数</th>
+                            <th>獲得ポイント</th>
+                            <th>進捗</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var stat in _categoryStatistics.OrderBy(s => s.CategoryOrder))
+                        {
+                            <tr>
+                                <td>
+                                    <MudChip T="string" 
+                                            Size="Size.Small" 
+                                            Color="@GetCategoryColor(stat.Category)"
+                                            Icon="@GetCategoryIcon(stat.Category)">
+                                        @stat.CategoryName
+                                    </MudChip>
+                                </td>
+                                <td><strong>@stat.TotalProblems</strong> 問</td>
+                                <td>
+                                    <MudText Color="@GetAccuracyColor(stat.AccuracyRate)" Style="font-weight: bold;">
+                                        @stat.AccuracyRate.ToString("F1")%
+                                    </MudText>
+                                </td>
+                                <td>@stat.CorrectAnswers / @stat.TotalProblems</td>
+                                <td>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Stars">
+                                        @stat.TotalPoints
+                                    </MudChip>
+                                </td>
+                                <td>
+                                    <MudProgressLinear 
+                                        Color="@GetAccuracyProgressColor(stat.AccuracyRate)" 
+                                        Value="@stat.AccuracyRate" 
+                                        Size="Size.Medium"
+                                        Style="width: 150px;" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+
+                @if (_categoryStatistics.Count >= 2)
+                {
+                    <MudAlert Severity="Severity.Info" Class="mt-4" Dense="true">
+                        <strong>アドバイス:</strong> 
+                        @GetStudyAdvice()
+                    </MudAlert>
+                }
+            </MudPaper>
+        }
+
         <!-- Learning Records List -->
         <LearningRecordList 
             Records="_records" 
@@ -78,6 +144,20 @@
     private DateTime? _startDate;
     private DateTime? _endDate;
     private string? _selectedCalculationType;
+    
+    // カテゴリ別統計
+    private List<CategoryStatistic> _categoryStatistics = new();
+
+    private class CategoryStatistic
+    {
+        public string Category { get; set; } = "";
+        public string CategoryName { get; set; } = "";
+        public int CategoryOrder { get; set; }
+        public int TotalProblems { get; set; }
+        public int CorrectAnswers { get; set; }
+        public double AccuracyRate { get; set; }
+        public int TotalPoints { get; set; }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -101,6 +181,9 @@
                 StudentId, _startDate, _endDate);
             
             Console.WriteLine($"Statistics loaded: TotalProblems={_statistics?.TotalProblems ?? 0}");
+
+            // Load category statistics
+            await LoadCategoryStatisticsAsync();
 
             // Load records
             var response = await LearningRecordClient.GetRecordsAsync(
@@ -131,6 +214,105 @@
         {
             _isLoading = false;
             Console.WriteLine($"Loading complete. IsLoading={_isLoading}, Statistics is null={_statistics == null}");
+        }
+    }
+
+    private async Task LoadCategoryStatisticsAsync()
+    {
+        _categoryStatistics.Clear();
+
+        if (_statistics == null) return;
+
+        var categories = new[]
+        {
+            ("Addition", "足し算", 1),
+            ("Subtraction", "引き算", 2),
+            ("Multiplication", "掛け算", 3),
+            ("Division", "割り算", 4)
+        };
+
+        foreach (var (category, name, order) in categories)
+        {
+            if (_statistics.ProblemsByType.TryGetValue(category, out var count) && count > 0)
+            {
+                var accuracy = _statistics.AccuracyByType.TryGetValue(category, out var acc) ? acc : 0;
+                var correctCount = (int)(count * accuracy / 100);
+
+    private Color GetCategoryColor(string category)
+    {
+        return category switch
+        {
+            "Addition" => Color.Success,
+            "Subtraction" => Color.Warning,
+            "Multiplication" => Color.Info,
+            "Division" => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private string GetCategoryIcon(string category)
+    {
+        return category switch
+        {
+            "Addition" => Icons.Material.Filled.Add,
+            "Subtraction" => Icons.Material.Filled.Remove,
+            "Multiplication" => Icons.Material.Filled.Close,
+            "Division" => Icons.Material.Filled.MoreHoriz,
+            _ => Icons.Material.Filled.Calculate
+        };
+    }
+
+    private Color GetAccuracyColor(double accuracy)
+    {
+        if (accuracy >= 80) return Color.Success;
+        if (accuracy >= 60) return Color.Warning;
+        return Color.Error;
+    }
+
+    private Color GetAccuracyProgressColor(double accuracy)
+    {
+        if (accuracy >= 80) return Color.Success;
+        if (accuracy >= 60) return Color.Warning;
+        return Color.Error;
+    }
+
+    private string GetStudyAdvice()
+    {
+        if (!_categoryStatistics.Any()) return "";
+
+        var weakest = _categoryStatistics.OrderBy(s => s.AccuracyRate).FirstOrDefault();
+        var strongest = _categoryStatistics.OrderByDescending(s => s.AccuracyRate).FirstOrDefault();
+
+        if (weakest == null || strongest == null) return "";
+
+        if (weakest.AccuracyRate < 60)
+        {
+            return $"{weakest.CategoryName}が苦手なようです。もう少し練習してみましょう！";
+        }
+        else if (strongest.AccuracyRate >= 90)
+        {
+            return $"{strongest.CategoryName}が得意ですね！素晴らしいです！";
+        }
+        else
+        {
+            return "全体的にバランスよく学習できています。この調子で続けましょう！";
+        }
+    }
+                
+                // ポイント計算: 正解数 × 10ポイント（基本）
+                var points = correctCount * 10;
+
+                _categoryStatistics.Add(new CategoryStatistic
+                {
+                    Category = category,
+                    CategoryName = name,
+                    CategoryOrder = order,
+                    TotalProblems = count,
+                    CorrectAnswers = correctCount,
+                    AccuracyRate = accuracy,
+                    TotalPoints = points
+                });
+            }
         }
     }
 

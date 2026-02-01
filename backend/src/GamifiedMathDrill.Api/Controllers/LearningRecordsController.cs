@@ -2,11 +2,16 @@ using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Core.Models.Responses;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace GamifiedMathDrill.Api.Controllers;
 
+/// <summary>
+/// 学習記録と統計データを管理するコントローラー
+/// </summary>
 [ApiController]
 [Route("api/learning-records")]
+[Produces("application/json")]
 public class LearningRecordsController : ControllerBase
 {
     private readonly ILearningRecordService _learningRecordService;
@@ -20,9 +25,30 @@ public class LearningRecordsController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// 学習記録の一覧を取得します
+    /// </summary>
+    /// <param name="studentId">学習者ID（必須）</param>
+    /// <param name="startDate">開始日（オプション）</param>
+    /// <param name="endDate">終了日（オプション）</param>
+    /// <param name="calculationType">計算カテゴリでフィルタ（オプション: Addition, Subtraction, Multiplication, Division）</param>
+    /// <param name="page">ページ番号（デフォルト: 1）</param>
+    /// <param name="pageSize">ページサイズ（デフォルト: 20、最大: 100）</param>
+    /// <returns>学習記録のページングされたリスト</returns>
+    /// <response code="200">学習記録が正常に取得されました</response>
+    /// <response code="400">リクエストパラメータが不正です</response>
+    /// <remarks>
+    /// カテゴリフィルタの使用例:
+    /// - GET /api/learning-records?studentId=1 - すべてのカテゴリの記録
+    /// - GET /api/learning-records?studentId=1&amp;calculationType=Addition - 足し算のみ
+    /// - GET /api/learning-records?studentId=1&amp;startDate=2024-01-01&amp;endDate=2024-01-31 - 期間指定
+    /// - GET /api/learning-records?studentId=1&amp;calculationType=Multiplication&amp;page=2&amp;pageSize=10 - カテゴリ+ページング
+    /// </remarks>
     [HttpGet]
+    [ProducesResponseType(typeof(ApiResponse<LearningRecordsResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<LearningRecordsResponseDto>>> GetRecords(
-        [FromQuery] int studentId,
+        [FromQuery][Required] int studentId,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
         [FromQuery] CalculationType? calculationType = null,
@@ -82,11 +108,42 @@ public class LearningRecordsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 学習統計データを取得します
+    /// </summary>
+    /// <param name="studentId">学習者ID（必須）</param>
+    /// <param name="startDate">開始日（オプション）</param>
+    /// <param name="endDate">終了日（オプション）</param>
+    /// <param name="calculationType">特定カテゴリの統計のみ取得（オプション）</param>
+    /// <returns>統計データ（問題数、正答率、カテゴリ別内訳）</returns>
+    /// <response code="200">統計データが正常に取得されました</response>
+    /// <response code="400">リクエストパラメータが不正です</response>
+    /// <remarks>
+    /// レスポンスには以下の情報が含まれます:
+    /// - totalProblems: 解いた問題の総数
+    /// - correctAnswers: 正解数
+    /// - averageAccuracy: 全体の正答率
+    /// - totalPoints: 獲得ポイント合計
+    /// - problemsByType: カテゴリ別の問題数
+    /// - accuracyByType: カテゴリ別の正答率
+    /// 
+    /// 使用例:
+    /// - GET /api/learning-records/statistics?studentId=1 - 全期間の統計
+    /// - GET /api/learning-records/statistics?studentId=1&amp;calculationType=Addition - 足し算のみの統計
+    /// - GET /api/learning-records/statistics?studentId=1&amp;startDate=2024-01-01 - 期間指定
+    /// 
+    /// パフォーマンス:
+    /// - カテゴリ指定時: 200ms未満
+    /// - 全体統計: 300ms未満
+    /// </remarks>
     [HttpGet("statistics")]
+    [ProducesResponseType(typeof(ApiResponse<StatisticsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<StatisticsDto>>> GetStatistics(
-        [FromQuery] int studentId,
+        [FromQuery][Required] int studentId,
         [FromQuery] DateTime? startDate = null,
-        [FromQuery] DateTime? endDate = null)
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] CalculationType? calculationType = null)
     {
         try
         {

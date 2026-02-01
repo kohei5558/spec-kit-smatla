@@ -4,6 +4,7 @@ using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Services;
 using GamifiedMathDrill.Infrastructure.Data;
 using GamifiedMathDrill.Infrastructure.Identity;
+using GamifiedMathDrill.Infrastructure.Jobs;
 using GamifiedMathDrill.Infrastructure.Repositories;
 using GamifiedMathDrill.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -64,6 +65,9 @@ builder.Services.AddScoped<IRewardService, RewardService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IAuthService, GamifiedMathDrill.Infrastructure.Services.AuthService>();
 builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
+
+// Background services
+builder.Services.AddHostedService<DailyChallengeJob>();
 
 // ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
