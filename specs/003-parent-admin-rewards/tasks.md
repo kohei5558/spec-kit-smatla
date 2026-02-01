@@ -316,7 +316,7 @@
 - [x] T104 Update quickstart.md in specs/003-parent-admin-rewards/ with validation checklist
 - [x] T105 [P] Add CORS configuration to backend/src/GamifiedMathDrill.Api/Program.cs for production (restrict to specific frontend domain)
 - [x] T106 [P] Add security headers to API responses (X-Content-Type-Options, X-Frame-Options, etc.)
-- [ ] T107 Verify all image uploads are validated for MIME type and size across all upload points
+- [x] T107 Verify all image uploads are validated for MIME type and size across all upload points
 - [ ] T108 Test optimistic locking behavior with concurrent reward updates (manual or automated concurrency test)
 - [ ] T109 Review and test all edge cases from spec.md (stock management, point insufficiency, image upload failures, multi-device login, child deletion, request cancellation)
 - [ ] T110 Run full E2E test suite covering all 5 user stories
