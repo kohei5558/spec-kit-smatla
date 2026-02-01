@@ -4,6 +4,7 @@ using Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using GamifiedMathDrill.Infrastructure.Data;
 using GamifiedMathDrill.Core.Models;
+using GamifiedMathDrill.Tests.Integration.Helpers;
 
 namespace GamifiedMathDrill.Tests.Integration;
 
@@ -36,6 +37,10 @@ public class ApiBasicTests : IClassFixture<TestWebApplicationFactory>
     public async Task StudentsEndpoint_CanBeAccessed()
     {
         // Arrange
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
         await SeedTestStudent();
 
         // Act

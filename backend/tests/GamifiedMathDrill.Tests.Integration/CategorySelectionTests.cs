@@ -4,6 +4,7 @@ using FluentAssertions;
 using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Core.Models.DTOs;
 using GamifiedMathDrill.Core.Models.Responses;
+using GamifiedMathDrill.Tests.Integration.Helpers;
 using Xunit;
 
 namespace GamifiedMathDrill.Tests.Integration;
@@ -56,16 +57,21 @@ public class TestLearningRecordDto
 public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
 {
     private readonly HttpClient _client;
+    private readonly TestWebApplicationFactory _factory;
 
     public CategorySelectionTests(TestWebApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task GetNextProblem_WithoutCategory_ShouldReturnRandomProblem()
     {
-        // Arrange
+        // Arrange - Authenticate as parent
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_{Guid.NewGuid().ToString()[..8]}",

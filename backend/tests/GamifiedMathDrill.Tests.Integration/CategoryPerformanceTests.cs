@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using GamifiedMathDrill.Core.Models.Responses;
+using GamifiedMathDrill.Tests.Integration.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -19,9 +20,11 @@ public class TestStudentDto
 public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
 {
     private readonly HttpClient _client;
+    private readonly TestWebApplicationFactory _factory;
 
     public CategoryPerformanceTests(TestWebApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
@@ -32,7 +35,11 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
     [InlineData("Division")]
     public async Task GetNextProblem_WithCategory_ShouldReturnInLessThan100Ms(string category)
     {
-        // Arrange - Create student first
+        // Arrange - Authenticate as parent
+        var token = await AuthenticationHelper.LoginAsParentAsync(_client);
+        AuthenticationHelper.AddAuthorizationHeader(_client, token);
+        
+        // Create student first
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Perf_{category[..3]}_{Guid.NewGuid().ToString()[..8]}",
