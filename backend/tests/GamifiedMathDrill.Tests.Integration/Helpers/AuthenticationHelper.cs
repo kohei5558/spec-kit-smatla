@@ -19,13 +19,13 @@ public static class AuthenticationHelper
     /// <summary>
     /// テストユーザーをシード（初回のみ実行）
     /// </summary>
-    public static async Task EnsureTestUsersExistAsync(IServiceProvider services)
+    public static Task EnsureTestUsersExistAsync(IServiceProvider services)
     {
-        if (_usersSeeded) return;
+        if (_usersSeeded) return Task.CompletedTask;
 
         lock (_lock)
         {
-            if (_usersSeeded) return;
+            if (_usersSeeded) return Task.CompletedTask;
 
             using var scope = services.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -77,11 +77,27 @@ public static class AuthenticationHelper
                 {
                     throw new Exception($"Failed to create child user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
                 }
+                
+                existingChild = child;
+            }
+            
+            // Studentエントリを作成（存在しない場合）
+            var student = db.Students.FirstOrDefault(s => s.Name == "太郎");
+            if (student == null)
+            {
+                student = new Student
+                {
+                    Name = "太郎",
+                    TotalPoints = 100 // テスト用に初期ポイントを設定
+                };
+                db.Students.Add(student);
+                db.SaveChangesAsync().Wait();
             }
 
-            db.SaveChangesAsync().Wait();
             _usersSeeded = true;
         }
+
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -142,5 +158,17 @@ public static class AuthenticationHelper
     {
         client.DefaultRequestHeaders.Authorization = 
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+    }
+
+    /// <summary>
+    /// テスト用の子供ユーザーIDを取得
+    /// </summary>
+    public static string GetTestChildId(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        
+        var child = userManager.Users.FirstOrDefault(u => u.DisplayName == "太郎" && u.Role == UserRole.Child);
+        return child?.Id ?? throw new Exception("Test child user not found");
     }
 }

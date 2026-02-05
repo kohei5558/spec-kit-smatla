@@ -1,5 +1,6 @@
 using GamifiedMathDrill.Api.DTOs;
 using GamifiedMathDrill.Core.Models;
+using GamifiedMathDrill.Tests.Integration.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Headers;
@@ -26,6 +27,9 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task StockManagement_ConcurrentRequests_CorrectHandling()
     {
+        // 認証
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+
         // Arrange: 保護者でログイン
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
         {
@@ -33,7 +37,7 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
             Password = "Parent123!"
         });
         var loginResult = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult!.Token);
 
         // 在庫1の景品を作成
         var createRewardResponse = await _client.PostAsJsonAsync("/api/rewards", new
@@ -45,15 +49,17 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
             Stock = 1
         });
         var rewardDto = await createRewardResponse.Content.ReadFromJsonAsync<RewardDto>();
+        Assert.NotNull(rewardDto);
 
         // 子供でログイン
+        var childId = AuthenticationHelper.GetTestChildId(_factory.Services);
         var childLoginResponse = await _client.PostAsJsonAsync("/api/auth/child-login", new
         {
-            ChildId = 1,
+            ChildId = childId,
             PIN = "1234"
         });
         var childLoginResult = await childLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult!.Token);
 
         // Act: 交換申請（成功するはず）
         var exchangeResponse = await _client.PostAsJsonAsync("/api/exchange-requests", new
@@ -75,6 +81,9 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task PointInsufficiency_ApprovalTimeCheck()
     {
+        // 認証
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+
         // Arrange: 保護者でログイン
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
         {
@@ -82,7 +91,7 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
             Password = "Parent123!"
         });
         var loginResult = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult!.Token);
 
         // 景品を作成（100ポイント必要）
         var createRewardResponse = await _client.PostAsJsonAsync("/api/rewards", new
@@ -94,17 +103,19 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
             Stock = 10
         });
         var rewardDto = await createRewardResponse.Content.ReadFromJsonAsync<RewardDto>();
+        Assert.NotNull(rewardDto);
 
         // 子供でログイン（初期ポイント: 0）
+        var childId = AuthenticationHelper.GetTestChildId(_factory.Services);
         var childLoginResponse = await _client.PostAsJsonAsync("/api/auth/child-login", new
         {
-            ChildId = 1,
+            ChildId = childId,
             PIN = "1234"
         });
 
         // ポイント不足時の申請は拒否されるべき
         var childLoginResult = await childLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult!.Token);
 
         var exchangeResponse = await _client.PostAsJsonAsync("/api/exchange-requests", new
         {
@@ -120,6 +131,9 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task ImageUpload_OversizedFile_Rejected()
     {
+        // 認証
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+
         // Arrange: 保護者でログイン
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
         {
@@ -127,7 +141,7 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
             Password = "Parent123!"
         });
         var loginResult = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult!.Token);
 
         // 5MBを超える画像をシミュレート（実際は6MB）
         var oversizedContent = new byte[6 * 1024 * 1024]; // 6MB
@@ -156,6 +170,9 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task RequestCancellation_OnlyPendingStatusAllowed()
     {
+        // 認証
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+
         // Arrange: 保護者でログイン
         var parentLoginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
         {
@@ -165,7 +182,7 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         var parentLoginResult = await parentLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
 
         // 景品を作成
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult!.Token);
         var createRewardResponse = await _client.PostAsJsonAsync("/api/rewards", new
         {
             Name = "Test Item",
@@ -175,22 +192,25 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
             Stock = 5
         });
         var rewardDto = await createRewardResponse.Content.ReadFromJsonAsync<RewardDto>();
+        Assert.NotNull(rewardDto);
 
         // 子供でログイン
+        var childId = AuthenticationHelper.GetTestChildId(_factory.Services);
         var childLoginResponse = await _client.PostAsJsonAsync("/api/auth/child-login", new
         {
-            ChildId = 1,
+            ChildId = childId,
             PIN = "1234"
         });
         var childLoginResult = await childLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
 
         // 交換申請
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult!.Token);
         var exchangeResponse = await _client.PostAsJsonAsync("/api/exchange-requests", new
         {
             RewardId = rewardDto.Id
         });
         var exchangeRequest = await exchangeResponse.Content.ReadFromJsonAsync<ExchangeRequestDto>();
+        Assert.NotNull(exchangeRequest);
 
         // Act: Pendingステータスのキャンセル（成功するはず）
         var cancelResponse = await _client.PutAsync($"/api/exchange-requests/{exchangeRequest.Id}/cancel", null);
@@ -206,6 +226,9 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task ApprovedRequest_CannotBeCancelled()
     {
+        // 認証
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+
         // Arrange: 保護者でログイン
         var parentLoginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
         {
@@ -215,7 +238,7 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         var parentLoginResult = await parentLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
 
         // 景品を作成
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult!.Token);
         var createRewardResponse = await _client.PostAsJsonAsync("/api/rewards", new
         {
             Name = "Test Item",
@@ -225,28 +248,31 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
             Stock = 5
         });
         var rewardDto = await createRewardResponse.Content.ReadFromJsonAsync<RewardDto>();
+        Assert.NotNull(rewardDto);
 
         // 子供でログイン・申請
+        var childId = AuthenticationHelper.GetTestChildId(_factory.Services);
         var childLoginResponse = await _client.PostAsJsonAsync("/api/auth/child-login", new
         {
-            ChildId = 1,
+            ChildId = childId,
             PIN = "1234"
         });
         var childLoginResult = await childLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult!.Token);
 
         var exchangeResponse = await _client.PostAsJsonAsync("/api/exchange-requests", new
         {
             RewardId = rewardDto.Id
         });
         var exchangeRequest = await exchangeResponse.Content.ReadFromJsonAsync<ExchangeRequestDto>();
+        Assert.NotNull(exchangeRequest);
 
         // 保護者が承認
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult!.Token);
         await _client.PutAsync($"/api/exchange-requests/{exchangeRequest.Id}/approve", null);
 
         // Act: 承認済み申請をキャンセル試行（失敗するはず）
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult!.Token);
         var cancelResponse = await _client.PutAsync($"/api/exchange-requests/{exchangeRequest.Id}/cancel", null);
 
         // Assert
@@ -258,6 +284,9 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task StockReturnsOnRejection()
     {
+        // 認証
+        await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
+
         // Arrange: 保護者でログイン
         var parentLoginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
         {
@@ -267,7 +296,7 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         var parentLoginResult = await parentLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
 
         // 在庫5の景品を作成
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult!.Token);
         var createRewardResponse = await _client.PostAsJsonAsync("/api/rewards", new
         {
             Name = "Stock Test Item",
@@ -277,29 +306,33 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
             Stock = 5
         });
         var rewardDto = await createRewardResponse.Content.ReadFromJsonAsync<RewardDto>();
+        Assert.NotNull(rewardDto);
 
         // 子供でログイン・申請
+        var childId = AuthenticationHelper.GetTestChildId(_factory.Services);
         var childLoginResponse = await _client.PostAsJsonAsync("/api/auth/child-login", new
         {
-            ChildId = 1,
+            ChildId = childId,
             PIN = "1234"
         });
         var childLoginResult = await childLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult!.Token);
 
         var exchangeResponse = await _client.PostAsJsonAsync("/api/exchange-requests", new
         {
             RewardId = rewardDto.Id
         });
         var exchangeRequest = await exchangeResponse.Content.ReadFromJsonAsync<ExchangeRequestDto>();
+        Assert.NotNull(exchangeRequest);
 
         // 在庫確認（申請後は4になっているはず）
         var afterRequestResponse = await _client.GetAsync($"/api/rewards/{rewardDto.Id}");
         var afterRequestReward = await afterRequestResponse.Content.ReadFromJsonAsync<RewardDto>();
+        Assert.NotNull(afterRequestReward);
         Assert.Equal(4, afterRequestReward.Stock);
 
         // Act: 保護者が却下
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult.Token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult!.Token);
         await _client.PutAsJsonAsync($"/api/exchange-requests/{exchangeRequest.Id}/reject", new
         {
             Reason = "Test rejection"
@@ -308,6 +341,7 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         // Assert: 在庫が戻っているはず（5に戻る）
         var afterRejectionResponse = await _client.GetAsync($"/api/rewards/{rewardDto.Id}");
         var afterRejectionReward = await afterRejectionResponse.Content.ReadFromJsonAsync<RewardDto>();
+        Assert.NotNull(afterRejectionReward);
         Assert.Equal(5, afterRejectionReward.Stock);
     }
 }
