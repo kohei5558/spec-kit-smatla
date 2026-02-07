@@ -195,21 +195,21 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T082 [P] [US3] Create AuthRegisterTests.cs in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
-- [ ] T083 [P] [US3] Add test case for successful registration with valid data in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
-- [ ] T084 [P] [US3] Add test case for registration with duplicate email fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
-- [ ] T085 [P] [US3] Add test case for registration with weak password fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
-- [ ] T086 [P] [US3] Add test case for registration with mismatched passwords fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
-- [ ] T087 [P] [US3] Add test case for registration auto-login (JWT token returned) in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [X] T082 [P] [US3] Create AuthRegisterTests.cs in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [X] T083 [P] [US3] Add test case for successful registration with valid data in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [X] T084 [P] [US3] Add test case for registration with duplicate email fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [X] T085 [P] [US3] Add test case for registration with weak password fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [X] T086 [P] [US3] Add test case for registration with mismatched passwords fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [X] T087 [P] [US3] Add test case for registration auto-login (JWT token returned) in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
 
 ### Backend Implementation for User Story 3
 
-- [ ] T088 [US3] Add RegisterAsync method to IAuthService in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
-- [ ] T089 [US3] Implement RegisterAsync in AuthService (validate, create user, auto-login) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
-- [ ] T090 [US3] Add POST /api/auth/register endpoint to AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
-- [ ] T091 [US3] Add email uniqueness check in RegisterAsync in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
-- [ ] T092 [US3] Add password strength validation in RegisterAsync in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
-- [ ] T093 [US3] Add logging for registration attempts (success/failure) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [X] T088 [US3] Add RegisterAsync method to IAuthService in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
+- [X] T089 [US3] Implement RegisterAsync in AuthService (validate, create user, auto-login) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [X] T090 [US3] Add POST /api/auth/register endpoint to AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
+- [X] T091 [US3] Add email uniqueness check in RegisterAsync in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [X] T092 [US3] Add password strength validation in RegisterAsync in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [X] T093 [US3] Add logging for registration attempts (success/failure) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
 
 ### Frontend Models for User Story 3
 

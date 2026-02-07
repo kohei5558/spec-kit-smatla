@@ -57,4 +57,14 @@ public interface IAuthService
     /// <param name="newPassword">新しいパスワード</param>
     /// <returns>成功したかどうか</returns>
     Task<bool> ResetPasswordAsync(string token, string newPassword);
+
+    /// <summary>
+    /// 新規保護者アカウントを作成
+    /// </summary>
+    /// <param name="email">メールアドレス</param>
+    /// <param name="displayName">表示名</param>
+    /// <param name="password">パスワード</param>
+    /// <param name="confirmPassword">パスワード確認</param>
+    /// <returns>(成功フラグ, ユーザーID, トークン, 有効期限, エラーメッセージ)</returns>
+    Task<(bool success, string? userId, string? token, DateTime? expiresAt, string? errorMessage)> RegisterAsync(string email, string displayName, string password, string confirmPassword);
 }

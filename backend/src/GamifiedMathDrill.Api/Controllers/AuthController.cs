@@ -1,5 +1,6 @@
 using GamifiedMathDrill.Api.DTOs;
 using GamifiedMathDrill.Core.Interfaces;
+using GamifiedMathDrill.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GamifiedMathDrill.Api.Controllers;
@@ -209,6 +210,47 @@ public class AuthController : ControllerBase
         {
             Success = true,
             Message = "パスワードがリセットされました"
+        });
+    }
+
+    /// <summary>
+    /// 新規保護者アカウントを作成
+    /// </summary>
+    /// <param name="request">登録リクエスト</param>
+    /// <returns>登録レスポンス（自動ログイン用トークン含む）</returns>
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        _logger.LogInformation("Registration attempt for email: {Email}", request.Email);
+
+        var (success, userId, token, expiresAt, errorMessage) = await _authService.RegisterAsync(
+            request.Email,
+            request.DisplayName,
+            request.Password,
+            request.ConfirmPassword
+        );
+
+        if (!success)
+        {
+            _logger.LogWarning("Registration failed for email {Email}: {Error}", request.Email, errorMessage);
+            return BadRequest(new RegisterResponse
+            {
+                Success = false,
+                Message = errorMessage
+            });
+        }
+
+        _logger.LogInformation("User registered successfully: {UserId}", userId);
+        return Ok(new RegisterResponse
+        {
+            Success = true,
+            Message = "アカウントが作成されました",
+            UserId = userId,
+            Token = token,
+            DisplayName = request.DisplayName,
+            Email = request.Email,
+            Role = UserRole.Parent.ToString(),
+            ExpiresAt = expiresAt
         });
     }
 }

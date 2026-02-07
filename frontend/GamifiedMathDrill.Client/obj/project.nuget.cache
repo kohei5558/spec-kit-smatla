@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "Gd4oiLMVZC4=",
+  "dgSpecHash": "AnUJvqg1B4k=",
   "success": true,
   "projectFilePath": "/Users/murayama/dev/ai/spec-kit-smatla/frontend/GamifiedMathDrill.Client/GamifiedMathDrill.Client.csproj",
   "expectedPackageFiles": [
     "/Users/murayama/.nuget/packages/blazored.localstorage/4.3.0/blazored.localstorage.4.3.0.nupkg.sha512",
+    "/Users/murayama/.nuget/packages/blazored.sessionstorage/2.4.0/blazored.sessionstorage.2.4.0.nupkg.sha512",
     "/Users/murayama/.nuget/packages/microsoft.aspnetcore.authorization/8.0.22/microsoft.aspnetcore.authorization.8.0.22.nupkg.sha512",
     "/Users/murayama/.nuget/packages/microsoft.aspnetcore.components/8.0.22/microsoft.aspnetcore.components.8.0.22.nupkg.sha512",
     "/Users/murayama/.nuget/packages/microsoft.aspnetcore.components.analyzers/8.0.22/microsoft.aspnetcore.components.analyzers.8.0.22.nupkg.sha512",

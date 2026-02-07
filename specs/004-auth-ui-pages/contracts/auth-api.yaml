@@ -1,0 +1,540 @@
+openapi: 3.0.3
+info:
+  title: GamifiedMathDrill Authentication API
+  description: |
+    保護者向けの認証UI機能のためのAPIエンドポイント。
+    - ログイン（セッション保持オプション付き）
+    - 新規アカウント作成
+    - パスワードリセット（メール送信とトークン検証）
+  version: 1.0.0
+  contact:
+    name: GamifiedMathDrill Team
+
+servers:
+  - url: http://localhost:5000
+    description: Development server
+  - url: https://api.gamifiedmathdrill.com
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: 保護者認証関連のエンドポイント
+
+paths:
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: 新規保護者アカウント作成
+      description: |
+        新しい保護者アカウントを作成します。
+        - 最小限の情報（メールアドレス、表示名、パスワード）を収集
+        - パスワードは8文字以上で、大文字、小文字、数字、記号を各1文字以上含む必要あり
+        - メールアドレスの重複は不可
+      operationId: registerParent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+            examples:
+              valid:
+                summary: 有効なリクエスト例
+                value:
+                  email: "parent@example.com"
+                  displayName: "山田太郎"
+                  password: "SecurePass123!"
+                  confirmPassword: "SecurePass123!"
+      responses:
+        "201":
+          description: アカウント作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterResponse"
+              examples:
+                success:
+                  value:
+                    success: true
+                    message: "アカウントが作成されました"
+                    userId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        "400":
+          description: リクエストが無効（バリデーションエラー）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                weakPassword:
+                  value:
+                    success: false
+                    message: "パスワードは大文字、小文字、数字、記号を各1文字以上含む必要があります"
+                duplicateEmail:
+                  value:
+                    success: false
+                    message: "このメールアドレスは既に登録されています"
+        "429":
+          description: レート制限超過
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                rateLimitExceeded:
+                  value:
+                    success: false
+                    message: "しばらくしてから再度お試しください"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: 保護者ログイン（既存エンドポイントの更新）
+      description: |
+        保護者アカウントでログインします。
+        - 新機能: `rememberMe`フラグでセッション保持期間を選択可能
+        - rememberMe=false: トークン有効期限60分、セッションストレージに保存
+        - rememberMe=true: トークン有効期限30日、ローカルストレージに保存
+        - レート制限: 15分間に5回失敗すると15分間ブロック
+      operationId: loginParent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              withRememberMe:
+                summary: ログイン状態を保持する
+                value:
+                  email: "parent@example.com"
+                  password: "SecurePass123!"
+                  rememberMe: true
+              withoutRememberMe:
+                summary: ログイン状態を保持しない（デフォルト）
+                value:
+                  email: "parent@example.com"
+                  password: "SecurePass123!"
+                  rememberMe: false
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+              examples:
+                success:
+                  value:
+                    success: true
+                    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    userId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                    displayName: "山田太郎"
+                    role: "Parent"
+                    expiresAt: "2026-02-07T15:30:00Z"
+        "401":
+          description: 認証失敗（メールアドレスまたはパスワードが間違っている）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidCredentials:
+                  value:
+                    success: false
+                    errorMessage: "メールアドレスまたはパスワードが間違っています"
+        "429":
+          description: レート制限超過（15分間に5回失敗）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                rateLimitExceeded:
+                  value:
+                    success: false
+                    errorMessage: "しばらくしてから再度お試しください"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/auth/forgot-password:
+    post:
+      tags:
+        - Authentication
+      summary: パスワードリセットメール送信
+      description: |
+        パスワードリセットのためのメールを送信します。
+        - セキュリティ上、アカウントの存在に関わらず常に成功メッセージを返す
+        - メール送信失敗時もログのみに記録し、ユーザーには成功を通知
+        - リセットリンクの有効期限は24時間
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+            examples:
+              valid:
+                value:
+                  email: "parent@example.com"
+      responses:
+        "200":
+          description: メール送信処理完了（実際の成否は非公開）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForgotPasswordResponse"
+              examples:
+                success:
+                  value:
+                    success: true
+                    message: "メールアドレスが登録されている場合、パスワードリセットのメールをお送りしました。"
+        "400":
+          description: リクエストが無効（メールアドレス形式が不正）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidEmail:
+                  value:
+                    success: false
+                    message: "有効なメールアドレスを入力してください"
+        "429":
+          description: レート制限超過
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/auth/reset-password:
+    post:
+      tags:
+        - Authentication
+      summary: パスワードリセット実行
+      description: |
+        トークンを使用してパスワードをリセットします。
+        - トークンの有効期限は24時間
+        - 1つのトークンは1回のみ使用可能
+        - 新しいパスワードは既存のパスワードポリシーに準拠する必要あり
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+            examples:
+              valid:
+                value:
+                  email: "parent@example.com"
+                  token: "CfDJ8N..."
+                  newPassword: "NewSecurePass123!"
+                  confirmPassword: "NewSecurePass123!"
+      responses:
+        "200":
+          description: パスワードリセット成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResetPasswordResponse"
+              examples:
+                success:
+                  value:
+                    success: true
+                    message: "パスワードが正常に変更されました"
+        "400":
+          description: リクエストが無効（トークン無効、パスワードポリシー違反など）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidToken:
+                  value:
+                    success: false
+                    message: "トークンが無効または期限切れです"
+                weakPassword:
+                  value:
+                    success: false
+                    message: "パスワードは大文字、小文字、数字、記号を各1文字以上含む必要があります"
+                passwordMismatch:
+                  value:
+                    success: false
+                    message: "パスワードが一致しません"
+        "429":
+          description: レート制限超過
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/auth/validate-reset-token:
+    get:
+      tags:
+        - Authentication
+      summary: パスワードリセットトークンの検証
+      description: |
+        パスワードリセットトークンが有効かどうかを検証します。
+        - トークンが存在し、期限内で、未使用の場合のみ有効
+        - フロントエンドでリセット画面表示前に使用
+      operationId: validateResetToken
+      parameters:
+        - name: token
+          in: query
+          required: true
+          description: パスワードリセットトークン
+          schema:
+            type: string
+          example: "CfDJ8N..."
+        - name: email
+          in: query
+          required: true
+          description: メールアドレス
+          schema:
+            type: string
+            format: email
+          example: "parent@example.com"
+      responses:
+        "200":
+          description: トークン検証結果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isValid:
+                    type: boolean
+                    description: トークンが有効かどうか
+                  message:
+                    type: string
+                    description: エラーメッセージ（無効の場合）
+              examples:
+                valid:
+                  value:
+                    isValid: true
+                    message: null
+                expired:
+                  value:
+                    isValid: false
+                    message: "トークンの有効期限が切れています"
+                notFound:
+                  value:
+                    isValid: false
+                    message: "トークンが無効です"
+        "400":
+          description: リクエストが無効
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - displayName
+        - password
+        - confirmPassword
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 256
+          description: メールアドレス
+          example: "parent@example.com"
+        displayName:
+          type: string
+          maxLength: 50
+          description: 表示名（保護者の名前）
+          example: "山田太郎"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 100
+          description: |
+            パスワード（8文字以上、大文字・小文字・数字・記号を各1文字以上含む）
+          example: "SecurePass123!"
+        confirmPassword:
+          type: string
+          format: password
+          description: パスワード確認（passwordと一致する必要あり）
+          example: "SecurePass123!"
+
+    RegisterResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: 登録成功フラグ
+        message:
+          type: string
+          description: 成功またはエラーメッセージ
+        userId:
+          type: string
+          format: uuid
+          description: 作成されたユーザーのID（成功時のみ）
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: メールアドレス
+          example: "parent@example.com"
+        password:
+          type: string
+          format: password
+          description: パスワード
+          example: "SecurePass123!"
+        rememberMe:
+          type: boolean
+          default: false
+          description: |
+            ログイン状態を保持するフラグ
+            - false: セッションストレージ、トークン有効期限60分
+            - true: ローカルストレージ、トークン有効期限30日
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: ログイン成功フラグ
+        token:
+          type: string
+          description: JWTトークン（成功時のみ）
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        userId:
+          type: string
+          format: uuid
+          description: ユーザーID（成功時のみ）
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        displayName:
+          type: string
+          description: 表示名（成功時のみ）
+          example: "山田太郎"
+        role:
+          type: string
+          description: ユーザーロール（成功時のみ）
+          example: "Parent"
+        expiresAt:
+          type: string
+          format: date-time
+          description: トークン有効期限（成功時のみ）
+          example: "2026-02-07T15:30:00Z"
+        errorMessage:
+          type: string
+          description: エラーメッセージ（失敗時のみ）
+          example: "メールアドレスまたはパスワードが間違っています"
+
+    ForgotPasswordRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: メールアドレス
+          example: "parent@example.com"
+
+    ForgotPasswordResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: 処理成功フラグ（常にtrue）
+        message:
+          type: string
+          description: メッセージ
+          example: "メールアドレスが登録されている場合、パスワードリセットのメールをお送りしました。"
+
+    ResetPasswordRequest:
+      type: object
+      required:
+        - email
+        - token
+        - newPassword
+        - confirmPassword
+      properties:
+        email:
+          type: string
+          format: email
+          description: メールアドレス
+          example: "parent@example.com"
+        token:
+          type: string
+          description: パスワードリセットトークン
+          example: "CfDJ8N..."
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 100
+          description: |
+            新しいパスワード（8文字以上、大文字・小文字・数字・記号を各1文字以上含む）
+          example: "NewSecurePass123!"
+        confirmPassword:
+          type: string
+          format: password
+          description: パスワード確認（newPasswordと一致する必要あり）
+          example: "NewSecurePass123!"
+
+    ResetPasswordResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: リセット成功フラグ
+        message:
+          type: string
+          description: 成功またはエラーメッセージ
+          example: "パスワードが正常に変更されました"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: 常にfalse
+          example: false
+        message:
+          type: string
+          description: エラーメッセージ
+          example: "エラーが発生しました"
+        errorMessage:
+          type: string
+          description: 詳細なエラーメッセージ（オプション）

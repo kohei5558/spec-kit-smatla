@@ -42,6 +42,12 @@ public class AuthService : IAuthService
     /// </summary>
     public async Task<(string? userId, string? displayName, UserRole? role, string? parentId, string? token, DateTime? expiresAt)> LoginAsync(string email, string password, bool rememberMe = false)
     {
+        // 基本的な入力バリデーション
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            return (null, null, null, null, null, null);
+        }
+
         var user = await _userManager.FindByEmailAsync(email);
         if (user == null || !user.IsActive || user.Role != UserRole.Parent)
         {
@@ -271,6 +277,90 @@ public class AuthService : IAuthService
         {
             _logger.LogError(ex, "Failed to reset password");
             return false;
+        }
+    }
+
+    /// <summary>
+    /// 新規保護者アカウントを作成
+    /// </summary>
+    public async Task<(bool success, string? userId, string? token, DateTime? expiresAt, string? errorMessage)> RegisterAsync(
+        string email,
+        string displayName,
+        string password,
+        string confirmPassword)
+    {
+        try
+        {
+            // 基本的な入力バリデーション
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(displayName) ||
+                string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
+            {
+                return (false, null, null, null, "すべての項目を入力してください");
+            }
+
+            // パスワードの一致確認
+            if (password != confirmPassword)
+            {
+                _logger.LogWarning("Registration failed: Passwords do not match for email: {Email}", email);
+                return (false, null, null, null, "パスワードが一致しません");
+            }
+
+            // パスワードの基本バリデーション（8文字以上）
+            if (password.Length < 8)
+            {
+                _logger.LogWarning("Registration failed: Password too short for email: {Email}", email);
+                return (false, null, null, null, "パスワードは8文字以上で、大文字、小文字、数字、記号を含む必要があります");
+            }
+
+            // メールアドレスの重複チェック
+            var existingUser = await _userManager.FindByEmailAsync(email);
+            if (existingUser != null)
+            {
+                _logger.LogWarning("Registration failed: Email already exists: {Email}", email);
+                return (false, null, null, null, "このメールアドレスは既に使用されています");
+            }
+
+            // 新しい保護者ユーザーを作成
+            var newUser = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                DisplayName = displayName,
+                Role = UserRole.Parent,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true,
+                EmailConfirmed = false // 実際の実装ではメール確認プロセスを追加する
+            };
+
+            // ユーザーを作成（パスワード強度検証は自動的に実施される）
+            var result = await _userManager.CreateAsync(newUser, password);
+            
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                _logger.LogWarning("Registration failed: {Errors} for email: {Email}", errors, email);
+                
+                // パスワード強度エラーをユーザーフレンドリーに変換
+                if (errors.Contains("Passwords must") || errors.Contains("パスワードは"))
+                {
+                    return (false, null, null, null, "パスワードは8文字以上で、大文字、小文字、数字、記号を含む必要があります");
+                }
+                
+                return (false, null, null, null, errors);
+            }
+
+            // 自動ログイン用のJWTトークンを生成（デフォルトの60分有効期限）
+            var token = GenerateJwtToken(newUser.Id, newUser.DisplayName, UserRole.Parent.ToString());
+            var expiresAt = DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:SessionExpiryMinutes", 60));
+
+            _logger.LogInformation("User registered successfully: {UserId}, Email: {Email}", newUser.Id, email);
+            
+            return (true, newUser.Id, token, expiresAt, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to register user with email: {Email}", email);
+            return (false, null, null, null, "登録処理中にエラーが発生しました");
         }
     }
 }

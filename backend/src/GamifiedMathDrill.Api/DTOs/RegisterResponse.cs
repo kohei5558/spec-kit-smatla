@@ -31,6 +31,11 @@ public class RegisterResponse
     public string? DisplayName { get; set; }
 
     /// <summary>
+    /// メールアドレス（成功時のみ）
+    /// </summary>
+    public string? Email { get; set; }
+
+    /// <summary>
     /// ユーザーロール（成功時のみ）
     /// </summary>
     public string? Role { get; set; }
