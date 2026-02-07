@@ -28,7 +28,7 @@ public static class AuthenticationHelper
 
             // 保護者ユーザーの存在確認と作成
             var parentEmail = "parent@example.com";
-            var existingParent = userManager.FindByEmailAsync(parentEmail).Result;
+            var existingParent = await userManager.FindByEmailAsync(parentEmail);
 
             if (existingParent == null)
             {
