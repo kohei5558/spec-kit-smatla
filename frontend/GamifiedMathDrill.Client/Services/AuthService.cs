@@ -54,6 +54,22 @@ public class AuthService
                 return (false, loginResponse?.ErrorMessage ?? "ログインに失敗しました");
             }
 
+            // 429 Too Many Requests のチェック
+            if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                var rateLimitContent = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    var rateLimitError = JsonSerializer.Deserialize<RateLimitError>(rateLimitContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var retryMinutes = (rateLimitError?.RetryAfterSeconds ?? 900) / 60;
+                    return (false, $"試行回数が多すぎます。{retryMinutes}分後に再度お試しください。");
+                }
+                catch
+                {
+                    return (false, "試行回数が多すぎます。しばらくしてから再度お試しください。");
+                }
+            }
+
             var errorContent = await response.Content.ReadAsStringAsync();
             try
             {
@@ -175,6 +191,22 @@ public class AuthService
                 return (result?.Success ?? false, result?.Message);
             }
 
+            // 429 Too Many Requests のチェック
+            if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                var rateLimitContent = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    var rateLimitError = JsonSerializer.Deserialize<RateLimitError>(rateLimitContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var retryMinutes = (rateLimitError?.RetryAfterSeconds ?? 900) / 60;
+                    return (false, $"試行回数が多すぎます。{retryMinutes}分後に再度お試しください。");
+                }
+                catch
+                {
+                    return (false, "試行回数が多すぎます。しばらくしてから再度お試しください。");
+                }
+            }
+
             var errorContent = await response.Content.ReadAsStringAsync();
             return (false, errorContent);
         }
@@ -279,6 +311,22 @@ public class AuthService
                 return (false, result?.Message ?? "登録に失敗しました", null);
             }
 
+            // 429 Too Many Requests のチェック
+            if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                var rateLimitContent = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    var rateLimitError = JsonSerializer.Deserialize<RateLimitError>(rateLimitContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var retryMinutes = (rateLimitError?.RetryAfterSeconds ?? 900) / 60;
+                    return (false, $"試行回数が多すぎます。{retryMinutes}分後に再度お試しください。", null);
+                }
+                catch
+                {
+                    return (false, "試行回数が多すぎます。しばらくしてから再度お試しください。", null);
+                }
+            }
+
             // エラーレスポンスを解析
             var errorContent = await response.Content.ReadAsStringAsync();
             try
@@ -295,5 +343,15 @@ public class AuthService
         {
             return (false, $"エラーが発生しました: {ex.Message}", null);
         }
+    }
+
+    /// <summary>
+    /// レート制限エラーレスポンスDTO
+    /// </summary>
+    private class RateLimitError
+    {
+        public bool Success { get; set; }
+        public string? Message { get; set; }
+        public int RetryAfterSeconds { get; set; }
     }
 }
