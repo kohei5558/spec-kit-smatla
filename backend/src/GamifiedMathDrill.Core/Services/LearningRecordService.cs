@@ -108,7 +108,7 @@ public class LearningRecordService : ILearningRecordService
         }
 
         var recordsList = records.ToList();
-        
+
         // Apply calculation type filter if specified
         if (calculationType.HasValue)
         {

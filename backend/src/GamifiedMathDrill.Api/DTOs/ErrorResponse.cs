@@ -9,12 +9,12 @@ public class ErrorResponse
     /// エラーコード
     /// </summary>
     public string Error { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// エラーメッセージ
     /// </summary>
     public string Message { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// エラー詳細（デバッグ用）
     /// </summary>

@@ -39,7 +39,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         // Create student first
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
@@ -59,7 +59,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        stopwatch.ElapsedMilliseconds.Should().BeLessThan(100, 
+        stopwatch.ElapsedMilliseconds.Should().BeLessThan(100,
             $"カテゴリ指定の問題取得は100ms以内に完了すべき (実測: {stopwatch.ElapsedMilliseconds}ms)");
 
         var problemResponse = await response.Content.ReadFromJsonAsync<ApiResponse<TestProblemDto>>();
@@ -75,7 +75,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         // Create student and learning records
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
@@ -129,7 +129,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         // Create student
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
@@ -144,7 +144,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
 
         // Act - Measure end-to-end flow
         var stopwatch = Stopwatch.StartNew();
-        
+
         // 1. Get problem with category
         var problemApiResponse = await _client.GetAsync(
             $"/api/problems/next?studentId={student.Id}&category=Multiplication");
@@ -157,7 +157,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         problemApiResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         problem.Should().NotBeNull();
         problem!.CalculationTypeText.Should().Be("Multiplication");
-        
+
         stopwatch.ElapsedMilliseconds.Should().BeLessThan(2000,
             $"カテゴリ選択から問題表示までは2秒以内に完了すべき (実測: {stopwatch.ElapsedMilliseconds}ms)");
     }
@@ -169,7 +169,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         // Create student
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
@@ -183,8 +183,8 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
 
         // Act - Make concurrent requests
         var stopwatch = Stopwatch.StartNew();
-        
-        var tasks = categories.Select(category => 
+
+        var tasks = categories.Select(category =>
             _client.GetAsync($"/api/problems/next?studentId={student.Id}&category={category}")
         ).ToArray();
 
@@ -193,13 +193,13 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         responses.Should().AllSatisfy(r => r.StatusCode.Should().Be(HttpStatusCode.OK));
-        
+
         // Average time per request should be reasonable
         var avgTimePerRequest = stopwatch.ElapsedMilliseconds / (double)categories.Length;
         avgTimePerRequest.Should().BeLessThan(150,
             $"並行リクエストの平均応答時間は150ms以内であるべき (実測: {avgTimePerRequest:F1}ms)");
     }
-    
+
     private int ParseQuestionForAnswer(string question)
     {
         // Remove "= ?" from the end
@@ -208,7 +208,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
 
         if (!int.TryParse(parts[0], out var num1)) return 0;
         if (!int.TryParse(parts[2], out var num2)) return 0;
-        
+
         var op = parts[1];
         return op switch
         {
@@ -218,4 +218,5 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
             "÷" or "/" => num2 != 0 ? num1 / num2 : 0,
             _ => 0
         };
-    }}
+    }
+}

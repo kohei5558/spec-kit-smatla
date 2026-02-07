@@ -5,16 +5,16 @@ namespace GamifiedMathDrill.Core.Interfaces;
 public interface ILearningRecordService
 {
     Task<(List<LearningRecord> Records, int TotalCount)> GetRecordsAsync(
-        int studentId, 
-        DateTime? startDate = null, 
-        DateTime? endDate = null, 
+        int studentId,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
         CalculationType? calculationType = null,
         int page = 1,
         int pageSize = 20);
 
     Task<LearningStatistics> GetStatisticsAsync(
-        int studentId, 
-        DateTime? startDate = null, 
+        int studentId,
+        DateTime? startDate = null,
         DateTime? endDate = null,
         CalculationType? calculationType = null);
 }

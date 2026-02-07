@@ -59,7 +59,7 @@ public class RateLimitingMiddleware
             {
                 shouldBlock = true;
                 retryAfter = (int)rateLimitConfig.TimeWindow.TotalSeconds;
-                _logger.LogWarning("レート制限超過: IP={ClientIp}, Path={Path}, Count={Count}", 
+                _logger.LogWarning("レート制限超過: IP={ClientIp}, Path={Path}, Count={Count}",
                     clientIp, path, history.Requests.Count);
             }
             else

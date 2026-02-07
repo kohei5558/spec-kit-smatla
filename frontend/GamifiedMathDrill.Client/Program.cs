@@ -4,6 +4,7 @@ using GamifiedMathDrill.Client;
 using GamifiedMathDrill.Client.Services;
 using MudBlazor.Services;
 using Blazored.LocalStorage;
+using Blazored.SessionStorage;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -12,8 +13,9 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // MudBlazor services
 builder.Services.AddMudServices();
 
-// Blazored LocalStorage
+// Blazored LocalStorage and SessionStorage
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddBlazoredSessionStorage();
 
 // Configure HttpClient with API base address
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5242") });

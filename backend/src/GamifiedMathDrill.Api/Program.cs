@@ -56,6 +56,7 @@ builder.Services.AddScoped<IRewardRepository, RewardRepository>();
 builder.Services.AddScoped<IAcquiredRewardRepository, AcquiredRewardRepository>();
 builder.Services.AddScoped<IExchangeRequestRepository, ExchangeRequestRepository>();
 builder.Services.AddScoped<IDailyChallengeRepository, DailyChallengeRepository>();
+builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
 // Register services
 builder.Services.AddScoped<IStudentService, StudentService>();
@@ -68,6 +69,7 @@ builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IAuthService, GamifiedMathDrill.Infrastructure.Services.AuthService>();
 builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
 builder.Services.AddScoped<IParentDashboardService, ParentDashboardService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Background services
 builder.Services.AddHostedService<DailyChallengeJob>();
@@ -81,12 +83,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 8;
-    
+
     // Lockout settings
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.AllowedForNewUsers = true;
-    
+
     // User settings
     options.User.RequireUniqueEmail = true;
 })
@@ -94,7 +96,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 // JWT Authentication
-var jwtSecretKey = builder.Configuration["Jwt:SecretKey"] 
+var jwtSecretKey = builder.Configuration["Jwt:SecretKey"]
     ?? throw new InvalidOperationException("JWT SecretKey is not configured");
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "GamifiedMathDrill.Api";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "GamifiedMathDrill.Client";
@@ -134,7 +136,12 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // ModelState自動バリデーションを無効化（サービス層でバリデーション実施）
+        options.SuppressModelStateInvalidFilter = true;
+    });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -162,19 +169,19 @@ app.Use(async (context, next) =>
     context.Response.Headers["X-Frame-Options"] = "DENY";
     context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
     context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
-    
+
     if (!app.Environment.IsDevelopment())
     {
         context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
     }
-    
+
     await next();
 });
 
 // レート制限ミドルウェア（テスト環境では無効化）
 if (!app.Environment.IsEnvironment("Testing"))
 {
-    app.UseRateLimiting();
+    app.UseMiddleware<RateLimitMiddleware>();
 }
 
 if (app.Environment.IsDevelopment())

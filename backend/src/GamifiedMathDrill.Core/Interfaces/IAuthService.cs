@@ -12,9 +12,10 @@ public interface IAuthService
     /// </summary>
     /// <param name="email">メールアドレス</param>
     /// <param name="password">パスワード</param>
+    /// <param name="rememberMe">ログイン状態を保持するか（true: 30日間、false: 60分）</param>
     /// <returns>ログインレスポンスデータ(userId, displayName, role, parentId, token, expiresAt)</returns>
-    Task<(string? userId, string? displayName, UserRole? role, string? parentId, string? token, DateTime? expiresAt)> LoginAsync(string email, string password);
-    
+    Task<(string? userId, string? displayName, UserRole? role, string? parentId, string? token, DateTime? expiresAt)> LoginAsync(string email, string password, bool rememberMe = false);
+
     /// <summary>
     /// 子供ログイン
     /// </summary>
@@ -22,7 +23,7 @@ public interface IAuthService
     /// <param name="pin">PIN（4桁）</param>
     /// <returns>ログインレスポンスデータ(userId, displayName, role, parentId, token, expiresAt)</returns>
     Task<(string? userId, string? displayName, UserRole? role, string? parentId, string? token, DateTime? expiresAt)> ChildLoginAsync(string childId, string pin);
-    
+
     /// <summary>
     /// JWTトークンを生成
     /// </summary>
@@ -30,6 +31,40 @@ public interface IAuthService
     /// <param name="displayName">表示名</param>
     /// <param name="role">ロール</param>
     /// <param name="parentId">親ID（子供の場合）</param>
+    /// <param name="expiryMinutes">有効期限（分）</param>
     /// <returns>JWTトークン</returns>
-    string GenerateJwtToken(string userId, string displayName, string role, string? parentId = null);
+    string GenerateJwtToken(string userId, string displayName, string role, string? parentId = null, int? expiryMinutes = null);
+
+    /// <summary>
+    /// パスワードリセットメールを送信
+    /// </summary>
+    /// <param name="email">メールアドレス</param>
+    /// <param name="ipAddress">リクエスト元IPアドレス</param>
+    /// <returns>成功したかどうか</returns>
+    Task<bool> SendPasswordResetEmailAsync(string email, string ipAddress);
+
+    /// <summary>
+    /// パスワードリセットトークンを検証
+    /// </summary>
+    /// <param name="token">リセットトークン</param>
+    /// <returns>有効なトークンかどうか</returns>
+    Task<bool> ValidateResetTokenAsync(string token);
+
+    /// <summary>
+    /// パスワードをリセット
+    /// </summary>
+    /// <param name="token">リセットトークン</param>
+    /// <param name="newPassword">新しいパスワード</param>
+    /// <returns>成功したかどうか</returns>
+    Task<bool> ResetPasswordAsync(string token, string newPassword);
+
+    /// <summary>
+    /// 新規保護者アカウントを作成
+    /// </summary>
+    /// <param name="email">メールアドレス</param>
+    /// <param name="displayName">表示名</param>
+    /// <param name="password">パスワード</param>
+    /// <param name="confirmPassword">パスワード確認</param>
+    /// <returns>(成功フラグ, ユーザーID, トークン, 有効期限, エラーメッセージ)</returns>
+    Task<(bool success, string? userId, string? token, DateTime? expiresAt, string? errorMessage)> RegisterAsync(string email, string displayName, string password, string confirmPassword);
 }

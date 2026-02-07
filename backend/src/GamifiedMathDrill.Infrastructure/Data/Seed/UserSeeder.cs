@@ -17,7 +17,7 @@ public static class UserSeeder
         // 保護者アカウント
         var parentEmail = "parent@example.com";
         var existingParent = await userManager.FindByEmailAsync(parentEmail);
-        
+
         if (existingParent == null)
         {
             var parent = new ApplicationUser
@@ -35,7 +35,7 @@ public static class UserSeeder
             if (result.Succeeded)
             {
                 Console.WriteLine($"Created parent user: {parentEmail}");
-                
+
                 // 子供アカウント1
                 var child1 = new ApplicationUser
                 {

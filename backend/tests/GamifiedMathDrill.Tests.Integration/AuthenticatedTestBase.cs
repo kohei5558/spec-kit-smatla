@@ -14,7 +14,7 @@ public abstract class AuthenticatedTestBase : IClassFixture<TestWebApplicationFa
     {
         Factory = factory;
         Client = factory.CreateClient();
-        
+
         // テストユーザーをシード
         AuthenticationHelper.EnsureTestUsersExistAsync(factory.Services).Wait();
     }

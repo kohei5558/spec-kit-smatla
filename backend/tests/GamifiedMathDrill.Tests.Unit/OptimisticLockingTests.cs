@@ -51,7 +51,7 @@ public class OptimisticLockingTests
         mockRewardRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(reward);
         mockStudentRepo.Setup(s => s.GetByIdAsync(1)).ReturnsAsync(student1);
         mockStudentRepo.Setup(s => s.GetByIdAsync(2)).ReturnsAsync(student2);
-        
+
         mockRewardRepo.Setup(r => r.UpdateAsync(It.IsAny<Reward>()))
             .ReturnsAsync((Reward r) =>
             {
@@ -160,7 +160,7 @@ public class OptimisticLockingTests
 
         // Act
         var result1 = await service.UpdateRewardAsync(1, updatedReward1, null, null, null, "user1");
-        
+
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await service.UpdateRewardAsync(1, updatedReward2, null, null, null, "user2"));
 

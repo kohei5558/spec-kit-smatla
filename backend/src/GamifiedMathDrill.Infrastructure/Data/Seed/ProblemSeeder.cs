@@ -38,7 +38,7 @@ public static class ProblemSeeder
             int maxValue = difficulty * 10;
             int a = Random.Next(1, maxValue);
             int b = Random.Next(1, maxValue);
-            
+
             problems.Add(new Problem
             {
                 Id = startId++,
@@ -60,7 +60,7 @@ public static class ProblemSeeder
             int maxValue = difficulty * 10;
             int a = Random.Next(1, maxValue);
             int b = Random.Next(1, a + 1); // 負の数を避けるため
-            
+
             problems.Add(new Problem
             {
                 Id = startId++,
@@ -82,7 +82,7 @@ public static class ProblemSeeder
             int maxValue = Math.Min(difficulty * 2, 12); // 九九の範囲内
             int a = Random.Next(1, maxValue + 1);
             int b = Random.Next(1, maxValue + 1);
-            
+
             problems.Add(new Problem
             {
                 Id = startId++,
@@ -104,7 +104,7 @@ public static class ProblemSeeder
             int divisor = Random.Next(2, 11); // 2-10
             int quotient = Random.Next(1, difficulty * 5);
             int dividend = divisor * quotient;
-            
+
             problems.Add(new Problem
             {
                 Id = startId++,
