@@ -1,0 +1,161 @@
+@page "/parent/children/detail/{Id}"
+@using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Services
+@inject ChildAccountApiClient ChildAccountApiClient
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>子供アカウント詳細</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (childAccount == null)
+    {
+        <MudAlert Severity="Severity.Error">子供アカウントが見つかりませんでした</MudAlert>
+    }
+    else
+    {
+        <MudText Typo="Typo.h4" Class="mb-4">
+            <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
+            @childAccount.Name さんの詳細情報
+        </MudText>
+
+        <!-- 基本情報カード -->
+        <MudCard Class="mb-4">
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-3">基本情報</MudText>
+                <MudGrid>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">アバター</MudText>
+                        <MudAvatar Size="Size.Large" Class="mt-2">
+                            <MudImage Src="@childAccount.AvatarUrl" Alt="@childAccount.Name" />
+                        </MudAvatar>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">名前</MudText>
+                        <MudText Typo="Typo.body1" Class="mt-2">@childAccount.Name</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">学年</MudText>
+                        <MudText Typo="Typo.body1" Class="mt-2">@childAccount.GradeLevel 年生</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">状態</MudText>
+                        <MudChip Color="@(childAccount.IsActive ? Color.Success : Color.Default)" Size="Size.Small" Class="mt-2">
+                            @(childAccount.IsActive ? "有効" : "停止中")
+                        </MudChip>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+
+        <!-- 学習統計カード -->
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-3">学習統計</MudText>
+                
+                @if (childAccount.LearningStats == null)
+                {
+                    <MudAlert Severity="Severity.Info">まだ学習記録がありません</MudAlert>
+                }
+                else
+                {
+                    <MudGrid>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="2" Class="pa-4 text-center">
+                                <MudIcon Icon="@Icons.Material.Filled.QuestionAnswer" Color="Color.Primary" Size="Size.Large" />
+                                <MudText Typo="Typo.h5" Class="mt-2">@childAccount.LearningStats.TotalProblems</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">総問題数</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="2" Class="pa-4 text-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                                <MudText Typo="Typo.h5" Class="mt-2">@childAccount.LearningStats.AccuracyRate.ToString("F1")%</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">正答率</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="2" Class="pa-4 text-center">
+                                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Large" />
+                                <MudText Typo="Typo.h5" Class="mt-2">@childAccount.LearningStats.TotalPoints</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">獲得ポイント</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="2" Class="pa-4 text-center">
+                                <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Color="Color.Error" Size="Size.Large" />
+                                <MudText Typo="Typo.h5" Class="mt-2">@childAccount.LearningStats.ConsecutiveDays</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">連続学習日数</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+
+                    <!-- 過去7日間のアクティビティ -->
+                    @if (childAccount.LearningStats.Last7DaysActivity != null && childAccount.LearningStats.Last7DaysActivity.Any())
+                    {
+                        <MudDivider Class="my-4" />
+                        <MudText Typo="Typo.h6" Class="mb-3">過去7日間の学習記録</MudText>
+                        <LearningStatsChart ActivityData="@childAccount.LearningStats.Last7DaysActivity" />
+                    }
+                }
+            </MudCardContent>
+        </MudCard>
+
+        <!-- アクションボタン -->
+        <MudStack Row="true" Class="mt-4" Spacing="2">
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="GoBack">
+                <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Class="mr-2" />
+                戻る
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"/parent/children/edit/{Id}")">
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-2" />
+                編集
+            </MudButton>
+        </MudStack>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private ChildAccountViewModel? childAccount;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadChildAccountAsync();
+    }
+
+    private async Task LoadChildAccountAsync()
+    {
+        isLoading = true;
+        try
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                Snackbar.Add("子供アカウントIDが指定されていません", Severity.Error);
+                return;
+            }
+
+            childAccount = await ChildAccountApiClient.GetChildAccountDetailAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("データの読み込みに失敗しました", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/parent/children");
+    }
+}

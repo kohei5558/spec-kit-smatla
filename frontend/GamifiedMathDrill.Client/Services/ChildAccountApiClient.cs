@@ -87,6 +87,23 @@ public class ChildAccountApiClient
     }
 
     /// <summary>
+    /// 子供アカウント詳細情報を取得（学習統計含む）
+    /// </summary>
+    public async Task<ChildAccountViewModel?> GetChildAccountDetailAsync(string id)
+    {
+        try
+        {
+            await SetAuthorizationHeaderAsync();
+            return await _httpClient.GetFromJsonAsync<ChildAccountViewModel>($"api/child-accounts/{id}/detail");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting child account detail: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
     /// 子供アカウントを更新
     /// </summary>
     public async Task<ChildAccountViewModel?> UpdateChildAccountAsync(string id, ChildAccountUpdateRequest request)

@@ -75,6 +75,10 @@
                             </p>
 
                             <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-info btn-sm" 
+                                        @onclick="() => ViewDetail(child.Id)">
+                                    <i class="bi bi-eye me-1"></i>詳細
+                                </button>
                                 <button type="button" class="btn btn-outline-primary btn-sm" 
                                         @onclick="() => EditChild(child.Id)">
                                     <i class="bi bi-pencil me-1"></i>編集
@@ -196,6 +200,11 @@
     private void CreateNew()
     {
         Navigation.NavigateTo("/parent/children/create");
+    }
+
+    private void ViewDetail(string id)
+    {
+        Navigation.NavigateTo($"/parent/children/detail/{id}");
     }
 
     private void EditChild(string id)

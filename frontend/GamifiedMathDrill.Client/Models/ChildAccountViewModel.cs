@@ -34,6 +34,11 @@ public class ChildAccountViewModel
     /// 作成日時
     /// </summary>
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// 学習統計（詳細取得時のみ）
+    /// </summary>
+    public ChildLearningStatsViewModel? LearningStats { get; set; }
 }
 
 /// <summary>
@@ -128,4 +133,56 @@ public class ChildLoginRequestModel
     /// PINコード
     /// </summary>
     public string PIN { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// 子供の学習統計情報
+/// </summary>
+public class ChildLearningStatsViewModel
+{
+    /// <summary>
+    /// 総問題数
+    /// </summary>
+    public int TotalProblems { get; set; }
+
+    /// <summary>
+    /// 正答率（パーセント）
+    /// </summary>
+    public decimal AccuracyRate { get; set; }
+
+    /// <summary>
+    /// 獲得ポイント
+    /// </summary>
+    public int TotalPoints { get; set; }
+
+    /// <summary>
+    /// 連続学習日数
+    /// </summary>
+    public int ConsecutiveDays { get; set; }
+
+    /// <summary>
+    /// 過去7日間のアクティビティ
+    /// </summary>
+    public List<DailyActivityDto>? Last7DaysActivity { get; set; }
+}
+
+/// <summary>
+/// 日次アクティビティデータ
+/// </summary>
+public class DailyActivityDto
+{
+    /// <summary>
+    /// 日付
+    /// </summary>
+    public DateTime Date { get; set; }
+
+    /// <summary>
+    /// 解いた問題数
+    /// </summary>
+    public int ProblemsSolved { get; set; }
+
+    /// <summary>
+    /// 獲得ポイント
+    /// </summary>
+    public int PointsEarned { get; set; }
 }

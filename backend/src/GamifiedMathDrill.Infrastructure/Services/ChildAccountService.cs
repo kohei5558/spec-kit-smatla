@@ -345,16 +345,16 @@ public class ChildAccountService : IChildAccountService
     /// <summary>
     /// PINロックアウト状態を確認
     /// </summary>
-    public async Task<bool> IsLockedOutAsync(string childId)
+    public Task<bool> IsLockedOutAsync(string childId)
     {
         var lockoutKey = $"pin_lockout_{childId}";
-        return _cache.TryGetValue(lockoutKey, out _);
+        return Task.FromResult(_cache.TryGetValue(lockoutKey, out _));
     }
 
     /// <summary>
     /// PIN失敗回数を記録
     /// </summary>
-    public async Task RecordFailedPinAttemptAsync(string childId)
+    public Task RecordFailedPinAttemptAsync(string childId)
     {
         var attemptsKey = $"pin_attempts_{childId}";
         var lockoutKey = $"pin_lockout_{childId}";
@@ -379,17 +379,17 @@ public class ChildAccountService : IChildAccountService
             _cache.Remove(attemptsKey);
         }
 
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     /// <summary>
     /// PIN失敗カウンターをクリア（ログイン成功時）
     /// </summary>
-    public async Task ClearFailedPinAttemptsAsync(string childId)
+    public Task ClearFailedPinAttemptsAsync(string childId)
     {
         var attemptsKey = $"pin_attempts_{childId}";
         _cache.Remove(attemptsKey);
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     /// <summary>
