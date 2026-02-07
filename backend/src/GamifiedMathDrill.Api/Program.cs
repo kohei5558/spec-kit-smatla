@@ -56,6 +56,7 @@ builder.Services.AddScoped<IRewardRepository, RewardRepository>();
 builder.Services.AddScoped<IAcquiredRewardRepository, AcquiredRewardRepository>();
 builder.Services.AddScoped<IExchangeRequestRepository, ExchangeRequestRepository>();
 builder.Services.AddScoped<IDailyChallengeRepository, DailyChallengeRepository>();
+builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
 // Register services
 builder.Services.AddScoped<IStudentService, StudentService>();
@@ -68,6 +69,7 @@ builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IAuthService, GamifiedMathDrill.Infrastructure.Services.AuthService>();
 builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
 builder.Services.AddScoped<IParentDashboardService, ParentDashboardService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Background services
 builder.Services.AddHostedService<DailyChallengeJob>();
@@ -174,7 +176,7 @@ app.Use(async (context, next) =>
 // レート制限ミドルウェア（テスト環境では無効化）
 if (!app.Environment.IsEnvironment("Testing"))
 {
-    app.UseRateLimiting();
+    app.UseMiddleware<RateLimitMiddleware>();
 }
 
 if (app.Environment.IsDevelopment())
