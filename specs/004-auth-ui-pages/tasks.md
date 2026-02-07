@@ -102,11 +102,11 @@
 
 ### Frontend Implementation for User Story 1
 
-- [ ] T037 [P] [US1] Update TokenService to support session vs local storage based on rememberMe in frontend/GamifiedMathDrill.Client/Services/TokenService.cs
-- [ ] T038 [US1] Update AuthService.LoginAsync to pass rememberMe parameter in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
-- [ ] T039 [US1] Update Login.razor to add "ログイン状態を保持する" MudCheckBox in frontend/GamifiedMathDrill.Client/Pages/Login.razor
-- [ ] T040 [US1] Update Login.razor to pass rememberMe state to AuthService.LoginAsync in frontend/GamifiedMathDrill.Client/Pages/Login.razor
-- [ ] T041 [US1] Add visual feedback for login in progress (MudProgressCircular) in frontend/GamifiedMathDrill.Client/Pages/Login.razor
+- [x] T037 [P] [US1] Update TokenService to support session vs local storage based on rememberMe in frontend/GamifiedMathDrill.Client/Services/TokenService.cs
+- [x] T038 [US1] Update AuthService.LoginAsync to pass rememberMe parameter in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
+- [x] T039 [US1] Update Login.razor to add "ログイン状態を保持する" MudCheckBox in frontend/GamifiedMathDrill.Client/Pages/Login.razor
+- [x] T040 [US1] Update Login.razor to pass rememberMe state to AuthService.LoginAsync in frontend/GamifiedMathDrill.Client/Pages/Login.razor
+- [x] T041 [US1] Add visual feedback for login in progress (MudProgressCircular) in frontend/GamifiedMathDrill.Client/Pages/Login.razor
 
 ### Frontend Tests for User Story 1
 
