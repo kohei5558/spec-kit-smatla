@@ -1,0 +1,257 @@
+@page "/register"
+@using GamifiedMathDrill.Client.Services
+@using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
+@using MudBlazor
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>新規アカウント作成</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudPaper Class="pa-6" Elevation="3">
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">新規アカウント作成</MudText>
+        
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4">@errorMessage</MudAlert>
+        }
+
+        <EditForm Model="@registerModel" OnValidSubmit="@HandleRegister">
+            <DataAnnotationsValidator />
+            
+            <MudTextField @bind-Value="registerModel.Email" 
+                          Label="メールアドレス" 
+                          Variant="Variant.Outlined" 
+                          For="@(() => registerModel.Email)"
+                          Class="mb-3" />
+
+            <MudTextField @bind-Value="registerModel.DisplayName" 
+                          Label="表示名（保護者の名前）" 
+                          Variant="Variant.Outlined" 
+                          For="@(() => registerModel.DisplayName)"
+                          Class="mb-3" />
+
+            <MudTextField @bind-Value="registerModel.Password" 
+                          Label="パスワード" 
+                          InputType="InputType.Password"
+                          Variant="Variant.Outlined" 
+                          For="@(() => registerModel.Password)"
+                          @oninput="@OnPasswordChanged"
+                          Class="mb-2" />
+
+            @* パスワード強度インジケーター *@
+            @if (!string.IsNullOrEmpty(registerModel.Password))
+            {
+                <MudText Typo="Typo.caption" Class="mb-1">パスワード強度:</MudText>
+                <MudProgressLinear Color="@passwordStrengthColor" 
+                                   Value="@passwordStrengthValue" 
+                                   Class="mb-1" />
+                <MudText Typo="Typo.caption" Color="@passwordStrengthColor" Class="mb-3">
+                    @passwordStrengthText
+                </MudText>
+                
+                @* パスワード要件チェックリスト *@
+                <MudText Typo="Typo.caption" Class="mb-1">パスワード要件:</MudText>
+                <MudList Dense="true" Class="mb-3" Style="padding: 0;">
+                    <MudListItem Dense="true" Style="min-height: 24px; padding: 2px 0;">
+                        <MudIcon Icon="@(passwordChecks.HasMinLength ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)" 
+                                 Color="@(passwordChecks.HasMinLength ? Color.Success : Color.Default)" 
+                                 Size="Size.Small" 
+                                 Class="mr-1" />
+                        <MudText Typo="Typo.caption">8文字以上</MudText>
+                    </MudListItem>
+                    <MudListItem Dense="true" Style="min-height: 24px; padding: 2px 0;">
+                        <MudIcon Icon="@(passwordChecks.HasUpperCase ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)" 
+                                 Color="@(passwordChecks.HasUpperCase ? Color.Success : Color.Default)" 
+                                 Size="Size.Small" 
+                                 Class="mr-1" />
+                        <MudText Typo="Typo.caption">大文字を含む</MudText>
+                    </MudListItem>
+                    <MudListItem Dense="true" Style="min-height: 24px; padding: 2px 0;">
+                        <MudIcon Icon="@(passwordChecks.HasLowerCase ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)" 
+                                 Color="@(passwordChecks.HasLowerCase ? Color.Success : Color.Default)" 
+                                 Size="Size.Small" 
+                                 Class="mr-1" />
+                        <MudText Typo="Typo.caption">小文字を含む</MudText>
+                    </MudListItem>
+                    <MudListItem Dense="true" Style="min-height: 24px; padding: 2px 0;">
+                        <MudIcon Icon="@(passwordChecks.HasDigit ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)" 
+                                 Color="@(passwordChecks.HasDigit ? Color.Success : Color.Default)" 
+                                 Size="Size.Small" 
+                                 Class="mr-1" />
+                        <MudText Typo="Typo.caption">数字を含む</MudText>
+                    </MudListItem>
+                    <MudListItem Dense="true" Style="min-height: 24px; padding: 2px 0;">
+                        <MudIcon Icon="@(passwordChecks.HasSpecialChar ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)" 
+                                 Color="@(passwordChecks.HasSpecialChar ? Color.Success : Color.Default)" 
+                                 Size="Size.Small" 
+                                 Class="mr-1" />
+                        <MudText Typo="Typo.caption">記号を含む (@$!%*?&)</MudText>
+                    </MudListItem>
+                </MudList>
+            }
+
+            <MudTextField @bind-Value="registerModel.ConfirmPassword" 
+                          Label="パスワード確認" 
+                          InputType="InputType.Password"
+                          Variant="Variant.Outlined" 
+                          For="@(() => registerModel.ConfirmPassword)"
+                          Class="mb-4" />
+
+            <MudButton ButtonType="ButtonType.Submit" 
+                       Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       FullWidth="true"
+                       Disabled="@isLoading"
+                       Class="mb-3">
+                @if (isLoading)
+                {
+                    <MudProgressCircular Class="mr-2" Size="Size.Small" Indeterminate="true" />
+                    <span>登録中...</span>
+                }
+                else
+                {
+                    <span>アカウント作成</span>
+                }
+            </MudButton>
+        </EditForm>
+
+        <MudDivider Class="my-4" />
+        
+        <MudText Align="Align.Center">
+            すでにアカウントをお持ちの方は
+            <MudLink Href="/login" Color="Color.Primary">ログイン</MudLink>
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private RegisterModel registerModel = new();
+    private bool isLoading = false;
+    private string? errorMessage;
+    
+    private PasswordChecks passwordChecks = new();
+    private int passwordStrengthValue = 0;
+    private Color passwordStrengthColor = Color.Default;
+    private string passwordStrengthText = "";
+
+    private void OnPasswordChanged(ChangeEventArgs e)
+    {
+        var password = e.Value?.ToString() ?? "";
+        registerModel.Password = password;
+        UpdatePasswordStrength(password);
+    }
+
+    private void UpdatePasswordStrength(string password)
+    {
+        if (string.IsNullOrEmpty(password))
+        {
+            passwordChecks = new PasswordChecks();
+            passwordStrengthValue = 0;
+            passwordStrengthColor = Color.Default;
+            passwordStrengthText = "";
+            return;
+        }
+
+        // パスワード要件をチェック
+        passwordChecks.HasMinLength = password.Length >= 8;
+        passwordChecks.HasUpperCase = Regex.IsMatch(password, @"[A-Z]");
+        passwordChecks.HasLowerCase = Regex.IsMatch(password, @"[a-z]");
+        passwordChecks.HasDigit = Regex.IsMatch(password, @"\d");
+        passwordChecks.HasSpecialChar = Regex.IsMatch(password, @"[@$!%*?&]");
+
+        // 強度を計算
+        int strength = 0;
+        if (passwordChecks.HasMinLength) strength += 20;
+        if (passwordChecks.HasUpperCase) strength += 20;
+        if (passwordChecks.HasLowerCase) strength += 20;
+        if (passwordChecks.HasDigit) strength += 20;
+        if (passwordChecks.HasSpecialChar) strength += 20;
+
+        passwordStrengthValue = strength;
+
+        // 色とテキストを設定
+        if (strength == 100)
+        {
+            passwordStrengthColor = Color.Success;
+            passwordStrengthText = "非常に強力";
+        }
+        else if (strength >= 80)
+        {
+            passwordStrengthColor = Color.Info;
+            passwordStrengthText = "強力";
+        }
+        else if (strength >= 60)
+        {
+            passwordStrengthColor = Color.Warning;
+            passwordStrengthText = "普通";
+        }
+        else
+        {
+            passwordStrengthColor = Color.Error;
+            passwordStrengthText = "弱い";
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        isLoading = true;
+        errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var (success, message, token) = await AuthService.RegisterAsync(
+                registerModel.Email,
+                registerModel.DisplayName,
+                registerModel.Password,
+                registerModel.ConfirmPassword);
+
+            if (success && !string.IsNullOrEmpty(token))
+            {
+                // 自動ログイン成功 - ダッシュボードにリダイレクト
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = message ?? "登録に失敗しました";
+            }
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private class RegisterModel
+    {
+        [Required(ErrorMessage = "メールアドレスを入力してください")]
+        [EmailAddress(ErrorMessage = "正しいメールアドレスを入力してください")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "表示名を入力してください")]
+        [StringLength(50, ErrorMessage = "表示名は50文字以内で入力してください")]
+        public string DisplayName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "パスワードを入力してください")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8文字以上100文字以内で入力してください")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$",
+            ErrorMessage = "パスワードは大文字、小文字、数字、記号を各1文字以上含む必要があります")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "パスワード確認を入力してください")]
+        [Compare(nameof(Password), ErrorMessage = "パスワードが一致しません")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+
+    private class PasswordChecks
+    {
+        public bool HasMinLength { get; set; }
+        public bool HasUpperCase { get; set; }
+        public bool HasLowerCase { get; set; }
+        public bool HasDigit { get; set; }
+        public bool HasSpecialChar { get; set; }
+    }
+}

@@ -213,23 +213,23 @@
 
 ### Frontend Models for User Story 3
 
-- [ ] T094 [P] [US3] Create RegisterRequest.cs in frontend/GamifiedMathDrill.Client/Models/RegisterRequest.cs
-- [ ] T095 [P] [US3] Create RegisterResponse.cs in frontend/GamifiedMathDrill.Client/Models/RegisterResponse.cs
+- [X] T094 [P] [US3] Create RegisterRequest.cs in frontend/GamifiedMathDrill.Client/Models/RegisterRequest.cs
+- [X] T095 [P] [US3] Create RegisterResponse.cs in frontend/GamifiedMathDrill.Client/Models/RegisterResponse.cs
 
 ### Frontend Services for User Story 3
 
-- [ ] T096 [US3] Add RegisterAsync method to AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
+- [X] T096 [US3] Add RegisterAsync method to AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
 
 ### Frontend Pages for User Story 3
 
-- [ ] T097 [P] [US3] Create Register.razor page with registration form in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [ ] T098 [P] [US3] Add MudBlazor components (MudTextField, MudButton, MudAlert) to Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [ ] T099 [P] [US3] Add client-side validation for all fields (email, displayName, password) in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [ ] T100 [P] [US3] Add password strength indicator UI in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [ ] T101 [P] [US3] Add confirm password matching validation in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [ ] T102 [P] [US3] Connect Register.razor to AuthService.RegisterAsync in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [ ] T103 [P] [US3] Handle auto-login after successful registration in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [ ] T104 [US3] Update Login.razor to add "新規登録" link to /register in frontend/GamifiedMathDrill.Client/Pages/Login.razor
+- [X] T097 [P] [US3] Create Register.razor page with registration form in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [X] T098 [P] [US3] Add MudBlazor components (MudTextField, MudButton, MudAlert) to Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [X] T099 [P] [US3] Add client-side validation for all fields (email, displayName, password) in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [X] T100 [P] [US3] Add password strength indicator UI in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [X] T101 [P] [US3] Add confirm password matching validation in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [X] T102 [P] [US3] Connect Register.razor to AuthService.RegisterAsync in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [X] T103 [P] [US3] Handle auto-login after successful registration in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [X] T104 [US3] Update Login.razor to add "新規登録" link to /register in frontend/GamifiedMathDrill.Client/Pages/Login.razor
 
 ### Frontend Tests for User Story 3
 

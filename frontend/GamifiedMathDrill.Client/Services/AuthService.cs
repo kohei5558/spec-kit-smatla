@@ -245,4 +245,55 @@ public class AuthService
             return (false, $"エラーが発生しました: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// 新規アカウントを作成（自動ログイン）
+    /// </summary>
+    public async Task<(bool success, string? message, string? token)> RegisterAsync(
+        string email, 
+        string displayName, 
+        string password, 
+        string confirmPassword)
+    {
+        try
+        {
+            var request = new RegisterRequest
+            {
+                Email = email,
+                DisplayName = displayName,
+                Password = password,
+                ConfirmPassword = confirmPassword
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/register", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+                if (result?.Success == true && !string.IsNullOrEmpty(result.Token))
+                {
+                    // 自動ログイン: トークンをセッションストレージに保存（rememberMe=false）
+                    await _tokenService.SetTokenAsync(result.Token, rememberMe: false);
+                    return (true, result.Message, result.Token);
+                }
+                return (false, result?.Message ?? "登録に失敗しました", null);
+            }
+
+            // エラーレスポンスを解析
+            var errorContent = await response.Content.ReadAsStringAsync();
+            try
+            {
+                var errorResponse = JsonSerializer.Deserialize<RegisterResponse>(errorContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return (false, errorResponse?.Message ?? "登録に失敗しました", null);
+            }
+            catch
+            {
+                return (false, "登録に失敗しました", null);
+            }
+        }
+        catch (Exception ex)
+        {
+            return (false, $"エラーが発生しました: {ex.Message}", null);
+        }
+    }
 }
