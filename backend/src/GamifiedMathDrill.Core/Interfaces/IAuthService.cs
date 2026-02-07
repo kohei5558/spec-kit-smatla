@@ -34,4 +34,27 @@ public interface IAuthService
     /// <param name="expiryMinutes">有効期限（分）</param>
     /// <returns>JWTトークン</returns>
     string GenerateJwtToken(string userId, string displayName, string role, string? parentId = null, int? expiryMinutes = null);
+    
+    /// <summary>
+    /// パスワードリセットメールを送信
+    /// </summary>
+    /// <param name="email">メールアドレス</param>
+    /// <param name="ipAddress">リクエスト元IPアドレス</param>
+    /// <returns>成功したかどうか</returns>
+    Task<bool> SendPasswordResetEmailAsync(string email, string ipAddress);
+    
+    /// <summary>
+    /// パスワードリセットトークンを検証
+    /// </summary>
+    /// <param name="token">リセットトークン</param>
+    /// <returns>有効なトークンかどうか</returns>
+    Task<bool> ValidateResetTokenAsync(string token);
+    
+    /// <summary>
+    /// パスワードをリセット
+    /// </summary>
+    /// <param name="token">リセットトークン</param>
+    /// <param name="newPassword">新しいパスワード</param>
+    /// <returns>成功したかどうか</returns>
+    Task<bool> ResetPasswordAsync(string token, string newPassword);
 }

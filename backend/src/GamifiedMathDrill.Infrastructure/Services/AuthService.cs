@@ -1,11 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace GamifiedMathDrill.Infrastructure.Services;
@@ -17,11 +19,22 @@ public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
+    private readonly IEmailService _emailService;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+    public AuthService(
+        UserManager<ApplicationUser> userManager, 
+        IConfiguration configuration,
+        IPasswordResetTokenRepository passwordResetTokenRepository,
+        IEmailService emailService,
+        ILogger<AuthService> logger)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _passwordResetTokenRepository = passwordResetTokenRepository;
+        _emailService = emailService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -117,5 +130,147 @@ public class AuthService : IAuthService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    /// <summary>
+    /// パスワードリセットメールを送信
+    /// </summary>
+    public async Task<bool> SendPasswordResetEmailAsync(string email, string ipAddress)
+    {
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            
+            // セキュリティ上、ユーザーが存在しない場合でも成功を返す
+            if (user == null || user.Role != UserRole.Parent)
+            {
+                _logger.LogWarning("Password reset requested for non-existent or non-parent email: {Email}", email);
+                return true;
+            }
+
+            // トークンを生成
+            var token = Guid.NewGuid().ToString("N");
+            var tokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+
+            // トークンをDBに保存
+            var resetToken = new PasswordResetToken
+            {
+                UserId = user.Id,
+                TokenHash = tokenHash,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddHours(1), // 1時間有効
+                IsUsed = false,
+                IpAddress = ipAddress
+            };
+
+            await _passwordResetTokenRepository.CreateAsync(resetToken);
+
+            // リセットリンクを生成
+            var frontendUrl = _configuration["Frontend:BaseUrl"] ?? "http://localhost:5173";
+            var resetLink = $"{frontendUrl}/reset-password?token={Uri.EscapeDataString(token)}";
+
+            // メール送信
+            await _emailService.SendPasswordResetEmailAsync(email, resetLink);
+
+            _logger.LogInformation("Password reset email sent to {Email}", email);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send password reset email to {Email}", email);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// パスワードリセットトークンを検証
+    /// </summary>
+    public async Task<bool> ValidateResetTokenAsync(string token)
+    {
+        try
+        {
+            var tokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+            var resetToken = await _passwordResetTokenRepository.GetByTokenHashAsync(tokenHash);
+
+            if (resetToken == null)
+            {
+                _logger.LogWarning("Invalid reset token attempted");
+                return false;
+            }
+
+            if (resetToken.IsUsed)
+            {
+                _logger.LogWarning("Already used reset token attempted: {TokenId}", resetToken.Id);
+                return false;
+            }
+
+            if (resetToken.ExpiresAt < DateTime.UtcNow)
+            {
+                _logger.LogWarning("Expired reset token attempted: {TokenId}", resetToken.Id);
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to validate reset token");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// パスワードをリセット
+    /// </summary>
+    public async Task<bool> ResetPasswordAsync(string token, string newPassword)
+    {
+        try
+        {
+            var tokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+            var resetToken = await _passwordResetTokenRepository.GetByTokenHashAsync(tokenHash);
+
+            if (resetToken == null || resetToken.IsUsed || resetToken.ExpiresAt < DateTime.UtcNow)
+            {
+                _logger.LogWarning("Invalid, used, or expired reset token attempted");
+                return false;
+            }
+
+            // ユーザーを取得
+            var user = await _userManager.FindByIdAsync(resetToken.UserId);
+            if (user == null)
+            {
+                _logger.LogError("User not found for reset token: {UserId}", resetToken.UserId);
+                return false;
+            }
+
+            // パスワードをリセット
+            var removePasswordResult = await _userManager.RemovePasswordAsync(user);
+            if (!removePasswordResult.Succeeded)
+            {
+                _logger.LogError("Failed to remove old password for user: {UserId}", user.Id);
+                return false;
+            }
+
+            var addPasswordResult = await _userManager.AddPasswordAsync(user, newPassword);
+            if (!addPasswordResult.Succeeded)
+            {
+                _logger.LogError("Failed to add new password for user: {UserId}. Errors: {Errors}", 
+                    user.Id, string.Join(", ", addPasswordResult.Errors.Select(e => e.Description)));
+                return false;
+            }
+
+            // トークンを使用済みとしてマーク
+            resetToken.IsUsed = true;
+            resetToken.UsedAt = DateTime.UtcNow;
+            await _passwordResetTokenRepository.UpdateAsync(resetToken);
+
+            _logger.LogInformation("Password reset successful for user: {UserId}", user.Id);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to reset password");
+            return false;
+        }
     }
 }
