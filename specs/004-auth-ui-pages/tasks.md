@@ -245,12 +245,12 @@
 
 **Purpose**: Implement security measures across all authentication endpoints
 
-- [ ] T108 Create RateLimitTests.cs in backend/tests/GamifiedMathDrill.Tests.Integration/RateLimitTests.cs
-- [ ] T109 Add test case for rate limit on login after 5 failed attempts in backend/tests/GamifiedMathDrill.Tests.Integration/RateLimitTests.cs
-- [ ] T110 Add test case for rate limit reset after 15 minutes in backend/tests/GamifiedMathDrill.Tests.Integration/RateLimitTests.cs
-- [ ] T111 Verify RateLimitMiddleware applies to /api/auth/register endpoint in backend/src/GamifiedMathDrill.Api/Middleware/RateLimitMiddleware.cs
-- [ ] T112 Verify RateLimitMiddleware applies to /api/auth/forgot-password endpoint in backend/src/GamifiedMathDrill.Api/Middleware/RateLimitMiddleware.cs
-- [ ] T113 Add rate limit error message (429 Too Many Requests) handling in all frontend auth pages in frontend/GamifiedMathDrill.Client/Pages/
+- [x] T108 Create RateLimitTests.cs in backend/tests/GamifiedMathDrill.Tests.Integration/RateLimitTests.cs
+- [x] T109 Add test case for rate limit on login after 5 failed attempts in backend/tests/GamifiedMathDrill.Tests.Integration/RateLimitTests.cs
+- [x] T110 Add test case for rate limit reset after 15 minutes in backend/tests/GamifiedMathDrill.Tests.Integration/RateLimitTests.cs
+- [x] T111 Verify RateLimitMiddleware applies to /api/auth/register endpoint in backend/src/GamifiedMathDrill.Api/Middleware/RateLimitMiddleware.cs
+- [x] T112 Verify RateLimitMiddleware applies to /api/auth/forgot-password endpoint in backend/src/GamifiedMathDrill.Api/Middleware/RateLimitMiddleware.cs
+- [x] T113 Add rate limit error message (429 Too Many Requests) handling in all frontend auth pages in frontend/GamifiedMathDrill.Client/Pages/
 
 ---
 
@@ -273,12 +273,12 @@
 
 ### UI/UX Polish
 
-- [ ] T120 [P] Add responsive design verification for Login.razor (mobile/tablet/desktop) in frontend/GamifiedMathDrill.Client/Pages/Login.razor
-- [ ] T121 [P] Add responsive design verification for Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [ ] T122 [P] Add responsive design verification for ForgotPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
-- [ ] T123 [P] Add responsive design verification for ResetPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
-- [ ] T124 [P] Add loading states (MudProgressCircular) to all submit buttons in frontend/GamifiedMathDrill.Client/Pages/
-- [ ] T125 [P] Verify all error messages are user-friendly and localized (Japanese) in frontend/GamifiedMathDrill.Client/Pages/
+- [X] T120 [P] Add responsive design verification for Login.razor (mobile/tablet/desktop) in frontend/GamifiedMathDrill.Client/Pages/Login.razor
+- [X] T121 [P] Add responsive design verification for Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [X] T122 [P] Add responsive design verification for ForgotPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
+- [X] T123 [P] Add responsive design verification for ResetPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
+- [X] T124 [P] Add loading states (MudProgressCircular) to all submit buttons in frontend/GamifiedMathDrill.Client/Pages/
+- [X] T125 [P] Verify all error messages are user-friendly and localized (Japanese) in frontend/GamifiedMathDrill.Client/Pages/
 
 ### API Documentation
 
@@ -294,9 +294,9 @@
 
 ### Deployment Preparation
 
-- [ ] T132 Verify all environment variables documented in appsettings.json in backend/src/GamifiedMathDrill.Api/
-- [ ] T133 Create deployment checklist (database migration, email config, JWT secrets) in specs/004-auth-ui-pages/
-- [ ] T134 Run security audit (password hashing, HTTPS, rate limiting, token expiry) across all new code
+- [X] T132 Verify all environment variables documented in appsettings.json in backend/src/GamifiedMathDrill.Api/
+- [X] T133 Create deployment checklist (database migration, email config, JWT secrets) in specs/004-auth-ui-pages/
+- [X] T134 Run security audit (password hashing, HTTPS, rate limiting, token expiry) across all new code
 - [ ] T135 Run performance testing for login/register endpoints (<5s response time) in backend/tests/
 
 ---
@@ -305,9 +305,9 @@
 
 **Purpose**: Final quality gates before merging to main
 
-- [X] T136 [P] Run `dotnet format` on all backend C# code in backend/
-- [X] T137 Fix any linter warnings or errors in backend code
-- [X] T138 Verify all tests pass: `dotnet test` in backend/
+- [x] T136 [P] Run `dotnet format` on all backend C# code in backend/
+- [x] T137 Fix any linter warnings or errors in backend code
+- [x] T138 Verify all tests pass: `dotnet test` in backend/
 - [ ] T139 Create pull request from `004-auth-ui-pages` to main branch
 - [ ] T140 Address code review feedback
 - [ ] T141 Squash and merge to main branch after approval
