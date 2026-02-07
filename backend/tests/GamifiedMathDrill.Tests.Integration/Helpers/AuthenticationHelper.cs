@@ -13,11 +13,10 @@ namespace GamifiedMathDrill.Tests.Integration.Helpers;
 /// </summary>
 public static class AuthenticationHelper
 {
-    private static bool _usersSeeded = false;
     private static readonly object _lock = new object();
 
     /// <summary>
-    /// テストユーザーをシード（初回のみ実行）
+    /// テストユーザーをシード（存在しない場合のみ作成）
     /// </summary>
     public static Task EnsureTestUsersExistAsync(IServiceProvider services)
     {
@@ -27,60 +26,54 @@ public static class AuthenticationHelper
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            // ユーザー作成は初回のみ
-            if (!_usersSeeded)
+            // 保護者ユーザーの存在確認と作成
+            var parentEmail = "parent@example.com";
+            var existingParent = await userManager.FindByEmailAsync(parentEmail);
+
+            if (existingParent == null)
             {
-                // 保護者ユーザーを作成
-                var parentEmail = "parent@example.com";
-                var existingParent = userManager.FindByEmailAsync(parentEmail).Result;
-
-                if (existingParent == null)
+                var newParent = new ApplicationUser
                 {
-                    var newParent = new ApplicationUser
-                    {
-                        UserName = parentEmail,
-                        Email = parentEmail,
-                        DisplayName = "Test Parent",
-                        Role = UserRole.Parent,
-                        EmailConfirmed = true
-                    };
+                    UserName = parentEmail,
+                    Email = parentEmail,
+                    DisplayName = "Test Parent",
+                    Role = UserRole.Parent,
+                    EmailConfirmed = true
+                };
 
-                    var result = userManager.CreateAsync(newParent, "Parent123!").Result;
-                    if (!result.Succeeded)
-                    {
-                        throw new Exception($"Failed to create parent user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                    }
+                var result = await userManager.CreateAsync(newParent, "Parent123!");
+                if (!result.Succeeded)
+                {
+                    throw new Exception($"Failed to create parent user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+            }
+
+            // 子供ユーザーの存在確認と作成
+            var parentUser = await userManager.FindByEmailAsync(parentEmail)
+                ?? throw new Exception("Parent user not found after creation");
+
+            var existingChild = userManager.Users.FirstOrDefault(u => u.DisplayName == "太郎" && u.Role == UserRole.Child);
+
+            if (existingChild == null)
+            {
+                var child = new ApplicationUser
+                {
+                    UserName = $"child_taro_{Guid.NewGuid()}",
+                    Email = $"taro_{Guid.NewGuid()}@test.local",
+                    DisplayName = "太郎",
+                    Role = UserRole.Child,
+                    ParentId = parentUser.Id,
+                    PIN = userManager.PasswordHasher.HashPassword(null!, "1234"),
+                    EmailConfirmed = true
+                };
+
+                var result = await userManager.CreateAsync(child);
+                if (!result.Succeeded)
+                {
+                    throw new Exception($"Failed to create child user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
                 }
 
-                // 子供ユーザーを作成
-                var parentUser = userManager.FindByEmailAsync(parentEmail).Result
-                    ?? throw new Exception("Parent user not found after creation");
-
-                var existingChild = userManager.Users.FirstOrDefault(u => u.DisplayName == "太郎" && u.Role == UserRole.Child);
-
-                if (existingChild == null)
-                {
-                    var child = new ApplicationUser
-                    {
-                        UserName = $"child_taro_{Guid.NewGuid()}",
-                        Email = $"taro_{Guid.NewGuid()}@test.local",
-                        DisplayName = "太郎",
-                        Role = UserRole.Child,
-                        ParentId = parentUser.Id,
-                        PIN = userManager.PasswordHasher.HashPassword(null!, "1234"),
-                        EmailConfirmed = true
-                    };
-
-                    var result = userManager.CreateAsync(child).Result;
-                    if (!result.Succeeded)
-                    {
-                        throw new Exception($"Failed to create child user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                    }
-
-                    existingChild = child;
-                }
-
-                _usersSeeded = true;
+                existingChild = child;
             }
 
             // Studentエントリを作成（存在しない場合）または既存のものをリセット
