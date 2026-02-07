@@ -22,10 +22,10 @@
 
 **Purpose**: Project initialization and environment setup
 
-- [ ] T001 Verify .NET 8.0 SDK installation and PostgreSQL database connectivity
-- [ ] T002 Create feature branch `004-auth-ui-pages` and verify checkout
-- [ ] T003 [P] Run `dotnet restore` for backend solution in backend/GamifiedMathDrill.sln
-- [ ] T004 [P] Run `dotnet restore` for frontend project in frontend/GamifiedMathDrill.Client
+- [x] T001 Verify .NET 8.0 SDK installation and PostgreSQL database connectivity
+- [x] T002 Create feature branch `004-auth-ui-pages` and verify checkout
+- [x] T003 [P] Run `dotnet restore` for backend solution in backend/GamifiedMathDrill.sln
+- [x] T004 [P] Run `dotnet restore` for frontend project in frontend/GamifiedMathDrill.Client
 
 ---
 
@@ -86,19 +86,19 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T027 [P] [US1] Create LoginTests.cs for basic login flow in backend/tests/GamifiedMathDrill.Tests.Integration/LoginTests.cs
-- [ ] T028 [P] [US1] Add test case for successful login with rememberMe=false in backend/tests/GamifiedMathDrill.Tests.Integration/LoginTests.cs
-- [ ] T029 [P] [US1] Add test case for successful login with rememberMe=true in backend/tests/GamifiedMathDrill.Tests.Integration/LoginTests.cs
-- [ ] T030 [P] [US1] Add test case for invalid credentials login failure in backend/tests/GamifiedMathDrill.Tests.Integration/LoginTests.cs
-- [ ] T031 [P] [US1] Add test case for JWT token expiry validation (60 min vs 30 days) in backend/tests/GamifiedMathDrill.Tests.Integration/LoginTests.cs
+- [x] T027 [P] [US1] Create LoginTests.cs for basic login flow in backend/tests/GamifiedMathDrill.Tests.Integration/LoginTests.cs
+- [x] T028 [P] [US1] Add test case for successful login with rememberMe=false in backend/tests/GamifiedMathDrill.Tests.Integration/LoginTests.cs
+- [x] T029 [P] [US1] Add test case for successful login with rememberMe=true in backend/tests/GamifiedMathDrill.Tests.Integration/LoginTests.cs
+- [x] T030 [P] [US1] Add test case for invalid credentials login failure in backend/tests/GamifiedMathDrill.Tests.Integration/LoginTests.cs
+- [x] T031 [P] [US1] Add test case for JWT token expiry validation (60 min vs 30 days) in backend/tests/GamifiedMathDrill.Tests.Integration/LoginTests.cs
 
 ### Backend Implementation for User Story 1
 
-- [ ] T032 [US1] Update IAuthService interface to add rememberMe parameter to LoginAsync in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
-- [ ] T033 [US1] Update AuthService.LoginAsync to support rememberMe and adjust JWT expiry in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
-- [ ] T034 [US1] Update AuthController.Login endpoint to accept rememberMe parameter in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
-- [ ] T035 [US1] Add logging for login attempts (success/failure) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
-- [ ] T036 [US1] Verify RateLimitMiddleware applies to /api/auth/login endpoint in backend/src/GamifiedMathDrill.Api/Middleware/RateLimitMiddleware.cs
+- [x] T032 [US1] Update IAuthService interface to add rememberMe parameter to LoginAsync in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
+- [x] T033 [US1] Update AuthService.LoginAsync to support rememberMe and adjust JWT expiry in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [x] T034 [US1] Update AuthController.Login endpoint to accept rememberMe parameter in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
+- [x] T035 [US1] Add logging for login attempts (success/failure) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [x] T036 [US1] Verify RateLimitMiddleware applies to /api/auth/login endpoint in backend/src/GamifiedMathDrill.Api/Middleware/RateLimitMiddleware.cs
 
 ### Frontend Implementation for User Story 1
 
