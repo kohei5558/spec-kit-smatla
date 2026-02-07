@@ -209,4 +209,43 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         // Assert - child2はロックされていない
         Assert.Equal(HttpStatusCode.OK, child2LoginResponse.StatusCode);
     }
+
+    [Fact]
+    public async Task ChildLogin_SuspendedAccount_ReturnsForbidden()
+    {
+        // Arrange
+        await AuthenticateAsParentAsync();
+
+        // 子供アカウントを作成
+        var createRequest = new ChildAccountCreateDto
+        {
+            Name = "停止テスト太郎",
+            GradeLevel = 4,
+            PresetAvatarId = 2,
+            PIN = "5555"
+        };
+
+        var createResponse = await Client.PostAsJsonAsync("/api/child-accounts", createRequest);
+        var childAccount = await createResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(childAccount);
+
+        // アカウントを停止
+        var suspendResponse = await Client.PostAsync($"/api/child-accounts/{childAccount.Id}/suspend", null);
+        Assert.Equal(HttpStatusCode.NoContent, suspendResponse.StatusCode);
+
+        // ログアウト
+        Client.DefaultRequestHeaders.Authorization = null;
+
+        // Act: 停止中のアカウントでログイン試行
+        var loginRequest = new
+        {
+            ChildAccountId = childAccount.Id,
+            PIN = "5555" // 正しいPIN
+        };
+        var loginResponse = await Client.PostAsJsonAsync("/api/auth/child/login", loginRequest);
+
+        // Assert: 停止中のため拒否される
+        Assert.Equal(HttpStatusCode.Forbidden, loginResponse.StatusCode);
+    }
 }
+

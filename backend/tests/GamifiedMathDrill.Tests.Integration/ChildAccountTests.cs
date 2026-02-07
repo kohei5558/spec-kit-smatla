@@ -495,4 +495,55 @@ public class ChildAccountTests : AuthenticatedTestBase
     }
 
     #endregion
+
+    #region Phase 6: User Story 4 - アカウント一時停止
+
+    [Fact]
+    public async Task SuspendChildAccount_ThenActivate_Success()
+    {
+        // Arrange
+        await AuthenticateAsParentAsync();
+
+        // 子供アカウントを作成
+        var createRequest = new ChildAccountCreateDto
+        {
+            Name = "七郎",
+            GradeLevel = 3,
+            PresetAvatarId = 3,
+            PIN = "7777"
+        };
+
+        var createResponse = await Client.PostAsJsonAsync("/api/child-accounts", createRequest);
+        Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
+        var createdChild = await createResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(createdChild);
+        Assert.True(createdChild.IsActive);
+
+        // Act: アカウントを停止
+        var suspendResponse = await Client.PostAsync($"/api/child-accounts/{createdChild.Id}/suspend", null);
+
+        // Assert: 停止成功
+        Assert.Equal(HttpStatusCode.NoContent, suspendResponse.StatusCode);
+
+        // 停止後の状態を確認
+        var getResponse = await Client.GetAsync($"/api/child-accounts/{createdChild.Id}");
+        var suspendedChild = await getResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(suspendedChild);
+        Assert.False(suspendedChild.IsActive);
+
+        // Act: アカウントを再開
+        var activateResponse = await Client.PostAsync($"/api/child-accounts/{createdChild.Id}/activate", null);
+
+        // Assert: 再開成功
+        Assert.Equal(HttpStatusCode.NoContent, activateResponse.StatusCode);
+
+        // 再開後の状態を確認
+        var reactivatedResponse = await Client.GetAsync($"/api/child-accounts/{createdChild.Id}");
+        var reactivatedChild = await reactivatedResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(reactivatedChild);
+        Assert.True(reactivatedChild.IsActive);
+    }
+
+    #endregion
 }
+
