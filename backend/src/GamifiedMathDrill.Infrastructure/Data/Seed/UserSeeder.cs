@@ -31,7 +31,7 @@ public static class UserSeeder
                 EmailConfirmed = true
             };
 
-            var result = await userManager.CreateAsync(parent, "Parent123!@#");
+            var result = await userManager.CreateAsync(parent, "Parent123!");
             if (result.Succeeded)
             {
                 Console.WriteLine($"Created parent user: {parentEmail}");
