@@ -24,6 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ExchangeRequest> ExchangeRequests => Set<ExchangeRequest>();
     public DbSet<DailyChallenge> DailyChallenges => Set<DailyChallenge>();
     public DbSet<Level> Levels => Set<Level>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -172,6 +173,38 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany()
                 .HasForeignKey(e => e.RewardId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // PasswordResetToken
+        modelBuilder.Entity<PasswordResetToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.TokenHash)
+                .IsRequired()
+                .HasMaxLength(64);
+            
+            entity.Property(e => e.CreatedAt)
+                .IsRequired();
+            
+            entity.Property(e => e.ExpiresAt)
+                .IsRequired();
+            
+            entity.Property(e => e.IsUsed)
+                .HasDefaultValue(false);
+            
+            entity.Property(e => e.IpAddress)
+                .HasMaxLength(45);
+
+            // Foreign key to ApplicationUser
+            entity.HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.TokenHash).IsUnique();
+            entity.HasIndex(e => e.ExpiresAt);
         });
     }
 }
