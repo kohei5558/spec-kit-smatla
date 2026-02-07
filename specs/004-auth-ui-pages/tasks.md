@@ -305,9 +305,9 @@
 
 **Purpose**: Final quality gates before merging to main
 
-- [ ] T136 Run `dotnet format` on all backend C# code in backend/
-- [ ] T137 Fix any linter warnings or errors in backend code
-- [ ] T138 Verify all tests pass: `dotnet test` in backend/
+- [X] T136 [P] Run `dotnet format` on all backend C# code in backend/
+- [X] T137 Fix any linter warnings or errors in backend code
+- [X] T138 Verify all tests pass: `dotnet test` in backend/
 - [ ] T139 Create pull request from `004-auth-ui-pages` to main branch
 - [ ] T140 Address code review feedback
 - [ ] T141 Squash and merge to main branch after approval
