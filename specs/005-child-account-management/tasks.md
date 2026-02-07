@@ -244,8 +244,8 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 
 ### Tests
 
-- [ ] T062 [US5] アカウント削除の統合テスト（連鎖削除確認） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
-- [ ] T063 [US5] 削除後ログイン不可の統合テスト - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountSecurityTests.cs
+- [x] T062 [US5] アカウント削除の統合テスト（連鎖削除確認） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
+- [x] T063 [US5] 削除後ログイン不可の統合テスト - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountSecurityTests.cs
 
 ---
 

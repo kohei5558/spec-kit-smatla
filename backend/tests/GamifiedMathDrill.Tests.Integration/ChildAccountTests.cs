@@ -545,5 +545,51 @@ public class ChildAccountTests : AuthenticatedTestBase
     }
 
     #endregion
+
+    #region アカウント削除 (Phase 7)
+
+    [Fact]
+    public async Task DeleteChildAccount_WithValidData_Success()
+    {
+        // Arrange
+        await AuthenticateAsParentAsync();
+
+        // 子供アカウントを作成
+        var createRequest = new ChildAccountCreateDto
+        {
+            Name = "削除テスト太郎",
+            GradeLevel = 2,
+            PresetAvatarId = 2,
+            PIN = "9999"
+        };
+
+        var createResponse = await Client.PostAsJsonAsync("/api/child-accounts", createRequest);
+        Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
+        var createdChild = await createResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(createdChild);
+        var childId = createdChild.Id;
+
+        // 削除前に存在確認
+        var getBeforeDelete = await Client.GetAsync($"/api/child-accounts/{childId}");
+        Assert.Equal(HttpStatusCode.OK, getBeforeDelete.StatusCode);
+
+        // Act: アカウントを削除
+        var deleteResponse = await Client.DeleteAsync($"/api/child-accounts/{childId}");
+
+        // Assert: 削除成功
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+        // 削除後、取得できないことを確認
+        var getAfterDelete = await Client.GetAsync($"/api/child-accounts/{childId}");
+        Assert.Equal(HttpStatusCode.NotFound, getAfterDelete.StatusCode);
+
+        // 一覧にも表示されないことを確認
+        var listResponse = await Client.GetAsync("/api/child-accounts");
+        var children = await listResponse.Content.ReadFromJsonAsync<List<ChildAccountDto>>();
+        Assert.NotNull(children);
+        Assert.DoesNotContain(children, c => c.Id == childId);
+    }
+
+    #endregion
 }
 

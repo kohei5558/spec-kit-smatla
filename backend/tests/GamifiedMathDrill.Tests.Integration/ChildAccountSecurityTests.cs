@@ -247,5 +247,44 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         // Assert: 停止中のため拒否される
         Assert.Equal(HttpStatusCode.Forbidden, loginResponse.StatusCode);
     }
+
+    [Fact]
+    public async Task ChildLogin_DeletedAccount_ReturnsNotFound()
+    {
+        // Arrange
+        await AuthenticateAsParentAsync();
+
+        // 子供アカウントを作成
+        var createRequest = new ChildAccountCreateDto
+        {
+            Name = "削除テスト子",
+            GradeLevel = 3,
+            PresetAvatarId = 5,
+            PIN = "6666"
+        };
+
+        var createResponse = await Client.PostAsJsonAsync("/api/child-accounts", createRequest);
+        var childAccount = await createResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(childAccount);
+        var childId = childAccount.Id;
+
+        // アカウントを削除
+        var deleteResponse = await Client.DeleteAsync($"/api/child-accounts/{childId}");
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+        // ログアウト
+        Client.DefaultRequestHeaders.Authorization = null;
+
+        // Act: 削除済みアカウントでログイン試行
+        var loginRequest = new
+        {
+            ChildAccountId = childId,
+            PIN = "6666" // 正しいPIN（だが削除済み）
+        };
+        var loginResponse = await Client.PostAsJsonAsync("/api/auth/child/login", loginRequest);
+
+        // Assert: 削除済みのため認証失敗（NotFound）
+        Assert.Equal(HttpStatusCode.NotFound, loginResponse.StatusCode);
+    }
 }
 

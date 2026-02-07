@@ -13,14 +13,15 @@ namespace GamifiedMathDrill.Tests.Integration.Helpers;
 /// </summary>
 public static class AuthenticationHelper
 {
-    private static readonly object _lock = new object();
+    private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
     /// <summary>
     /// テストユーザーをシード（存在しない場合のみ作成）
     /// </summary>
-    public static Task EnsureTestUsersExistAsync(IServiceProvider services)
+    public static async Task EnsureTestUsersExistAsync(IServiceProvider services)
     {
-        lock (_lock)
+        await _semaphore.WaitAsync();
+        try
         {
             using var scope = services.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -93,10 +94,12 @@ public static class AuthenticationHelper
                 // 既存のStudentをリセット
                 student.TotalPoints = 0;
             }
-            db.SaveChangesAsync().Wait();
+            await db.SaveChangesAsync();
         }
-
-        return Task.CompletedTask;
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     /// <summary>
