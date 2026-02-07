@@ -33,24 +33,30 @@ public class AuthController : ControllerBase
             return BadRequest(new { Error = "Email and password are required" });
         }
 
-        var (userId, displayName, role, parentId, token, expiresAt) = await _authService.LoginAsync(request.Email, request.Password);
+        var (userId, displayName, role, parentId, token, expiresAt) = await _authService.LoginAsync(request.Email, request.Password, request.RememberMe);
         if (userId == null || token == null)
         {
             _logger.LogWarning("Failed login attempt for email: {Email}", request.Email);
-            return Unauthorized(new { Error = "Invalid email or password" });
+            return Unauthorized(new LoginResponse
+            {
+                Success = false,
+                ErrorMessage = "メールアドレスまたはパスワードが間違っています"
+            });
         }
 
         var response = new LoginResponse
         {
+            Success = true,
             Token = token,
             UserId = userId,
             DisplayName = displayName!,
-            Role = role!.Value,
+            Role = role!.Value.ToString(),
             ParentId = parentId,
             ExpiresAt = expiresAt!.Value
         };
 
-        _logger.LogInformation("User {UserId} logged in successfully", response.UserId);
+        _logger.LogInformation("User {UserId} logged in successfully (RememberMe: {RememberMe}, ExpiresAt: {ExpiresAt})", 
+            response.UserId, request.RememberMe, response.ExpiresAt);
         return Ok(response);
     }
 
@@ -71,15 +77,20 @@ public class AuthController : ControllerBase
         if (userId == null || token == null)
         {
             _logger.LogWarning("Failed child login attempt for childId: {ChildId}", request.ChildId);
-            return Unauthorized(new { Error = "Invalid child ID or PIN" });
+            return Unauthorized(new LoginResponse
+            {
+                Success = false,
+                ErrorMessage = "子供IDまたはPINが間違っています"
+            });
         }
 
         var response = new LoginResponse
         {
+            Success = true,
             Token = token,
             UserId = userId,
             DisplayName = displayName!,
-            Role = role!.Value,
+            Role = role!.Value.ToString(),
             ParentId = parentId,
             ExpiresAt = expiresAt!.Value
         };

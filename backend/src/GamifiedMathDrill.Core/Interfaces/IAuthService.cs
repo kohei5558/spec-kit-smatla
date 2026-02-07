@@ -12,8 +12,9 @@ public interface IAuthService
     /// </summary>
     /// <param name="email">メールアドレス</param>
     /// <param name="password">パスワード</param>
+    /// <param name="rememberMe">ログイン状態を保持するか（true: 30日間、false: 60分）</param>
     /// <returns>ログインレスポンスデータ(userId, displayName, role, parentId, token, expiresAt)</returns>
-    Task<(string? userId, string? displayName, UserRole? role, string? parentId, string? token, DateTime? expiresAt)> LoginAsync(string email, string password);
+    Task<(string? userId, string? displayName, UserRole? role, string? parentId, string? token, DateTime? expiresAt)> LoginAsync(string email, string password, bool rememberMe = false);
     
     /// <summary>
     /// 子供ログイン
@@ -30,6 +31,7 @@ public interface IAuthService
     /// <param name="displayName">表示名</param>
     /// <param name="role">ロール</param>
     /// <param name="parentId">親ID（子供の場合）</param>
+    /// <param name="expiryMinutes">有効期限（分）</param>
     /// <returns>JWTトークン</returns>
-    string GenerateJwtToken(string userId, string displayName, string role, string? parentId = null);
+    string GenerateJwtToken(string userId, string displayName, string role, string? parentId = null, int? expiryMinutes = null);
 }

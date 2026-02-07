@@ -119,7 +119,8 @@ public static class AuthenticationHelper
         var loginRequest = new LoginRequest
         {
             Email = "parent@example.com",
-            Password = "Parent123!"
+            Password = "Parent123!",
+            RememberMe = false
         };
 
         var response = await client.PostAsJsonAsync("/api/auth/login", loginRequest);

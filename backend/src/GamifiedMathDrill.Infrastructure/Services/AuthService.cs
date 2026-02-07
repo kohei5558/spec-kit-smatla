@@ -27,7 +27,7 @@ public class AuthService : IAuthService
     /// <summary>
     /// 保護者ログイン
     /// </summary>
-    public async Task<(string? userId, string? displayName, UserRole? role, string? parentId, string? token, DateTime? expiresAt)> LoginAsync(string email, string password)
+    public async Task<(string? userId, string? displayName, UserRole? role, string? parentId, string? token, DateTime? expiresAt)> LoginAsync(string email, string password, bool rememberMe = false)
     {
         var user = await _userManager.FindByEmailAsync(email);
         if (user == null || !user.IsActive || user.Role != UserRole.Parent)
@@ -41,8 +41,12 @@ public class AuthService : IAuthService
             return (null, null, null, null, null, null);
         }
 
-        var token = GenerateJwtToken(user.Id, user.DisplayName, user.Role.ToString(), user.ParentId);
-        var expiryMinutes = _configuration.GetValue<int>("Jwt:ExpiryMinutes", 60);
+        // rememberMeに基づいて有効期限を設定
+        var expiryMinutes = rememberMe 
+            ? _configuration.GetValue<int>("Jwt:RememberMeExpiryMinutes", 43200) // 30日間
+            : _configuration.GetValue<int>("Jwt:SessionExpiryMinutes", 60);      // 60分
+        
+        var token = GenerateJwtToken(user.Id, user.DisplayName, user.Role.ToString(), user.ParentId, expiryMinutes);
         var expiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes);
 
         return (user.Id, user.DisplayName, user.Role, user.ParentId, token, expiresAt);
@@ -81,13 +85,13 @@ public class AuthService : IAuthService
     /// <summary>
     /// JWTトークンを生成
     /// </summary>
-    public string GenerateJwtToken(string userId, string displayName, string role, string? parentId = null)
+    public string GenerateJwtToken(string userId, string displayName, string role, string? parentId = null, int? expiryMinutes = null)
     {
         var secretKey = _configuration["Jwt:SecretKey"] 
             ?? throw new InvalidOperationException("JWT SecretKey is not configured");
         var issuer = _configuration["Jwt:Issuer"] ?? "GamifiedMathDrill.Api";
         var audience = _configuration["Jwt:Audience"] ?? "GamifiedMathDrill.Client";
-        var expiryMinutes = _configuration.GetValue<int>("Jwt:ExpiryMinutes", 60);
+        var expiry = expiryMinutes ?? _configuration.GetValue<int>("Jwt:ExpiryMinutes", 60);
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -108,7 +112,7 @@ public class AuthService : IAuthService
             issuer: issuer,
             audience: audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
+            expires: DateTime.UtcNow.AddMinutes(expiry),
             signingCredentials: credentials
         );
 

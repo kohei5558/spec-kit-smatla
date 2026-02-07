@@ -8,24 +8,29 @@ namespace GamifiedMathDrill.Api.DTOs;
 public class LoginResponse
 {
     /// <summary>
+    /// ログイン成功フラグ
+    /// </summary>
+    public bool Success { get; set; }
+    
+    /// <summary>
     /// JWTトークン
     /// </summary>
-    public string Token { get; set; } = string.Empty;
+    public string? Token { get; set; }
     
     /// <summary>
     /// ユーザーID
     /// </summary>
-    public string UserId { get; set; } = string.Empty;
+    public string? UserId { get; set; }
     
     /// <summary>
     /// 表示名
     /// </summary>
-    public string DisplayName { get; set; } = string.Empty;
+    public string? DisplayName { get; set; }
     
     /// <summary>
     /// ユーザーロール
     /// </summary>
-    public UserRole Role { get; set; }
+    public string? Role { get; set; }
     
     /// <summary>
     /// 親アカウントID（子供の場合のみ）
@@ -35,5 +40,10 @@ public class LoginResponse
     /// <summary>
     /// トークン有効期限
     /// </summary>
-    public DateTime ExpiresAt { get; set; }
+    public DateTime? ExpiresAt { get; set; }
+    
+    /// <summary>
+    /// エラーメッセージ（失敗時のみ）
+    /// </summary>
+    public string? ErrorMessage { get; set; }
 }
