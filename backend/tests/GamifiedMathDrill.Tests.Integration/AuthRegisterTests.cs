@@ -45,7 +45,7 @@ public class AuthRegisterTests : IClassFixture<TestWebApplicationFactory>
         var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
         Assert.NotNull(result);
         Assert.True(result.Success);
-        Assert.NotEmpty(result.Token);
+        Assert.NotEmpty(result.Token!);
         Assert.Equal(uniqueEmail, result.Email);
         Assert.Equal("New Parent", result.DisplayName);
     }
@@ -147,11 +147,11 @@ public class AuthRegisterTests : IClassFixture<TestWebApplicationFactory>
 
         var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
         Assert.NotNull(result);
-        Assert.NotEmpty(result.Token);
+        Assert.NotEmpty(result.Token!);
 
         // トークンを使って認証が必要なエンドポイントにアクセスできるか確認
         // 既存の_clientにAuthorizationヘッダーを追加
-        AuthenticationHelper.AddAuthorizationHeader(_client, result.Token);
+        AuthenticationHelper.AddAuthorizationHeader(_client, result.Token!);
 
         var testResponse = await _client.GetAsync("/api/parent/dashboard");
         Assert.True(testResponse.IsSuccessStatusCode || testResponse.StatusCode == HttpStatusCode.NotFound);

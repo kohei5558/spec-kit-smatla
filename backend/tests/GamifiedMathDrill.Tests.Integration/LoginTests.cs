@@ -37,7 +37,7 @@ public class LoginTests : AuthenticatedTestBase
         var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
         Assert.NotNull(loginResponse);
         Assert.True(loginResponse.Success);
-        Assert.NotEmpty(loginResponse.Token);
+        Assert.NotEmpty(loginResponse.Token!);
         Assert.Equal("Parent", loginResponse.Role);
         Assert.NotNull(loginResponse.ExpiresAt);
 
@@ -66,7 +66,7 @@ public class LoginTests : AuthenticatedTestBase
         var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
         Assert.NotNull(loginResponse);
         Assert.True(loginResponse.Success);
-        Assert.NotEmpty(loginResponse.Token);
+        Assert.NotEmpty(loginResponse.Token!);
         Assert.Equal("Parent", loginResponse.Role);
         Assert.NotNull(loginResponse.ExpiresAt);
 
