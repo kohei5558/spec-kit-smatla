@@ -328,7 +328,16 @@ public class ChildAccountService : IChildAccountService
         }
 
         var result = _passwordHasher.VerifyHashedPassword(user, user.PIN, pin);
-        return result == PasswordVerificationResult.Success;
+        var isSuccess = result == PasswordVerificationResult.Success;
+        
+        // 検証成功時は失敗カウンターをクリア
+        if (isSuccess)
+        {
+            var attemptsKey = $"pin_attempts_{childId}";
+            _cache.Remove(attemptsKey);
+        }
+        
+        return isSuccess;
     }
 
     /// <summary>

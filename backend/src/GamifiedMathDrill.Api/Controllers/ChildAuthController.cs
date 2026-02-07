@@ -84,9 +84,6 @@ public class ChildAuthController : ControllerBase
             });
         }
 
-        // PIN検証成功：失敗カウンターをクリア
-        await _childAccountService.ClearFailedPinAttemptsAsync(request.ChildAccountId);
-
         // JWT トークン生成（既存のAuthServiceを再利用）
         var (token, expiresAt) = await _authService.GenerateChildTokenAsync(request.ChildAccountId, child.Name);
 
