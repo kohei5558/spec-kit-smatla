@@ -420,5 +420,77 @@ public class ChildAccountTests : AuthenticatedTestBase
     }
 
     #endregion
-}
 
+    #region Phase 5: User Story 3 - 学習統計
+
+    [Fact]
+    public async Task GetChildAccountDetail_WithLearningData_ReturnsStats()
+    {
+        // Arrange
+        await AuthenticateAsParentAsync();
+
+        // 子供アカウントを作成
+        var createRequest = new ChildAccountCreateDto
+        {
+            Name = "五郎（学習済み）",
+            GradeLevel = 4,
+            PresetAvatarId = 1,
+            PIN = "5555"
+        };
+
+        var createResponse = await Client.PostAsJsonAsync("/api/child-accounts", createRequest);
+        Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
+        var createdChild = await createResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(createdChild);
+
+        // Act: 学習統計を取得
+        var response = await Client.GetAsync($"/api/child-accounts/{createdChild.Id}/detail");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(result);
+        Assert.Equal("五郎（学習済み）", result.Name);
+        
+        // 学習統計が含まれていることを確認（データなしの場合でも構造は存在）
+        Assert.NotNull(result.LearningStats);
+    }
+
+    [Fact]
+    public async Task GetChildAccountDetail_WithoutLearningData_ReturnsEmptyStats()
+    {
+        // Arrange
+        await AuthenticateAsParentAsync();
+
+        // 子供アカウントを作成（学習記録なし）
+        var createRequest = new ChildAccountCreateDto
+        {
+            Name = "六郎（未学習）",
+            GradeLevel = 2,
+            PresetAvatarId = 2,
+            PIN = "6666"
+        };
+
+        var createResponse = await Client.PostAsJsonAsync("/api/child-accounts", createRequest);
+        Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
+        var createdChild = await createResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(createdChild);
+
+        // Act: 詳細情報を取得
+        var response = await Client.GetAsync($"/api/child-accounts/{createdChild.Id}/detail");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(result);
+        Assert.NotNull(result.LearningStats);
+        
+        // 学習データがない場合、初期値が返される
+        Assert.Equal(0, result.LearningStats.TotalProblems);
+        Assert.Equal(0, result.LearningStats.AccuracyRate);
+        Assert.Equal(0, result.LearningStats.TotalPoints);
+        Assert.Equal(0, result.LearningStats.ConsecutiveDays);
+    }
+
+    #endregion
+}

@@ -1,0 +1,49 @@
+@using GamifiedMathDrill.Client.Models
+
+<div class="learning-stats-chart">
+    <MudChart ChartType="ChartType.Bar" 
+              ChartSeries="@Series" 
+              XAxisLabels="@XAxisLabels" 
+              Width="100%" 
+              Height="300px"
+              ChartOptions="@Options">
+    </MudChart>
+</div>
+
+@code {
+    [Parameter]
+    public List<DailyActivityDto>? ActivityData { get; set; }
+
+    private List<ChartSeries> Series = new();
+    private string[] XAxisLabels = Array.Empty<string>();
+    private ChartOptions Options = new ChartOptions
+    {
+        YAxisTicks = 10,
+        YAxisLines = true,
+        MaxNumYAxisTicks = 10
+    };
+
+    protected override void OnParametersSet()
+    {
+        if (ActivityData != null && ActivityData.Any())
+        {
+            // X軸のラベル（日付）
+            XAxisLabels = ActivityData.Select(a => a.Date.ToString("M/d")).ToArray();
+
+            // チャートシリーズ（解いた問題数）
+            Series = new List<ChartSeries>
+            {
+                new ChartSeries 
+                { 
+                    Name = "解いた問題数", 
+                    Data = ActivityData.Select(a => (double)a.ProblemsSolved).ToArray() 
+                }
+            };
+        }
+        else
+        {
+            XAxisLabels = Array.Empty<string>();
+            Series = new List<ChartSeries>();
+        }
+    }
+}
