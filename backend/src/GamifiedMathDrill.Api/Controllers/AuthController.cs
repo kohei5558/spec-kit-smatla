@@ -56,7 +56,7 @@ public class AuthController : ControllerBase
             ExpiresAt = expiresAt!.Value
         };
 
-        _logger.LogInformation("User {UserId} logged in successfully (RememberMe: {RememberMe}, ExpiresAt: {ExpiresAt})", 
+        _logger.LogInformation("User {UserId} logged in successfully (RememberMe: {RememberMe}, ExpiresAt: {ExpiresAt})",
             response.UserId, request.RememberMe, response.ExpiresAt);
         return Ok(response);
     }
@@ -110,10 +110,10 @@ public class AuthController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(request.Email))
         {
-            return BadRequest(new ForgotPasswordResponse 
-            { 
-                Success = false, 
-                Message = "メールアドレスは必須です" 
+            return BadRequest(new ForgotPasswordResponse
+            {
+                Success = false,
+                Message = "メールアドレスは必須です"
             });
         }
 
@@ -123,10 +123,10 @@ public class AuthController : ControllerBase
         if (!success)
         {
             _logger.LogError("Failed to send password reset email to {Email}", request.Email);
-            return StatusCode(500, new ForgotPasswordResponse 
-            { 
-                Success = false, 
-                Message = "メール送信に失敗しました" 
+            return StatusCode(500, new ForgotPasswordResponse
+            {
+                Success = false,
+                Message = "メール送信に失敗しました"
             });
         }
 
@@ -173,8 +173,8 @@ public class AuthController : ControllerBase
     [HttpPost("reset-password")]
     public async Task<ActionResult<ResetPasswordResponse>> ResetPassword([FromBody] ResetPasswordRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Token) || 
-            string.IsNullOrWhiteSpace(request.NewPassword) || 
+        if (string.IsNullOrWhiteSpace(request.Token) ||
+            string.IsNullOrWhiteSpace(request.NewPassword) ||
             string.IsNullOrWhiteSpace(request.ConfirmPassword))
         {
             return BadRequest(new ResetPasswordResponse

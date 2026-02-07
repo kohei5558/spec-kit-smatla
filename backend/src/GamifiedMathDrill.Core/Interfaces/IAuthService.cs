@@ -15,7 +15,7 @@ public interface IAuthService
     /// <param name="rememberMe">ログイン状態を保持するか（true: 30日間、false: 60分）</param>
     /// <returns>ログインレスポンスデータ(userId, displayName, role, parentId, token, expiresAt)</returns>
     Task<(string? userId, string? displayName, UserRole? role, string? parentId, string? token, DateTime? expiresAt)> LoginAsync(string email, string password, bool rememberMe = false);
-    
+
     /// <summary>
     /// 子供ログイン
     /// </summary>
@@ -23,7 +23,7 @@ public interface IAuthService
     /// <param name="pin">PIN（4桁）</param>
     /// <returns>ログインレスポンスデータ(userId, displayName, role, parentId, token, expiresAt)</returns>
     Task<(string? userId, string? displayName, UserRole? role, string? parentId, string? token, DateTime? expiresAt)> ChildLoginAsync(string childId, string pin);
-    
+
     /// <summary>
     /// JWTトークンを生成
     /// </summary>
@@ -34,7 +34,7 @@ public interface IAuthService
     /// <param name="expiryMinutes">有効期限（分）</param>
     /// <returns>JWTトークン</returns>
     string GenerateJwtToken(string userId, string displayName, string role, string? parentId = null, int? expiryMinutes = null);
-    
+
     /// <summary>
     /// パスワードリセットメールを送信
     /// </summary>
@@ -42,14 +42,14 @@ public interface IAuthService
     /// <param name="ipAddress">リクエスト元IPアドレス</param>
     /// <returns>成功したかどうか</returns>
     Task<bool> SendPasswordResetEmailAsync(string email, string ipAddress);
-    
+
     /// <summary>
     /// パスワードリセットトークンを検証
     /// </summary>
     /// <param name="token">リセットトークン</param>
     /// <returns>有効なトークンかどうか</returns>
     Task<bool> ValidateResetTokenAsync(string token);
-    
+
     /// <summary>
     /// パスワードをリセット
     /// </summary>

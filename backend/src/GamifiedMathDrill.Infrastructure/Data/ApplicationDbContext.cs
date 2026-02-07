@@ -40,7 +40,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.TotalProblems).HasDefaultValue(0);
             entity.Property(e => e.CorrectAnswers).HasDefaultValue(0);
             entity.Property(e => e.CurrentLevelId).HasDefaultValue(1);
-            
+
             entity.HasIndex(e => e.CurrentLevelId);
             entity.HasIndex(e => e.LastLoginAt);
 
@@ -58,7 +58,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.CorrectAnswer).IsRequired();
             entity.Property(e => e.CalculationType).IsRequired();
             entity.Property(e => e.DifficultyLevel).IsRequired();
-            
+
             entity.HasIndex(e => e.CalculationType);
             entity.HasIndex(e => e.DifficultyLevel);
         });
@@ -72,7 +72,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.PointsEarned).IsRequired();
             entity.Property(e => e.TimeTakenSeconds).IsRequired();
             entity.Property(e => e.SolvedAt).IsRequired();
-            
+
             entity.HasIndex(e => e.StudentId);
             entity.HasIndex(e => e.SolvedAt);
             entity.HasIndex(e => new { e.StudentId, e.SolvedAt });
@@ -97,7 +97,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.RequiredPoints).IsRequired();
             entity.Property(e => e.Category).IsRequired();
             entity.Property(e => e.ImageUrl).HasMaxLength(500);
-            
+
             entity.HasIndex(e => e.RequiredPoints);
             entity.HasIndex(e => e.Category);
         });
@@ -108,7 +108,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasKey(e => e.Id);
             entity.Property(e => e.PointsSpent).IsRequired();
             entity.Property(e => e.AcquiredAt).IsRequired();
-            
+
             entity.HasIndex(e => e.StudentId);
             entity.HasIndex(e => e.AcquiredAt);
 
@@ -130,7 +130,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.TargetDate).IsRequired();
             entity.Property(e => e.BonusPoints).HasDefaultValue(20);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
-            
+
             entity.HasIndex(e => e.TargetDate).IsUnique();
             entity.HasIndex(e => e.IsActive);
 
@@ -148,7 +148,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.RequiredCorrectAnswers).IsRequired();
             entity.Property(e => e.MinDifficulty).IsRequired();
             entity.Property(e => e.MaxDifficulty).IsRequired();
-            
+
             entity.HasIndex(e => e.LevelNumber).IsUnique();
         });
 
@@ -159,7 +159,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.Status).IsRequired();
             entity.Property(e => e.RequestedAt).IsRequired();
             entity.Property(e => e.RequiredPoints).IsRequired();
-            
+
             entity.HasIndex(e => e.StudentId);
             entity.HasIndex(e => e.Status);
             entity.HasIndex(e => e.RequestedAt);
@@ -179,20 +179,20 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<PasswordResetToken>(entity =>
         {
             entity.HasKey(e => e.Id);
-            
+
             entity.Property(e => e.TokenHash)
                 .IsRequired()
                 .HasMaxLength(64);
-            
+
             entity.Property(e => e.CreatedAt)
                 .IsRequired();
-            
+
             entity.Property(e => e.ExpiresAt)
                 .IsRequired();
-            
+
             entity.Property(e => e.IsUsed)
                 .HasDefaultValue(false);
-            
+
             entity.Property(e => e.IpAddress)
                 .HasMaxLength(45);
 

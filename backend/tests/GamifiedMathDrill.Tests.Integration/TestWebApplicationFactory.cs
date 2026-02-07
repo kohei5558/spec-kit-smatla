@@ -43,7 +43,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 
         // テスト用のJWT SecretKeyを設定
         builder.UseSetting("Jwt:SecretKey", "ThisIsATestSecretKeyForIntegrationTestsWithMinimum32Characters!");
-        
+
         // テスト環境として設定
         builder.UseEnvironment("Testing");
     }
@@ -56,7 +56,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         db.Database.EnsureCreated();
-        
+
         // 初期データのシード（Levelsテーブルなど）
         if (!db.Levels.Any())
         {
@@ -72,7 +72,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         if (!db.Problems.Any())
         {
             var problems = new List<GamifiedMathDrill.Core.Models.Problem>();
-            var types = new[] { 
+            var types = new[] {
                 GamifiedMathDrill.Core.Models.CalculationType.Addition,
                 GamifiedMathDrill.Core.Models.CalculationType.Subtraction,
                 GamifiedMathDrill.Core.Models.CalculationType.Multiplication,

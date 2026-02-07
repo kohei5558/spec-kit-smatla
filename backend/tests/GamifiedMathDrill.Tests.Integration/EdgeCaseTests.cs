@@ -50,14 +50,14 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
             { new StringContent("1"), "Stock" }
         };
         var createRewardResponse = await _client.PostAsync("/api/rewards", formData);
-        
+
         // デバッグ: レスポンスを確認
         if (!createRewardResponse.IsSuccessStatusCode)
         {
             var errorContent = await createRewardResponse.Content.ReadAsStringAsync();
             throw new Exception($"Reward creation failed: {createRewardResponse.StatusCode} - {errorContent}");
         }
-        
+
         var rewardDto = await createRewardResponse.Content.ReadFromJsonAsync<RewardDto>();
         Assert.NotNull(rewardDto);
 

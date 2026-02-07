@@ -66,7 +66,7 @@ public class ProblemsController : ControllerBase
             var problem = await _problemService.GetNextProblemAsync(studentId, excludeRecentIds, category);
             if (problem == null)
             {
-                var message = category.HasValue 
+                var message = category.HasValue
                     ? $"選択したカテゴリ（{GetCategoryDisplayName(category.Value)}）の問題が見つかりませんでした。別のカテゴリを選択してください。"
                     : "利用可能な問題が見つかりませんでした。";
                 _logger.LogWarning("No problems available for studentId={StudentId}, category={Category}", studentId, category);
@@ -141,7 +141,7 @@ public class ProblemsController : ControllerBase
         [FromQuery][Required] int studentId,
         [FromBody] SubmitAnswerDto answerDto)
     {
-        _logger.LogInformation("SubmitAnswer called: ProblemId={ProblemId}, StudentId={StudentId}, Answer={Answer}", 
+        _logger.LogInformation("SubmitAnswer called: ProblemId={ProblemId}, StudentId={StudentId}, Answer={Answer}",
             id, studentId, answerDto.Answer);
 
         if (studentId <= 0)
@@ -156,10 +156,10 @@ public class ProblemsController : ControllerBase
 
         try
         {
-            var (isCorrect, pointsEarned, leveledUp, newLevel) = 
+            var (isCorrect, pointsEarned, leveledUp, newLevel) =
                 await _problemService.SubmitAnswerAsync(studentId, id, answerDto.Answer);
-            
-            _logger.LogInformation("Answer result: IsCorrect={IsCorrect}, PointsEarned={PointsEarned}", 
+
+            _logger.LogInformation("Answer result: IsCorrect={IsCorrect}, PointsEarned={PointsEarned}",
                 isCorrect, pointsEarned);
 
             var result = new AnswerResultDto

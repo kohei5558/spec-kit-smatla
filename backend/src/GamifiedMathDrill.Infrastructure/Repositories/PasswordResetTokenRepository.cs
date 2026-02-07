@@ -21,9 +21,9 @@ public class PasswordResetTokenRepository : IPasswordResetTokenRepository
     public async Task<PasswordResetToken?> GetByTokenHashAsync(string tokenHash)
     {
         return await _context.PasswordResetTokens
-            .FirstOrDefaultAsync(t => 
-                t.TokenHash == tokenHash && 
-                !t.IsUsed && 
+            .FirstOrDefaultAsync(t =>
+                t.TokenHash == tokenHash &&
+                !t.IsUsed &&
                 t.ExpiresAt > DateTime.UtcNow);
     }
 
@@ -38,9 +38,9 @@ public class PasswordResetTokenRepository : IPasswordResetTokenRepository
     public async Task<List<PasswordResetToken>> GetActiveTokensForUserAsync(string userId)
     {
         return await _context.PasswordResetTokens
-            .Where(t => 
-                t.UserId == userId && 
-                !t.IsUsed && 
+            .Where(t =>
+                t.UserId == userId &&
+                !t.IsUsed &&
                 t.ExpiresAt > DateTime.UtcNow)
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
@@ -67,7 +67,7 @@ public class PasswordResetTokenRepository : IPasswordResetTokenRepository
         var expiredTokens = await _context.PasswordResetTokens
             .Where(t => t.ExpiresAt < DateTime.UtcNow)
             .ToListAsync();
-        
+
         _context.PasswordResetTokens.RemoveRange(expiredTokens);
         return await _context.SaveChangesAsync();
     }

@@ -195,41 +195,41 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [X] T082 [P] [US3] Create AuthRegisterTests.cs in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
-- [X] T083 [P] [US3] Add test case for successful registration with valid data in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
-- [X] T084 [P] [US3] Add test case for registration with duplicate email fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
-- [X] T085 [P] [US3] Add test case for registration with weak password fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
-- [X] T086 [P] [US3] Add test case for registration with mismatched passwords fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
-- [X] T087 [P] [US3] Add test case for registration auto-login (JWT token returned) in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [x] T082 [P] [US3] Create AuthRegisterTests.cs in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [x] T083 [P] [US3] Add test case for successful registration with valid data in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [x] T084 [P] [US3] Add test case for registration with duplicate email fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [x] T085 [P] [US3] Add test case for registration with weak password fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [x] T086 [P] [US3] Add test case for registration with mismatched passwords fails in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
+- [x] T087 [P] [US3] Add test case for registration auto-login (JWT token returned) in backend/tests/GamifiedMathDrill.Tests.Integration/AuthRegisterTests.cs
 
 ### Backend Implementation for User Story 3
 
-- [X] T088 [US3] Add RegisterAsync method to IAuthService in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
-- [X] T089 [US3] Implement RegisterAsync in AuthService (validate, create user, auto-login) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
-- [X] T090 [US3] Add POST /api/auth/register endpoint to AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
-- [X] T091 [US3] Add email uniqueness check in RegisterAsync in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
-- [X] T092 [US3] Add password strength validation in RegisterAsync in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
-- [X] T093 [US3] Add logging for registration attempts (success/failure) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [x] T088 [US3] Add RegisterAsync method to IAuthService in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
+- [x] T089 [US3] Implement RegisterAsync in AuthService (validate, create user, auto-login) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [x] T090 [US3] Add POST /api/auth/register endpoint to AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
+- [x] T091 [US3] Add email uniqueness check in RegisterAsync in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [x] T092 [US3] Add password strength validation in RegisterAsync in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [x] T093 [US3] Add logging for registration attempts (success/failure) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
 
 ### Frontend Models for User Story 3
 
-- [X] T094 [P] [US3] Create RegisterRequest.cs in frontend/GamifiedMathDrill.Client/Models/RegisterRequest.cs
-- [X] T095 [P] [US3] Create RegisterResponse.cs in frontend/GamifiedMathDrill.Client/Models/RegisterResponse.cs
+- [x] T094 [P] [US3] Create RegisterRequest.cs in frontend/GamifiedMathDrill.Client/Models/RegisterRequest.cs
+- [x] T095 [P] [US3] Create RegisterResponse.cs in frontend/GamifiedMathDrill.Client/Models/RegisterResponse.cs
 
 ### Frontend Services for User Story 3
 
-- [X] T096 [US3] Add RegisterAsync method to AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
+- [x] T096 [US3] Add RegisterAsync method to AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
 
 ### Frontend Pages for User Story 3
 
-- [X] T097 [P] [US3] Create Register.razor page with registration form in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [X] T098 [P] [US3] Add MudBlazor components (MudTextField, MudButton, MudAlert) to Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [X] T099 [P] [US3] Add client-side validation for all fields (email, displayName, password) in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [X] T100 [P] [US3] Add password strength indicator UI in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [X] T101 [P] [US3] Add confirm password matching validation in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [X] T102 [P] [US3] Connect Register.razor to AuthService.RegisterAsync in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [X] T103 [P] [US3] Handle auto-login after successful registration in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [X] T104 [US3] Update Login.razor to add "新規登録" link to /register in frontend/GamifiedMathDrill.Client/Pages/Login.razor
+- [x] T097 [P] [US3] Create Register.razor page with registration form in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [x] T098 [P] [US3] Add MudBlazor components (MudTextField, MudButton, MudAlert) to Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [x] T099 [P] [US3] Add client-side validation for all fields (email, displayName, password) in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [x] T100 [P] [US3] Add password strength indicator UI in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [x] T101 [P] [US3] Add confirm password matching validation in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [x] T102 [P] [US3] Connect Register.razor to AuthService.RegisterAsync in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [x] T103 [P] [US3] Handle auto-login after successful registration in Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [x] T104 [US3] Update Login.razor to add "新規登録" link to /register in frontend/GamifiedMathDrill.Client/Pages/Login.razor
 
 ### Frontend Tests for User Story 3
 
@@ -258,12 +258,12 @@
 
 **Purpose**: Verify complete user journeys work end-to-end
 
-- [ ] T114 Create E2E test for full registration → login flow in backend/tests/GamifiedMathDrill.Tests.Integration/E2EAuthFlowTests.cs
-- [ ] T115 Create E2E test for login → forgot password → reset → login flow in backend/tests/GamifiedMathDrill.Tests.Integration/E2EAuthFlowTests.cs
-- [ ] T116 Create E2E test for remember me functionality (session vs local storage) in backend/tests/GamifiedMathDrill.Tests.Integration/E2EAuthFlowTests.cs
-- [ ] T117 Verify AuthenticationHelper.cs works with new register endpoint in backend/tests/GamifiedMathDrill.Tests.Integration/Helpers/AuthenticationHelper.cs
-- [ ] T118 Run all backend tests: `dotnet test` from backend/ directory
-- [ ] T119 Run all frontend tests (if bUnit tests created) from frontend/ directory
+- [x] T114 Create E2E test for full registration → login flow in backend/tests/GamifiedMathDrill.Tests.Integration/E2EAuthFlowTests.cs
+- [x] T115 Create E2E test for login → forgot password → reset → login flow in backend/tests/GamifiedMathDrill.Tests.Integration/E2EAuthFlowTests.cs
+- [x] T116 Create E2E test for remember me functionality (session vs local storage) in backend/tests/GamifiedMathDrill.Tests.Integration/E2EAuthFlowTests.cs
+- [x] T117 Verify AuthenticationHelper.cs works with new register endpoint in backend/tests/GamifiedMathDrill.Tests.Integration/Helpers/AuthenticationHelper.cs
+- [x] T118 Run all backend tests: `dotnet test` from backend/ directory
+- [x] T119 Run all frontend tests (if bUnit tests created) from frontend/ directory
 
 ---
 

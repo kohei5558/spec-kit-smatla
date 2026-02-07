@@ -9,7 +9,7 @@ public class LoginRequest
     /// メールアドレス
     /// </summary>
     public string Email { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// パスワード
     /// </summary>

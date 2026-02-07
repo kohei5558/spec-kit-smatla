@@ -10,10 +10,10 @@ public class RateLimitMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<RateLimitMiddleware> _logger;
-    
+
     // IPアドレスごとの失敗試行記録（メモリ内キャッシュ）
     private static readonly ConcurrentDictionary<string, List<DateTime>> _loginAttempts = new();
-    
+
     // レート制限設定
     private const int MaxAttemptsPerWindow = 5; // ウィンドウ内の最大試行回数
     private static readonly TimeSpan WindowDuration = TimeSpan.FromMinutes(15); // 監視ウィンドウ
@@ -29,8 +29,8 @@ public class RateLimitMiddleware
     {
         // 認証エンドポイントのみチェック
         var path = context.Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
-        var isAuthEndpoint = path.Contains("/api/auth/login") || 
-                            path.Contains("/api/auth/register") || 
+        var isAuthEndpoint = path.Contains("/api/auth/login") ||
+                            path.Contains("/api/auth/register") ||
                             path.Contains("/api/auth/forgot-password");
 
         if (!isAuthEndpoint)
@@ -46,13 +46,13 @@ public class RateLimitMiddleware
         {
             // 古い試行記録を削除（ウィンドウ外）
             attempts.RemoveAll(t => t < DateTime.UtcNow - WindowDuration);
-            
+
             // ブロック期間内に複数回失敗している場合
             if (attempts.Count >= MaxAttemptsPerWindow)
             {
                 var oldestAttempt = attempts.Min();
                 var timeSinceOldest = DateTime.UtcNow - oldestAttempt;
-                
+
                 if (timeSinceOldest < BlockDuration)
                 {
                     var remainingTime = BlockDuration - timeSinceOldest;
@@ -63,8 +63,8 @@ public class RateLimitMiddleware
 
                     context.Response.StatusCode = 429; // Too Many Requests
                     context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsJsonAsync(new 
-                    { 
+                    await context.Response.WriteAsJsonAsync(new
+                    {
                         success = false,
                         message = "しばらくしてから再度お試しください",
                         retryAfterSeconds = (int)remainingTime.TotalSeconds

@@ -80,21 +80,21 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_{Guid.NewGuid().ToString()[..8]}",
             Grade = 3
         });
-        
+
         var statusMsg = $"Student creation failed with status: {createResponse.StatusCode}, content: {await createResponse.Content.ReadAsStringAsync()}";
         createResponse.StatusCode.Should().BeOneOf(new[] { HttpStatusCode.OK, HttpStatusCode.Created }, statusMsg);
-            
+
         var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
         studentResponse.Should().NotBeNull("StudentResponse should not be null");
         studentResponse!.Success.Should().BeTrue($"Student creation failed: {studentResponse.Message}");
         studentResponse.Data.Should().NotBeNull("Student Data should not be null");
-        
+
         var student = studentResponse.Data!;
 
         // Act
@@ -102,14 +102,14 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        
+
         var content = await response.Content.ReadAsStringAsync();
         var problemResponse = System.Text.Json.JsonSerializer.Deserialize<ApiResponse<TestProblemDto>>(
             content, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        
+
         problemResponse.Should().NotBeNull($"Response content: {content}");
         problemResponse!.Success.Should().BeTrue($"API returned error: {problemResponse.Message}");
-        
+
         var problem = problemResponse.Data;
         problem.Should().NotBeNull("Data property should not be null");
         problem!.CalculationTypeText.Should().NotBeNullOrEmpty();
@@ -126,7 +126,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_{category[..3]}_{Guid.NewGuid().ToString()[..8]}",
@@ -146,7 +146,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
             var problemResponse = await response.Content.ReadFromJsonAsync<ApiResponse<TestProblemDto>>();
             var problem = problemResponse!.Data;
             problem.Should().NotBeNull();
-            problem!.CalculationTypeText.Should().Be(category, 
+            problem!.CalculationTypeText.Should().Be(category,
                 $"すべての問題は指定されたカテゴリ（{category}）であるべき");
         }
     }
@@ -158,7 +158,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_Stats_{Guid.NewGuid().ToString()[..8]}",
@@ -192,7 +192,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_All_{Guid.NewGuid().ToString()[..8]}",
@@ -229,7 +229,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_Rec_{Guid.NewGuid().ToString()[..8]}",
@@ -252,7 +252,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         var result = resultResponse!.Data;
         result.Should().NotBeNull();
         result!.Records.Should().HaveCount(3);
-        result.Records.Should().AllSatisfy(r => 
+        result.Records.Should().AllSatisfy(r =>
             r.CalculationType.Should().Be(CalculationType.Addition));
     }
 
@@ -263,7 +263,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_Acc_{Guid.NewGuid().ToString()[..8]}",
@@ -301,7 +301,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_Inv_{Guid.NewGuid().ToString()[..8]}",
@@ -325,7 +325,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         var createResponse = await _client.PostAsJsonAsync("/api/students", new
         {
             Name = $"Test_Flow_{Guid.NewGuid().ToString()[..8]}",
@@ -388,7 +388,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
                 new { Answer = answer });
         }
     }
-    
+
     private int ParseQuestionForAnswer(string question)
     {
         // Remove "= ?" from the end
@@ -397,7 +397,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
 
         if (!int.TryParse(parts[0], out var num1)) return 0;
         if (!int.TryParse(parts[2], out var num2)) return 0;
-        
+
         var op = parts[1];
         return op switch
         {

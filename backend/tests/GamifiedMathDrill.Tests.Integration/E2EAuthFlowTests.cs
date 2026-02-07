@@ -44,7 +44,7 @@ public class E2EAuthFlowTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert 1: 登録成功
         Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
-        
+
         var registerResult = await registerResponse.Content.ReadFromJsonAsync<RegisterResponse>();
         Assert.NotNull(registerResult);
         Assert.True(registerResult.Success);
@@ -57,13 +57,13 @@ public class E2EAuthFlowTests : IClassFixture<TestWebApplicationFactory>
         // Act 2: 取得したトークンで認証が必要なエンドポイントにアクセス
         var authenticatedClient = _client;
         AuthenticationHelper.AddAuthorizationHeader(authenticatedClient, registerResult.Token);
-        
+
         var dashboardResponse = await authenticatedClient.GetAsync("/api/parent/dashboard");
 
         // Assert 2: 認証されたアクセス成功（または適切なレスポンス）
         // Note: ダッシュボードエンドポイントが実装されていない場合はNotFoundでも可
         Assert.True(
-            dashboardResponse.IsSuccessStatusCode || 
+            dashboardResponse.IsSuccessStatusCode ||
             dashboardResponse.StatusCode == HttpStatusCode.NotFound,
             $"Expected success or NotFound, got {dashboardResponse.StatusCode}");
 
@@ -79,13 +79,13 @@ public class E2EAuthFlowTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert 3: ログイン成功
         Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
-        
+
         var loginResult = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
         Assert.NotNull(loginResult);
         Assert.True(loginResult.Success);
         Assert.NotNull(loginResult.Token);
         Assert.NotEmpty(loginResult.Token);
-        
+
         // 注: トークンは同じペイロード（userId, role等）から生成されるため同一になる可能性がある
         // 重要なのは両方とも有効なトークンであることを確認
         Assert.NotEmpty(registerResult.Token);
@@ -127,7 +127,7 @@ public class E2EAuthFlowTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert 2: パスワードリセットメール送信成功
         Assert.Equal(HttpStatusCode.OK, forgotPasswordResponse.StatusCode);
-        
+
         var forgotPasswordResult = await forgotPasswordResponse.Content.ReadFromJsonAsync<ForgotPasswordResponse>();
         Assert.NotNull(forgotPasswordResult);
         Assert.True(forgotPasswordResult.Success);
@@ -143,13 +143,13 @@ public class E2EAuthFlowTests : IClassFixture<TestWebApplicationFactory>
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var user = await userManager.FindByEmailAsync(testEmail);
             Assert.NotNull(user);
-            
+
             // データベースから最新のリセットトークンを取得
             var tokenRecord = db.PasswordResetTokens
                 .Where(t => t.UserId == user.Id && !t.IsUsed && t.ExpiresAt > DateTime.UtcNow)
                 .OrderByDescending(t => t.CreatedAt)
                 .FirstOrDefault();
-            
+
             Assert.NotNull(tokenRecord);
             Assert.False(tokenRecord.IsUsed);
             Assert.True(tokenRecord.ExpiresAt > DateTime.UtcNow);
@@ -181,7 +181,7 @@ public class E2EAuthFlowTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert 1: セッションログイン成功
         Assert.Equal(HttpStatusCode.OK, sessionLoginResponse.StatusCode);
-        
+
         var sessionLoginResult = await sessionLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
         Assert.NotNull(sessionLoginResult);
         Assert.True(sessionLoginResult.Success);
@@ -205,7 +205,7 @@ public class E2EAuthFlowTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert 2: 永続ログイン成功
         Assert.Equal(HttpStatusCode.OK, persistentLoginResponse.StatusCode);
-        
+
         var persistentLoginResult = await persistentLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
         Assert.NotNull(persistentLoginResult);
         Assert.True(persistentLoginResult.Success);
@@ -218,7 +218,7 @@ public class E2EAuthFlowTests : IClassFixture<TestWebApplicationFactory>
         Assert.InRange(persistentDuration.TotalDays, 29, 31);
 
         // Assert 3: 永続ログインのトークンはセッションより大幅に長い
-        Assert.True(persistentDuration > sessionDuration * 100, 
+        Assert.True(persistentDuration > sessionDuration * 100,
             $"Persistent duration ({persistentDuration.TotalMinutes} min) should be much longer than session ({sessionDuration.TotalMinutes} min)");
 
         // Assert 4: トークンは異なる

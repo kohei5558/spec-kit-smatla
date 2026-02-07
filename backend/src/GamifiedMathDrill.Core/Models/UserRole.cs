@@ -9,7 +9,7 @@ public enum UserRole
     /// 保護者アカウント
     /// </summary>
     Parent = 0,
-    
+
     /// <summary>
     /// 子供アカウント
     /// </summary>

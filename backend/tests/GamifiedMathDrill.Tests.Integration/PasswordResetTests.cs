@@ -24,7 +24,7 @@ public class PasswordResetTests : IClassFixture<TestWebApplicationFactory>
     {
         _factory = factory;
         _client = factory.CreateClient();
-        
+
         // テストユーザーをシード
         AuthenticationHelper.EnsureTestUsersExistAsync(factory.Services).Wait();
     }
@@ -43,7 +43,7 @@ public class PasswordResetTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        
+
         var result = await response.Content.ReadFromJsonAsync<ForgotPasswordResponse>();
         Assert.NotNull(result);
         Assert.True(result.Success);
@@ -65,7 +65,7 @@ public class PasswordResetTests : IClassFixture<TestWebApplicationFactory>
         // Assert
         // セキュリティ上、存在しないメールでも成功を返す
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        
+
         var result = await response.Content.ReadFromJsonAsync<ForgotPasswordResponse>();
         Assert.NotNull(result);
         Assert.True(result.Success);
@@ -82,7 +82,7 @@ public class PasswordResetTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        
+
         var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
         Assert.NotNull(result);
         Assert.True(result.Success);
@@ -100,7 +100,7 @@ public class PasswordResetTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        
+
         var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
         Assert.NotNull(result);
         Assert.False(result.Data);
@@ -111,7 +111,7 @@ public class PasswordResetTests : IClassFixture<TestWebApplicationFactory>
     {
         // Arrange - パスワードリセットトークンを生成
         var token = await GenerateResetTokenAsync(TestEmail);
-        
+
         var request = new ResetPasswordRequest
         {
             Token = token,
@@ -124,11 +124,11 @@ public class PasswordResetTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        
+
         var result = await response.Content.ReadFromJsonAsync<ResetPasswordResponse>();
         Assert.NotNull(result);
         Assert.True(result.Success);
-        
+
         // 新しいパスワードでログインできることを確認
         var loginRequest = new LoginRequest
         {
@@ -136,7 +136,7 @@ public class PasswordResetTests : IClassFixture<TestWebApplicationFactory>
             Password = "NewPassword123!",
             RememberMe = false
         };
-        
+
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginRequest);
         Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
     }
@@ -146,14 +146,14 @@ public class PasswordResetTests : IClassFixture<TestWebApplicationFactory>
     {
         // Arrange - パスワードリセットトークンを生成し、一度使用する
         var token = await GenerateResetTokenAsync(TestEmail);
-        
+
         var firstRequest = new ResetPasswordRequest
         {
             Token = token,
             NewPassword = "FirstPassword123!",
             ConfirmPassword = "FirstPassword123!"
         };
-        
+
         await _client.PostAsJsonAsync("/api/auth/reset-password", firstRequest);
 
         // Act - 同じトークンで再度リセットを試みる
@@ -163,12 +163,12 @@ public class PasswordResetTests : IClassFixture<TestWebApplicationFactory>
             NewPassword = "SecondPassword123!",
             ConfirmPassword = "SecondPassword123!"
         };
-        
+
         var response = await _client.PostAsJsonAsync("/api/auth/reset-password", secondRequest);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        
+
         var result = await response.Content.ReadFromJsonAsync<ResetPasswordResponse>();
         Assert.NotNull(result);
         Assert.False(result.Success);

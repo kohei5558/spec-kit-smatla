@@ -23,7 +23,7 @@ public class RewardServiceBasicTests
         _mockAcquiredRewardRepository = new Mock<IAcquiredRewardRepository>();
         _mockStudentRepository = new Mock<IStudentRepository>();
         _mockImageStorageService = new Mock<IImageStorageService>();
-        
+
         _rewardService = new RewardService(
             _mockRewardRepository.Object,
             _mockAcquiredRewardRepository.Object,
@@ -55,14 +55,14 @@ public class RewardServiceBasicTests
     public async Task ExchangeRewardAsync_WithInsufficientPoints_ReturnsFailure()
     {
         // Arrange
-        var student = new Student 
-        { 
-            Id = 1, 
-            Name = "Test Student", 
+        var student = new Student
+        {
+            Id = 1,
+            Name = "Test Student",
             TotalPoints = 10
         };
         var reward = new Reward { Id = 1, Name = "Snack", RequiredPoints = 100, Category = RewardCategory.Snack };
-        
+
         _mockStudentRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(student);
         _mockRewardRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(reward);
 

@@ -41,7 +41,7 @@ public class AuthRegisterTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        
+
         var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
         Assert.NotNull(result);
         Assert.True(result.Success);
@@ -55,7 +55,7 @@ public class AuthRegisterTests : IClassFixture<TestWebApplicationFactory>
     {
         // Arrange - 既存ユーザーを確保
         await AuthenticationHelper.EnsureTestUsersExistAsync(_services);
-        
+
         var request = new RegisterRequest
         {
             Email = "parent@example.com", // 既存のメールアドレス
@@ -69,7 +69,7 @@ public class AuthRegisterTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        
+
         var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
         Assert.NotNull(result);
         Assert.False(result.Success);
@@ -94,7 +94,7 @@ public class AuthRegisterTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        
+
         var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
         Assert.NotNull(result);
         Assert.False(result.Success);
@@ -119,7 +119,7 @@ public class AuthRegisterTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        
+
         var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
         Assert.NotNull(result);
         Assert.False(result.Success);
@@ -144,15 +144,15 @@ public class AuthRegisterTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        
+
         var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
         Assert.NotNull(result);
         Assert.NotEmpty(result.Token);
-        
+
         // トークンを使って認証が必要なエンドポイントにアクセスできるか確認
         // 既存の_clientにAuthorizationヘッダーを追加
         AuthenticationHelper.AddAuthorizationHeader(_client, result.Token);
-        
+
         var testResponse = await _client.GetAsync("/api/parent/dashboard");
         Assert.True(testResponse.IsSuccessStatusCode || testResponse.StatusCode == HttpStatusCode.NotFound);
     }

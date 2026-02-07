@@ -34,13 +34,13 @@ public class DailyChallengeJob : BackgroundService
             var tomorrow = now.Date.AddDays(1);
             var delay = tomorrow - now;
 
-            _logger.LogInformation("Next daily challenge will be created at {Tomorrow} UTC (in {Delay})", 
+            _logger.LogInformation("Next daily challenge will be created at {Tomorrow} UTC (in {Delay})",
                 tomorrow, delay);
 
             try
             {
                 await Task.Delay(delay, stoppingToken);
-                
+
                 if (!stoppingToken.IsCancellationRequested)
                 {
                     await CreateTodaysChallengeAsync();
@@ -68,10 +68,10 @@ public class DailyChallengeJob : BackgroundService
         {
             using var scope = _serviceProvider.CreateScope();
             var challengeService = scope.ServiceProvider.GetRequiredService<IDailyChallengeService>();
-            
+
             var today = DateTime.UtcNow.Date;
             var challenge = await challengeService.CreateDailyChallengeAsync(today);
-            
+
             _logger.LogInformation(
                 "Daily challenge created for {Date}: ProblemId={ProblemId}, BonusPoints={BonusPoints}",
                 challenge.TargetDate, challenge.ProblemId, challenge.BonusPoints);

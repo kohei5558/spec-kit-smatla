@@ -40,10 +40,10 @@ public class LoginTests : AuthenticatedTestBase
         Assert.NotEmpty(loginResponse.Token);
         Assert.Equal("Parent", loginResponse.Role);
         Assert.NotNull(loginResponse.ExpiresAt);
-        
+
         // Verify session expiry time (~60 minutes)
         var expiryTime = loginResponse.ExpiresAt.Value - DateTime.UtcNow;
-        Assert.True(expiryTime.TotalMinutes >= 59 && expiryTime.TotalMinutes <= 61, 
+        Assert.True(expiryTime.TotalMinutes >= 59 && expiryTime.TotalMinutes <= 61,
             $"Session expiry should be ~60 minutes, but was {expiryTime.TotalMinutes} minutes");
     }
 
@@ -69,10 +69,10 @@ public class LoginTests : AuthenticatedTestBase
         Assert.NotEmpty(loginResponse.Token);
         Assert.Equal("Parent", loginResponse.Role);
         Assert.NotNull(loginResponse.ExpiresAt);
-        
+
         // Verify remember me expiry time (~30 days = 43200 minutes)
         var expiryTime = loginResponse.ExpiresAt.Value - DateTime.UtcNow;
-        Assert.True(expiryTime.TotalMinutes >= 43190 && expiryTime.TotalMinutes <= 43210, 
+        Assert.True(expiryTime.TotalMinutes >= 43190 && expiryTime.TotalMinutes <= 43210,
             $"Remember Me expiry should be ~43200 minutes (30 days), but was {expiryTime.TotalMinutes} minutes");
     }
 
@@ -155,7 +155,7 @@ public class LoginTests : AuthenticatedTestBase
         // Session should be ~60 minutes, RememberMe should be ~30 days
         Assert.True(sessionExpiry.TotalMinutes >= 59 && sessionExpiry.TotalMinutes <= 61);
         Assert.True(rememberExpiry.TotalMinutes >= 43190 && rememberExpiry.TotalMinutes <= 43210);
-        
+
         // RememberMe expiry should be significantly longer than session expiry
         Assert.True(rememberExpiry > sessionExpiry);
     }

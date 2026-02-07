@@ -31,80 +31,80 @@ public static class AuthenticationHelper
             if (!_usersSeeded)
             {
                 // 保護者ユーザーを作成
-            var parentEmail = "parent@example.com";
-            var existingParent = userManager.FindByEmailAsync(parentEmail).Result;
-            
-            if (existingParent == null)
-            {
-                var newParent = new ApplicationUser
-                {
-                    UserName = parentEmail,
-                    Email = parentEmail,
-                    DisplayName = "Test Parent",
-                    Role = UserRole.Parent,
-                    EmailConfirmed = true
-                };
+                var parentEmail = "parent@example.com";
+                var existingParent = userManager.FindByEmailAsync(parentEmail).Result;
 
-                var result = userManager.CreateAsync(newParent, "Parent123!").Result;
-                if (!result.Succeeded)
+                if (existingParent == null)
                 {
-                    throw new Exception($"Failed to create parent user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    var newParent = new ApplicationUser
+                    {
+                        UserName = parentEmail,
+                        Email = parentEmail,
+                        DisplayName = "Test Parent",
+                        Role = UserRole.Parent,
+                        EmailConfirmed = true
+                    };
+
+                    var result = userManager.CreateAsync(newParent, "Parent123!").Result;
+                    if (!result.Succeeded)
+                    {
+                        throw new Exception($"Failed to create parent user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    }
                 }
+
+                // 子供ユーザーを作成
+                var parentUser = userManager.FindByEmailAsync(parentEmail).Result
+                    ?? throw new Exception("Parent user not found after creation");
+
+                var existingChild = userManager.Users.FirstOrDefault(u => u.DisplayName == "太郎" && u.Role == UserRole.Child);
+
+                if (existingChild == null)
+                {
+                    var child = new ApplicationUser
+                    {
+                        UserName = $"child_taro_{Guid.NewGuid()}",
+                        Email = $"taro_{Guid.NewGuid()}@test.local",
+                        DisplayName = "太郎",
+                        Role = UserRole.Child,
+                        ParentId = parentUser.Id,
+                        PIN = userManager.PasswordHasher.HashPassword(null!, "1234"),
+                        EmailConfirmed = true
+                    };
+
+                    var result = userManager.CreateAsync(child).Result;
+                    if (!result.Succeeded)
+                    {
+                        throw new Exception($"Failed to create child user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    }
+
+                    existingChild = child;
+                }
+
+                _usersSeeded = true;
             }
 
-            // 子供ユーザーを作成
-            var parentUser = userManager.FindByEmailAsync(parentEmail).Result 
-                ?? throw new Exception("Parent user not found after creation");
-
-            var existingChild = userManager.Users.FirstOrDefault(u => u.DisplayName == "太郎" && u.Role == UserRole.Child);
-            
-            if (existingChild == null)
+            // Studentエントリを作成（存在しない場合）または既存のものをリセット
+            // NOTE: 毎回チェックして、ポイントをリセットする
+            var student = db.Students.FirstOrDefault(s => s.Name == "太郎");
+            if (student == null)
             {
-                var child = new ApplicationUser
+                student = new Student
                 {
-                    UserName = $"child_taro_{Guid.NewGuid()}",
-                    Email = $"taro_{Guid.NewGuid()}@test.local",
-                    DisplayName = "太郎",
-                    Role = UserRole.Child,
-                    ParentId = parentUser.Id,
-                    PIN = userManager.PasswordHasher.HashPassword(null!, "1234"),
-                    EmailConfirmed = true
+                    Name = "太郎",
+                    TotalPoints = 0 // テスト用の初期ポイント（各テストで必要に応じて設定）
                 };
-
-                var result = userManager.CreateAsync(child).Result;
-                if (!result.Succeeded)
-                {
-                    throw new Exception($"Failed to create child user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                }
-                
-                existingChild = child;
+                db.Students.Add(student);
             }
-            
-            _usersSeeded = true;
-        }
-            
-        // Studentエントリを作成（存在しない場合）または既存のものをリセット
-        // NOTE: 毎回チェックして、ポイントをリセットする
-        var student = db.Students.FirstOrDefault(s => s.Name == "太郎");
-        if (student == null)
-        {
-            student = new Student
+            else
             {
-                Name = "太郎",
-                TotalPoints = 0 // テスト用の初期ポイント（各テストで必要に応じて設定）
-            };
-            db.Students.Add(student);
+                // 既存のStudentをリセット
+                student.TotalPoints = 0;
+            }
+            db.SaveChangesAsync().Wait();
         }
-        else
-        {
-            // 既存のStudentをリセット
-            student.TotalPoints = 0;
-        }
-        db.SaveChangesAsync().Wait();
+
+        return Task.CompletedTask;
     }
-
-    return Task.CompletedTask;
-}
 
     /// <summary>
     /// 保護者としてログインし、JWTトークンを取得
@@ -124,7 +124,7 @@ public static class AuthenticationHelper
         };
 
         var response = await client.PostAsJsonAsync("/api/auth/login", loginRequest);
-        
+
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
@@ -163,7 +163,7 @@ public static class AuthenticationHelper
     /// </summary>
     public static void AddAuthorizationHeader(HttpClient client, string token)
     {
-        client.DefaultRequestHeaders.Authorization = 
+        client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
     }
 
@@ -174,7 +174,7 @@ public static class AuthenticationHelper
     {
         using var scope = services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        
+
         var child = userManager.Users.FirstOrDefault(u => u.DisplayName == "太郎" && u.Role == UserRole.Child);
         return child?.Id ?? throw new Exception("Test child user not found");
     }
@@ -186,7 +186,7 @@ public static class AuthenticationHelper
     {
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        
+
         var student = db.Students.FirstOrDefault(s => s.Name == "太郎");
         return student?.Id ?? throw new Exception("Test student not found");
     }

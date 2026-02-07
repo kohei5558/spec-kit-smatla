@@ -40,7 +40,7 @@ public class ApiBasicTests : IClassFixture<TestWebApplicationFactory>
         await AuthenticationHelper.EnsureTestUsersExistAsync(_factory.Services);
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
-        
+
         await SeedTestStudent();
 
         // Act

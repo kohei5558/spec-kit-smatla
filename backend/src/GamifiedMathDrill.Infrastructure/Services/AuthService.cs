@@ -24,7 +24,7 @@ public class AuthService : IAuthService
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
-        UserManager<ApplicationUser> userManager, 
+        UserManager<ApplicationUser> userManager,
         IConfiguration configuration,
         IPasswordResetTokenRepository passwordResetTokenRepository,
         IEmailService emailService,
@@ -61,10 +61,10 @@ public class AuthService : IAuthService
         }
 
         // rememberMeに基づいて有効期限を設定
-        var expiryMinutes = rememberMe 
+        var expiryMinutes = rememberMe
             ? _configuration.GetValue<int>("Jwt:RememberMeExpiryMinutes", 43200) // 30日間
             : _configuration.GetValue<int>("Jwt:SessionExpiryMinutes", 60);      // 60分
-        
+
         var token = GenerateJwtToken(user.Id, user.DisplayName, user.Role.ToString(), user.ParentId, expiryMinutes);
         var expiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes);
 
@@ -106,7 +106,7 @@ public class AuthService : IAuthService
     /// </summary>
     public string GenerateJwtToken(string userId, string displayName, string role, string? parentId = null, int? expiryMinutes = null)
     {
-        var secretKey = _configuration["Jwt:SecretKey"] 
+        var secretKey = _configuration["Jwt:SecretKey"]
             ?? throw new InvalidOperationException("JWT SecretKey is not configured");
         var issuer = _configuration["Jwt:Issuer"] ?? "GamifiedMathDrill.Api";
         var audience = _configuration["Jwt:Audience"] ?? "GamifiedMathDrill.Client";
@@ -146,7 +146,7 @@ public class AuthService : IAuthService
         try
         {
             var user = await _userManager.FindByEmailAsync(email);
-            
+
             // セキュリティ上、ユーザーが存在しない場合でも成功を返す
             if (user == null || user.Role != UserRole.Parent)
             {
@@ -260,7 +260,7 @@ public class AuthService : IAuthService
             var addPasswordResult = await _userManager.AddPasswordAsync(user, newPassword);
             if (!addPasswordResult.Succeeded)
             {
-                _logger.LogError("Failed to add new password for user: {UserId}. Errors: {Errors}", 
+                _logger.LogError("Failed to add new password for user: {UserId}. Errors: {Errors}",
                     user.Id, string.Join(", ", addPasswordResult.Errors.Select(e => e.Description)));
                 return false;
             }
@@ -334,18 +334,18 @@ public class AuthService : IAuthService
 
             // ユーザーを作成（パスワード強度検証は自動的に実施される）
             var result = await _userManager.CreateAsync(newUser, password);
-            
+
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 _logger.LogWarning("Registration failed: {Errors} for email: {Email}", errors, email);
-                
+
                 // パスワード強度エラーをユーザーフレンドリーに変換
                 if (errors.Contains("Passwords must") || errors.Contains("パスワードは"))
                 {
                     return (false, null, null, null, "パスワードは8文字以上で、大文字、小文字、数字、記号を含む必要があります");
                 }
-                
+
                 return (false, null, null, null, errors);
             }
 
@@ -354,7 +354,7 @@ public class AuthService : IAuthService
             var expiresAt = DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:SessionExpiryMinutes", 60));
 
             _logger.LogInformation("User registered successfully: {UserId}, Email: {Email}", newUser.Id, email);
-            
+
             return (true, newUser.Id, token, expiresAt, null);
         }
         catch (Exception ex)

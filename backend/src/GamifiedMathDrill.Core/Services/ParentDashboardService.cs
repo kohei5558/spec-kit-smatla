@@ -34,7 +34,7 @@ public class ParentDashboardService : IParentDashboardService
         // 最近の交換申請を取得
         var allRequests = await _exchangeRequestRepository.GetAllAsync();
         var childrenIds = children.Select(c => c.Id).ToList();
-        
+
         // LINQの型推論を助けるため明示的に処理
         var filteredRequests = new List<ExchangeRequest>();
         foreach (var request in allRequests)
@@ -44,10 +44,10 @@ public class ParentDashboardService : IParentDashboardService
                 filteredRequests.Add(request);
             }
         }
-        
+
         // RequestedAtで降順ソート
         filteredRequests.Sort((a, b) => b.RequestedAt.CompareTo(a.RequestedAt));
-        
+
         var recentRequests = new List<ExchangeRequest>();
         for (int i = 0; i < Math.Min(5, filteredRequests.Count); i++)
         {
@@ -111,7 +111,7 @@ public class ParentDashboardService : IParentDashboardService
                 filtered.Add(student);
             }
         }
-        
+
         // 名前でソート
         filtered.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
         return filtered;
