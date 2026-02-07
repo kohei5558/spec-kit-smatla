@@ -154,4 +154,95 @@ public class AuthService
     {
         return await _tokenService.GetUserNameAsync();
     }
+
+    /// <summary>
+    /// パスワードリセットメールを送信
+    /// </summary>
+    public async Task<(bool success, string? message)> ForgotPasswordAsync(string email)
+    {
+        try
+        {
+            var request = new ForgotPasswordRequest
+            {
+                Email = email
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/forgot-password", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ForgotPasswordResponse>();
+                return (result?.Success ?? false, result?.Message);
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            return (false, errorContent);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"エラーが発生しました: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// パスワードリセットトークンを検証
+    /// </summary>
+    public async Task<bool> ValidateResetTokenAsync(string token)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"/api/auth/validate-reset-token?token={Uri.EscapeDataString(token)}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+                return result?.Data ?? false;
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// パスワードをリセット
+    /// </summary>
+    public async Task<(bool success, string? message)> ResetPasswordAsync(string token, string newPassword, string confirmPassword)
+    {
+        try
+        {
+            var request = new ResetPasswordRequest
+            {
+                Token = token,
+                NewPassword = newPassword,
+                ConfirmPassword = confirmPassword
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/reset-password", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ResetPasswordResponse>();
+                return (result?.Success ?? false, result?.Message);
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            try
+            {
+                var errorResponse = JsonSerializer.Deserialize<ResetPasswordResponse>(errorContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return (false, errorResponse?.Message ?? "パスワードリセットに失敗しました");
+            }
+            catch
+            {
+                return (false, "パスワードリセットに失敗しました");
+            }
+        }
+        catch (Exception ex)
+        {
+            return (false, $"エラーが発生しました: {ex.Message}");
+        }
+    }
 }
