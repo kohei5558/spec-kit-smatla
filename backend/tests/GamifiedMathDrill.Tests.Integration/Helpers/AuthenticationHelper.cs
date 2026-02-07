@@ -49,7 +49,7 @@ public static class AuthenticationHelper
             }
 
             // 子供ユーザーの存在確認と作成
-            var parentUser = userManager.FindByEmailAsync(parentEmail).Result
+            var parentUser = await userManager.FindByEmailAsync(parentEmail)
                 ?? throw new Exception("Parent user not found after creation");
 
             var existingChild = userManager.Users.FirstOrDefault(u => u.DisplayName == "太郎" && u.Role == UserRole.Child);
