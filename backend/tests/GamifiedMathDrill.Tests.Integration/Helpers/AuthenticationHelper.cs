@@ -67,7 +67,7 @@ public static class AuthenticationHelper
                     EmailConfirmed = true
                 };
 
-                var result = userManager.CreateAsync(child).Result;
+                var result = await userManager.CreateAsync(child);
                 if (!result.Succeeded)
                 {
                     throw new Exception($"Failed to create child user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
