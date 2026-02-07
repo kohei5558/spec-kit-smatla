@@ -41,7 +41,7 @@ public static class AuthenticationHelper
                     EmailConfirmed = true
                 };
 
-                var result = userManager.CreateAsync(newParent, "Parent123!").Result;
+                var result = await userManager.CreateAsync(newParent, "Parent123!");
                 if (!result.Succeeded)
                 {
                     throw new Exception($"Failed to create parent user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
