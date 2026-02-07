@@ -59,7 +59,14 @@ public class AuthService : IAuthService
             return (null, null, null, null, null, null);
         }
 
-        if (user.PIN != pin)
+        // PINの検証（ハッシュ化されたPINと比較）
+        if (string.IsNullOrEmpty(user.PIN))
+        {
+            return (null, null, null, null, null, null);
+        }
+
+        var verificationResult = _userManager.PasswordHasher.VerifyHashedPassword(user, user.PIN, pin);
+        if (verificationResult == PasswordVerificationResult.Failed)
         {
             return (null, null, null, null, null, null);
         }

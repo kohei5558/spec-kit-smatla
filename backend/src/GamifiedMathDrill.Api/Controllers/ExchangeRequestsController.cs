@@ -1,7 +1,11 @@
 using GamifiedMathDrill.Api.DTOs;
 using GamifiedMathDrill.Core.Interfaces;
+using GamifiedMathDrill.Infrastructure.Data;
+using GamifiedMathDrill.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace GamifiedMathDrill.Api.Controllers;
@@ -10,20 +14,23 @@ namespace GamifiedMathDrill.Api.Controllers;
 /// 交換申請API
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/exchange-requests")]
 public class ExchangeRequestsController : ControllerBase
 {
     private readonly IExchangeRequestService _exchangeRequestService;
     private readonly IExchangeRequestRepository _exchangeRequestRepository;
+    private readonly ApplicationDbContext _db;
     private readonly ILogger<ExchangeRequestsController> _logger;
 
     public ExchangeRequestsController(
         IExchangeRequestService exchangeRequestService,
         IExchangeRequestRepository exchangeRequestRepository,
+        ApplicationDbContext db,
         ILogger<ExchangeRequestsController> logger)
     {
         _exchangeRequestService = exchangeRequestService;
         _exchangeRequestRepository = exchangeRequestRepository;
+        _db = db;
         _logger = logger;
     }
 
@@ -42,9 +49,22 @@ public class ExchangeRequestsController : ControllerBase
                 return Unauthorized(new { message = "ユーザー情報が取得できません。" });
             }
 
-            // UserIdからStudentIdを取得する必要がある（現在は仮で固定値）
-            // TODO: ApplicationUserとStudentの関連付けを実装
-            var studentId = 1; // 仮の値
+            // UserIdからStudentIdを取得（DisplayNameで関連付け）
+            var user = await _db.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "ユーザーが見つかりません。" });
+            }
+
+            var student = await _db.Students.FirstOrDefaultAsync(s => s.Name == user.DisplayName);
+            if (student == null)
+            {
+                _logger.LogWarning($"Student not found for user {user.DisplayName} (UserId: {userId})");
+                return NotFound(new { message = $"生徒情報が見つかりません。ユーザー名: {user.DisplayName}" });
+            }
+
+            var studentId = student.Id;
+            _logger.LogInformation($"Found student {studentId} for user {user.DisplayName}");
 
             var exchangeRequest = await _exchangeRequestService.CreateRequestAsync(studentId, request.RewardId);
 
@@ -93,8 +113,20 @@ public class ExchangeRequestsController : ControllerBase
                 return Unauthorized(new { message = "ユーザー情報が取得できません。" });
             }
 
-            // TODO: UserIdからStudentIdを取得
-            var studentId = 1; // 仮の値
+            // UserIdからStudentIdを取得
+            var user = await _db.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "ユーザーが見つかりません。" });
+            }
+
+            var student = await _db.Students.FirstOrDefaultAsync(s => s.Name == user.DisplayName);
+            if (student == null)
+            {
+                return NotFound(new { message = "生徒情報が見つかりません。" });
+            }
+
+            var studentId = student.Id;
 
             var requests = await _exchangeRequestService.GetRequestsByStudentAsync(studentId);
 
@@ -183,8 +215,20 @@ public class ExchangeRequestsController : ControllerBase
                 return Unauthorized(new { message = "ユーザー情報が取得できません。" });
             }
 
-            // TODO: UserIdからStudentIdを取得
-            var studentId = 1; // 仮の値
+            // UserIdからStudentIdを取得
+            var user = await _db.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "ユーザーが見つかりません。" });
+            }
+
+            var student = await _db.Students.FirstOrDefaultAsync(s => s.Name == user.DisplayName);
+            if (student == null)
+            {
+                return NotFound(new { message = "生徒情報が見つかりません。" });
+            }
+
+            var studentId = student.Id;
 
             await _exchangeRequestService.CancelRequestAsync(id, studentId);
 

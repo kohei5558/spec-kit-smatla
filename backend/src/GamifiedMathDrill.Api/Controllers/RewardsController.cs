@@ -158,6 +158,11 @@ public class RewardsController : ControllerBase
 
             return CreatedAtAction(nameof(GetReward), new { id = dto.Id }, dto);
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error creating reward");
+            return BadRequest(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating reward");
@@ -227,6 +232,11 @@ public class RewardsController : ControllerBase
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error updating reward {RewardId}", id);
+            return BadRequest(new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {

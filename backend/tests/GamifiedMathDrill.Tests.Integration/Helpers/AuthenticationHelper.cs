@@ -21,17 +21,16 @@ public static class AuthenticationHelper
     /// </summary>
     public static Task EnsureTestUsersExistAsync(IServiceProvider services)
     {
-        if (_usersSeeded) return Task.CompletedTask;
-
         lock (_lock)
         {
-            if (_usersSeeded) return Task.CompletedTask;
-
             using var scope = services.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            // 保護者ユーザーを作成
+            // ユーザー作成は初回のみ
+            if (!_usersSeeded)
+            {
+                // 保護者ユーザーを作成
             var parentEmail = "parent@example.com";
             var existingParent = userManager.FindByEmailAsync(parentEmail).Result;
             
@@ -81,24 +80,31 @@ public static class AuthenticationHelper
                 existingChild = child;
             }
             
-            // Studentエントリを作成（存在しない場合）
-            var student = db.Students.FirstOrDefault(s => s.Name == "太郎");
-            if (student == null)
-            {
-                student = new Student
-                {
-                    Name = "太郎",
-                    TotalPoints = 100 // テスト用に初期ポイントを設定
-                };
-                db.Students.Add(student);
-                db.SaveChangesAsync().Wait();
-            }
-
             _usersSeeded = true;
         }
-
-        return Task.CompletedTask;
+            
+        // Studentエントリを作成（存在しない場合）または既存のものをリセット
+        // NOTE: 毎回チェックして、ポイントをリセットする
+        var student = db.Students.FirstOrDefault(s => s.Name == "太郎");
+        if (student == null)
+        {
+            student = new Student
+            {
+                Name = "太郎",
+                TotalPoints = 0 // テスト用の初期ポイント（各テストで必要に応じて設定）
+            };
+            db.Students.Add(student);
+        }
+        else
+        {
+            // 既存のStudentをリセット
+            student.TotalPoints = 0;
+        }
+        db.SaveChangesAsync().Wait();
     }
+
+    return Task.CompletedTask;
+}
 
     /// <summary>
     /// 保護者としてログインし、JWTトークンを取得
@@ -170,5 +176,17 @@ public static class AuthenticationHelper
         
         var child = userManager.Users.FirstOrDefault(u => u.DisplayName == "太郎" && u.Role == UserRole.Child);
         return child?.Id ?? throw new Exception("Test child user not found");
+    }
+
+    /// <summary>
+    /// テスト用のStudentIDを取得
+    /// </summary>
+    public static int GetTestStudentId(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        
+        var student = db.Students.FirstOrDefault(s => s.Name == "太郎");
+        return student?.Id ?? throw new Exception("Test student not found");
     }
 }

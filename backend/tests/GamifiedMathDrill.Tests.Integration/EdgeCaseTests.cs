@@ -40,14 +40,24 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult!.Token);
 
         // 在庫1の景品を作成
-        var createRewardResponse = await _client.PostAsJsonAsync("/api/rewards", new
+        var formData = new MultipartFormDataContent
         {
-            Name = "Limited Item",
-            RequiredPoints = 50,
-            Category = "Snack",
-            IsPhysical = true,
-            Stock = 1
-        });
+            { new StringContent("Limited Item"), "Name" },
+            { new StringContent("Test Description"), "Description" },
+            { new StringContent("50"), "RequiredPoints" },
+            { new StringContent("Snack"), "Category" },
+            { new StringContent("true"), "IsPhysical" },
+            { new StringContent("1"), "Stock" }
+        };
+        var createRewardResponse = await _client.PostAsync("/api/rewards", formData);
+        
+        // デバッグ: レスポンスを確認
+        if (!createRewardResponse.IsSuccessStatusCode)
+        {
+            var errorContent = await createRewardResponse.Content.ReadAsStringAsync();
+            throw new Exception($"Reward creation failed: {createRewardResponse.StatusCode} - {errorContent}");
+        }
+        
         var rewardDto = await createRewardResponse.Content.ReadFromJsonAsync<RewardDto>();
         Assert.NotNull(rewardDto);
 
@@ -61,11 +71,40 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         var childLoginResult = await childLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult!.Token);
 
+        // デバッグ: 認証状態を確認
+        if (!childLoginResponse.IsSuccessStatusCode)
+        {
+            var loginError = await childLoginResponse.Content.ReadAsStringAsync();
+            throw new Exception($"Child login failed: {childLoginResponse.StatusCode} - {loginError}");
+        }
+
+        // ポイントを追加（50ポイント必要）
+        var studentId = AuthenticationHelper.GetTestStudentId(_factory.Services);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GamifiedMathDrill.Infrastructure.Data.ApplicationDbContext>();
+            var student = await db.Students.FindAsync(studentId);
+            if (student != null)
+            {
+                student.TotalPoints = 100; // 十分なポイントを付与
+                await db.SaveChangesAsync();
+            }
+        }
+
         // Act: 交換申請（成功するはず）
         var exchangeResponse = await _client.PostAsJsonAsync("/api/exchange-requests", new
         {
             RewardId = rewardDto.Id
         });
+
+        // デバッグ: エラー内容を確認
+        if (!exchangeResponse.IsSuccessStatusCode)
+        {
+            var errorContent = await exchangeResponse.Content.ReadAsStringAsync();
+            var statusCode = exchangeResponse.StatusCode;
+            var headers = string.Join(", ", exchangeResponse.Headers.Select(h => $"{h.Key}={string.Join(";", h.Value)}"));
+            throw new Exception($"Exchange request failed: {statusCode} - Content: '{errorContent}' - Headers: {headers}");
+        }
 
         // 在庫が0になったので、2回目は失敗するはず
         var secondExchangeResponse = await _client.PostAsJsonAsync("/api/exchange-requests", new
@@ -74,7 +113,7 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         });
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, exchangeResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, exchangeResponse.StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, secondExchangeResponse.StatusCode);
     }
 
@@ -94,14 +133,16 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult!.Token);
 
         // 景品を作成（100ポイント必要）
-        var createRewardResponse = await _client.PostAsJsonAsync("/api/rewards", new
+        var formData1 = new MultipartFormDataContent
         {
-            Name = "Expensive Item",
-            RequiredPoints = 100,
-            Category = "Toy",
-            IsPhysical = true,
-            Stock = 10
-        });
+            { new StringContent("Expensive Item"), "Name" },
+            { new StringContent("Test Description"), "Description" },
+            { new StringContent("100"), "RequiredPoints" },
+            { new StringContent("Toy"), "Category" },
+            { new StringContent("true"), "IsPhysical" },
+            { new StringContent("10"), "Stock" }
+        };
+        var createRewardResponse = await _client.PostAsync("/api/rewards", formData1);
         var rewardDto = await createRewardResponse.Content.ReadFromJsonAsync<RewardDto>();
         Assert.NotNull(rewardDto);
 
@@ -151,6 +192,7 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         var formData = new MultipartFormDataContent
         {
             { new StringContent("Test Reward"), "Name" },
+            { new StringContent("Test Description"), "Description" },
             { new StringContent("100"), "RequiredPoints" },
             { new StringContent("Toy"), "Category" },
             { new StringContent("true"), "IsPhysical" },
@@ -161,9 +203,11 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         // Act
         var response = await _client.PostAsync("/api/rewards", formData);
 
+        // デバッグ: レスポンスを確認
+        var errorContent = await response.Content.ReadAsStringAsync();
+
         // Assert: ファイルサイズ超過でエラー
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        var errorContent = await response.Content.ReadAsStringAsync();
         Assert.Contains("ファイルサイズが大きすぎます", errorContent);
     }
 
@@ -183,14 +227,16 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
 
         // 景品を作成
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult!.Token);
-        var createRewardResponse = await _client.PostAsJsonAsync("/api/rewards", new
+        var formData2 = new MultipartFormDataContent
         {
-            Name = "Test Item",
-            RequiredPoints = 10,
-            Category = "Snack",
-            IsPhysical = true,
-            Stock = 5
-        });
+            { new StringContent("Test Item"), "Name" },
+            { new StringContent("Test Description"), "Description" },
+            { new StringContent("10"), "RequiredPoints" },
+            { new StringContent("Snack"), "Category" },
+            { new StringContent("true"), "IsPhysical" },
+            { new StringContent("5"), "Stock" }
+        };
+        var createRewardResponse = await _client.PostAsync("/api/rewards", formData2);
         var rewardDto = await createRewardResponse.Content.ReadFromJsonAsync<RewardDto>();
         Assert.NotNull(rewardDto);
 
@@ -202,6 +248,19 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
             PIN = "1234"
         });
         var childLoginResult = await childLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
+
+        // ポイントを追加（10ポイント必要）
+        var studentId = AuthenticationHelper.GetTestStudentId(_factory.Services);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GamifiedMathDrill.Infrastructure.Data.ApplicationDbContext>();
+            var student = await db.Students.FindAsync(studentId);
+            if (student != null)
+            {
+                student.TotalPoints = 50; // 十分なポイントを付与
+                await db.SaveChangesAsync();
+            }
+        }
 
         // 交換申請
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult!.Token);
@@ -216,7 +275,7 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         var cancelResponse = await _client.PutAsync($"/api/exchange-requests/{exchangeRequest.Id}/cancel", null);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, cancelResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, cancelResponse.StatusCode);
 
         // キャンセル後、再度キャンセル試行（失敗するはず）
         var secondCancelResponse = await _client.PutAsync($"/api/exchange-requests/{exchangeRequest.Id}/cancel", null);
@@ -239,14 +298,16 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
 
         // 景品を作成
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult!.Token);
-        var createRewardResponse = await _client.PostAsJsonAsync("/api/rewards", new
+        var formData3 = new MultipartFormDataContent
         {
-            Name = "Test Item",
-            RequiredPoints = 10,
-            Category = "Snack",
-            IsPhysical = true,
-            Stock = 5
-        });
+            { new StringContent("Test Item"), "Name" },
+            { new StringContent("Test Description"), "Description" },
+            { new StringContent("10"), "RequiredPoints" },
+            { new StringContent("Snack"), "Category" },
+            { new StringContent("true"), "IsPhysical" },
+            { new StringContent("5"), "Stock" }
+        };
+        var createRewardResponse = await _client.PostAsync("/api/rewards", formData3);
         var rewardDto = await createRewardResponse.Content.ReadFromJsonAsync<RewardDto>();
         Assert.NotNull(rewardDto);
 
@@ -260,6 +321,19 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         var childLoginResult = await childLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult!.Token);
 
+        // ポイントを追加（10ポイント必要）
+        var studentId = AuthenticationHelper.GetTestStudentId(_factory.Services);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GamifiedMathDrill.Infrastructure.Data.ApplicationDbContext>();
+            var student = await db.Students.FindAsync(studentId);
+            if (student != null)
+            {
+                student.TotalPoints = 50; // 十分なポイントを付与
+                await db.SaveChangesAsync();
+            }
+        }
+
         var exchangeResponse = await _client.PostAsJsonAsync("/api/exchange-requests", new
         {
             RewardId = rewardDto.Id
@@ -269,7 +343,8 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
 
         // 保護者が承認
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult!.Token);
-        await _client.PutAsync($"/api/exchange-requests/{exchangeRequest.Id}/approve", null);
+        var approveResponse = await _client.PutAsJsonAsync($"/api/exchange-requests/{exchangeRequest.Id}/approve", new { ParentNote = "承認します" });
+        Assert.True(approveResponse.IsSuccessStatusCode, $"Approval failed: {await approveResponse.Content.ReadAsStringAsync()}");
 
         // Act: 承認済み申請をキャンセル試行（失敗するはず）
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult!.Token);
@@ -278,7 +353,7 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, cancelResponse.StatusCode);
         var errorContent = await cancelResponse.Content.ReadAsStringAsync();
-        Assert.Contains("申請中のみキャンセルできます", errorContent);
+        Assert.Contains("承認済みまたは却下された申請はキャンセルできません", errorContent);
     }
 
     [Fact]
@@ -297,14 +372,16 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
 
         // 在庫5の景品を作成
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", parentLoginResult!.Token);
-        var createRewardResponse = await _client.PostAsJsonAsync("/api/rewards", new
+        var formData4 = new MultipartFormDataContent
         {
-            Name = "Stock Test Item",
-            RequiredPoints = 10,
-            Category = "Snack",
-            IsPhysical = true,
-            Stock = 5
-        });
+            { new StringContent("Stock Test Item"), "Name" },
+            { new StringContent("Test Description"), "Description" },
+            { new StringContent("10"), "RequiredPoints" },
+            { new StringContent("Snack"), "Category" },
+            { new StringContent("true"), "IsPhysical" },
+            { new StringContent("5"), "Stock" }
+        };
+        var createRewardResponse = await _client.PostAsync("/api/rewards", formData4);
         var rewardDto = await createRewardResponse.Content.ReadFromJsonAsync<RewardDto>();
         Assert.NotNull(rewardDto);
 
@@ -317,6 +394,19 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
         });
         var childLoginResult = await childLoginResponse.Content.ReadFromJsonAsync<LoginResponse>();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", childLoginResult!.Token);
+
+        // ポイントを追加（10ポイント必要）
+        var studentId = AuthenticationHelper.GetTestStudentId(_factory.Services);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GamifiedMathDrill.Infrastructure.Data.ApplicationDbContext>();
+            var student = await db.Students.FindAsync(studentId);
+            if (student != null)
+            {
+                student.TotalPoints = 50; // 十分なポイントを付与
+                await db.SaveChangesAsync();
+            }
+        }
 
         var exchangeResponse = await _client.PostAsJsonAsync("/api/exchange-requests", new
         {
