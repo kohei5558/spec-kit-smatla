@@ -129,10 +129,10 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 
 ### Tests
 
-- [ ] T032 [US1] ChildAccountControllerの統合テスト（作成、一覧取得） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
-- [ ] T033 [US1] 子供ログインの統合テスト（カード選択、PIN認証） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildLoginTests.cs
-- [ ] T034 [US1] PINロックアウトの統合テスト（3回失敗、5分解除） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountSecurityTests.cs
-- [ ] T035 [US1] バリデーションテスト（重複名、PIN形式、10件上限） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
+- [x] T032 [US1] ChildAccountControllerの統合テスト（作成、一覧取得） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
+- [x] T033 [US1] 子供ログインの統合テスト（カード選択、PIN認証） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildLoginTests.cs
+- [x] T034 [US1] PINロックアウトの統合テスト（3回失敗、5分解除） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountSecurityTests.cs
+- [x] T035 [US1] バリデーションテスト（重複名、PIN形式、10件上限） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
 
 ---
 
