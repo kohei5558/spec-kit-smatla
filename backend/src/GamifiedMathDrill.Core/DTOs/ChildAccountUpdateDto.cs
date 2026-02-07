@@ -31,6 +31,6 @@ public class ChildAccountUpdateDto
     /// 新しいPINコード（変更時のみ入力）
     /// </summary>
     [StringLength(4, MinimumLength = 4, ErrorMessage = "PINは4桁で入力してください")]
-    [RegularExpression(@"^\d{4}$", ErrorMessage = "PINは4桁の数字で入力してください")]
+    [RegularExpression(@"^(\d{4})?$", ErrorMessage = "PINは4桁の数字で入力してください")]
     public string? NewPIN { get; set; }
 }
