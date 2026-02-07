@@ -1,0 +1,101 @@
+@using GamifiedMathDrill.Client.Models
+
+<div class="child-card @(IsSelected ? "selected" : "")" @onclick="OnClick">
+    <div class="child-card-avatar">
+        <img src="@Child.AvatarUrl" alt="@Child.Name" />
+    </div>
+    <div class="child-card-name">
+        @Child.Name
+    </div>
+    <div class="child-card-grade">
+        @Child.GradeLevel 年生
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ChildAccountViewModel Child { get; set; } = null!;
+
+    [Parameter]
+    public bool IsSelected { get; set; }
+
+    [Parameter]
+    public EventCallback<ChildAccountViewModel> OnCardClick { get; set; }
+
+    private async Task OnClick()
+    {
+        await OnCardClick.InvokeAsync(Child);
+    }
+}
+
+<style>
+    .child-card {
+        cursor: pointer;
+        text-align: center;
+        padding: 24px;
+        border: 4px solid #e9ecef;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .child-card:hover {
+        border-color: #0d6efd;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 12px rgba(13, 110, 253, 0.2);
+    }
+
+    .child-card.selected {
+        border-color: #0d6efd;
+        background: linear-gradient(135deg, #e7f1ff 0%, #cfe2ff 100%);
+        box-shadow: 0 8px 12px rgba(13, 110, 253, 0.3);
+    }
+
+    .child-card-avatar {
+        margin-bottom: 16px;
+    }
+
+    .child-card-avatar img {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+        border-radius: 50%;
+        background-color: #ffffff;
+        padding: 8px;
+    }
+
+    .child-card-name {
+        font-size: 20px;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 8px;
+    }
+
+    .child-card-grade {
+        font-size: 14px;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    @@media (max-width: 576px) {
+        .child-card {
+            min-height: 180px;
+            padding: 20px;
+        }
+
+        .child-card-avatar img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .child-card-name {
+            font-size: 18px;
+        }
+    }
+</style>
