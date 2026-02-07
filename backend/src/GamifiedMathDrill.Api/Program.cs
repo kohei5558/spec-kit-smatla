@@ -57,6 +57,7 @@ builder.Services.AddScoped<IAcquiredRewardRepository, AcquiredRewardRepository>(
 builder.Services.AddScoped<IExchangeRequestRepository, ExchangeRequestRepository>();
 builder.Services.AddScoped<IDailyChallengeRepository, DailyChallengeRepository>();
 builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+builder.Services.AddScoped<IPresetAvatarRepository, PresetAvatarRepository>();
 
 // Register services
 builder.Services.AddScoped<IStudentService, StudentService>();
@@ -70,6 +71,10 @@ builder.Services.AddScoped<IAuthService, GamifiedMathDrill.Infrastructure.Servic
 builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
 builder.Services.AddScoped<IParentDashboardService, ParentDashboardService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IChildAccountService, ChildAccountService>();
+
+// Memory cache for PIN lockout
+builder.Services.AddMemoryCache();
 
 // Background services
 builder.Services.AddHostedService<DailyChallengeJob>();
