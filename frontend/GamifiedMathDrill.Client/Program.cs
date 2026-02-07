@@ -32,6 +32,7 @@ builder.Services.AddScoped<DailyChallengeApiClient>();
 builder.Services.AddScoped<RewardApiClient>();
 builder.Services.AddScoped<ExchangeRequestApiClient>();
 builder.Services.AddScoped<ParentDashboardApiClient>();
+builder.Services.AddScoped<ChildAccountApiClient>();
 
 // Register state management services
 builder.Services.AddScoped<CategoryStateService>();
