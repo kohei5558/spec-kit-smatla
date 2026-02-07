@@ -238,12 +238,14 @@
                 if (request.NewPIN.Length != 4)
                 {
                     pinError = "PINは4桁の数字を入力してください";
+                    isSubmitting = false;
                     return;
                 }
 
                 if (!request.NewPIN.All(char.IsDigit))
                 {
                     pinError = "PINは数字のみ入力してください";
+                    isSubmitting = false;
                     return;
                 }
             }
