@@ -127,53 +127,53 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T044 [P] [US2] Create PasswordResetTests.cs in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
-- [ ] T045 [P] [US2] Add test case for forgot password request (valid email) in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
-- [ ] T046 [P] [US2] Add test case for forgot password request (non-existent email) returns success in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
-- [ ] T047 [P] [US2] Add test case for validate reset token (valid token) in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
-- [ ] T048 [P] [US2] Add test case for validate reset token (expired token) in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
-- [ ] T049 [P] [US2] Add test case for reset password (valid token + new password) in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
-- [ ] T050 [P] [US2] Add test case for reset password (used token) fails in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
+- [x] T044 [P] [US2] Create PasswordResetTests.cs in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
+- [x] T045 [P] [US2] Add test case for forgot password request (valid email) in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
+- [x] T046 [P] [US2] Add test case for forgot password request (non-existent email) returns success in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
+- [x] T047 [P] [US2] Add test case for validate reset token (valid token) in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
+- [x] T048 [P] [US2] Add test case for validate reset token (expired token) in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
+- [x] T049 [P] [US2] Add test case for reset password (valid token + new password) in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
+- [x] T050 [P] [US2] Add test case for reset password (used token) fails in backend/tests/GamifiedMathDrill.Tests.Integration/PasswordResetTests.cs
 
 ### Backend Implementation for User Story 2
 
-- [ ] T051 [US2] Add SendPasswordResetEmailAsync method to IAuthService in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
-- [ ] T052 [US2] Add ValidateResetTokenAsync method to IAuthService in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
-- [ ] T053 [US2] Add ResetPasswordAsync method to IAuthService in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
-- [ ] T054 [US2] Implement SendPasswordResetEmailAsync in AuthService (generate token, save to DB, send email) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
-- [ ] T055 [US2] Implement ValidateResetTokenAsync in AuthService (check token exists, not expired, not used) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
-- [ ] T056 [US2] Implement ResetPasswordAsync in AuthService (validate token, update password, mark token as used) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
-- [ ] T057 [US2] Add POST /api/auth/forgot-password endpoint to AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
-- [ ] T058 [US2] Add GET /api/auth/validate-reset-token endpoint to AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
-- [ ] T059 [US2] Add POST /api/auth/reset-password endpoint to AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
-- [ ] T060 [US2] Add error handling and logging for all password reset operations in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [x] T051 [US2] Add SendPasswordResetEmailAsync method to IAuthService in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
+- [x] T052 [US2] Add ValidateResetTokenAsync method to IAuthService in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
+- [x] T053 [US2] Add ResetPasswordAsync method to IAuthService in backend/src/GamifiedMathDrill.Core/Interfaces/IAuthService.cs
+- [x] T054 [US2] Implement SendPasswordResetEmailAsync in AuthService (generate token, save to DB, send email) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [x] T055 [US2] Implement ValidateResetTokenAsync in AuthService (check token exists, not expired, not used) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [x] T056 [US2] Implement ResetPasswordAsync in AuthService (validate token, update password, mark token as used) in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
+- [x] T057 [US2] Add POST /api/auth/forgot-password endpoint to AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
+- [x] T058 [US2] Add GET /api/auth/validate-reset-token endpoint to AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
+- [x] T059 [US2] Add POST /api/auth/reset-password endpoint to AuthController in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
+- [x] T060 [US2] Add error handling and logging for all password reset operations in backend/src/GamifiedMathDrill.Infrastructure/Services/AuthService.cs
 
 ### Frontend Models for User Story 2
 
-- [ ] T061 [P] [US2] Create ForgotPasswordRequest.cs in frontend/GamifiedMathDrill.Client/Models/ForgotPasswordRequest.cs
-- [ ] T062 [P] [US2] Create ForgotPasswordResponse.cs in frontend/GamifiedMathDrill.Client/Models/ForgotPasswordResponse.cs
-- [ ] T063 [P] [US2] Create ResetPasswordRequest.cs in frontend/GamifiedMathDrill.Client/Models/ResetPasswordRequest.cs
-- [ ] T064 [P] [US2] Create ResetPasswordResponse.cs in frontend/GamifiedMathDrill.Client/Models/ResetPasswordResponse.cs
+- [x] T061 [P] [US2] Create ForgotPasswordRequest.cs in frontend/GamifiedMathDrill.Client/Models/ForgotPasswordRequest.cs
+- [x] T062 [P] [US2] Create ForgotPasswordResponse.cs in frontend/GamifiedMathDrill.Client/Models/ForgotPasswordResponse.cs
+- [x] T063 [P] [US2] Create ResetPasswordRequest.cs in frontend/GamifiedMathDrill.Client/Models/ResetPasswordRequest.cs
+- [x] T064 [P] [US2] Create ResetPasswordResponse.cs in frontend/GamifiedMathDrill.Client/Models/ResetPasswordResponse.cs
 
 ### Frontend Services for User Story 2
 
-- [ ] T065 [US2] Add ForgotPasswordAsync method to AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
-- [ ] T066 [US2] Add ValidateResetTokenAsync method to AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
-- [ ] T067 [US2] Add ResetPasswordAsync method to AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
+- [x] T065 [US2] Add ForgotPasswordAsync method to AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
+- [x] T066 [US2] Add ValidateResetTokenAsync method to AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
+- [x] T067 [US2] Add ResetPasswordAsync method to AuthService in frontend/GamifiedMathDrill.Client/Services/AuthService.cs
 
 ### Frontend Pages for User Story 2
 
-- [ ] T068 [P] [US2] Create ForgotPassword.razor page with email input form in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
-- [ ] T069 [P] [US2] Add MudBlazor components (MudTextField, MudButton, MudAlert) to ForgotPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
-- [ ] T070 [P] [US2] Add client-side validation for email format in ForgotPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
-- [ ] T071 [P] [US2] Connect ForgotPassword.razor to AuthService.ForgotPasswordAsync in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
-- [ ] T072 [P] [US2] Add success message display in ForgotPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
-- [ ] T073 [P] [US2] Create ResetPassword.razor page with token validation on load in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
-- [ ] T074 [P] [US2] Add expired token error UI to ResetPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
-- [ ] T075 [P] [US2] Add password reset form (new password + confirm password) to ResetPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
-- [ ] T076 [P] [US2] Add client-side password validation (strength requirements) to ResetPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
-- [ ] T077 [P] [US2] Connect ResetPassword.razor to AuthService.ResetPasswordAsync in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
-- [ ] T078 [US2] Update Login.razor to add "パスワードを忘れた" link to /forgot-password in frontend/GamifiedMathDrill.Client/Pages/Login.razor
+- [x] T068 [P] [US2] Create ForgotPassword.razor page with email input form in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
+- [x] T069 [P] [US2] Add MudBlazor components (MudTextField, MudButton, MudAlert) to ForgotPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
+- [x] T070 [P] [US2] Add client-side validation for email format in ForgotPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
+- [x] T071 [P] [US2] Connect ForgotPassword.razor to AuthService.ForgotPasswordAsync in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
+- [x] T072 [P] [US2] Add success message display in ForgotPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
+- [x] T073 [P] [US2] Create ResetPassword.razor page with token validation on load in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
+- [x] T074 [P] [US2] Add expired token error UI to ResetPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
+- [x] T075 [P] [US2] Add password reset form (new password + confirm password) to ResetPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
+- [x] T076 [P] [US2] Add client-side password validation (strength requirements) to ResetPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
+- [x] T077 [P] [US2] Connect ResetPassword.razor to AuthService.ResetPasswordAsync in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
+- [x] T078 [US2] Update Login.razor to add "パスワードを忘れた" link to /forgot-password in frontend/GamifiedMathDrill.Client/Pages/Login.razor
 
 ### Frontend Tests for User Story 2
 
