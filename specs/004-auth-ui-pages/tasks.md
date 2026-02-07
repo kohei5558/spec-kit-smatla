@@ -273,12 +273,12 @@
 
 ### UI/UX Polish
 
-- [X] T120 [P] Add responsive design verification for Login.razor (mobile/tablet/desktop) in frontend/GamifiedMathDrill.Client/Pages/Login.razor
-- [X] T121 [P] Add responsive design verification for Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
-- [X] T122 [P] Add responsive design verification for ForgotPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
-- [X] T123 [P] Add responsive design verification for ResetPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
-- [X] T124 [P] Add loading states (MudProgressCircular) to all submit buttons in frontend/GamifiedMathDrill.Client/Pages/
-- [X] T125 [P] Verify all error messages are user-friendly and localized (Japanese) in frontend/GamifiedMathDrill.Client/Pages/
+- [x] T120 [P] Add responsive design verification for Login.razor (mobile/tablet/desktop) in frontend/GamifiedMathDrill.Client/Pages/Login.razor
+- [x] T121 [P] Add responsive design verification for Register.razor in frontend/GamifiedMathDrill.Client/Pages/Register.razor
+- [x] T122 [P] Add responsive design verification for ForgotPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ForgotPassword.razor
+- [x] T123 [P] Add responsive design verification for ResetPassword.razor in frontend/GamifiedMathDrill.Client/Pages/ResetPassword.razor
+- [x] T124 [P] Add loading states (MudProgressCircular) to all submit buttons in frontend/GamifiedMathDrill.Client/Pages/
+- [x] T125 [P] Verify all error messages are user-friendly and localized (Japanese) in frontend/GamifiedMathDrill.Client/Pages/
 
 ### API Documentation
 
@@ -294,9 +294,9 @@
 
 ### Deployment Preparation
 
-- [X] T132 Verify all environment variables documented in appsettings.json in backend/src/GamifiedMathDrill.Api/
-- [X] T133 Create deployment checklist (database migration, email config, JWT secrets) in specs/004-auth-ui-pages/
-- [X] T134 Run security audit (password hashing, HTTPS, rate limiting, token expiry) across all new code
+- [x] T132 Verify all environment variables documented in appsettings.json in backend/src/GamifiedMathDrill.Api/
+- [x] T133 Create deployment checklist (database migration, email config, JWT secrets) in specs/004-auth-ui-pages/
+- [x] T134 Run security audit (password hashing, HTTPS, rate limiting, token expiry) across all new code
 - [ ] T135 Run performance testing for login/register endpoints (<5s response time) in backend/tests/
 
 ---
