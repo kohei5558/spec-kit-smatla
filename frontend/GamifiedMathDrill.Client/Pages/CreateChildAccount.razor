@@ -1,0 +1,184 @@
+@page "/parent/children/create"
+@using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Services
+@inject ChildAccountApiClient ChildAccountApi
+@inject NavigationManager Navigation
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Parent")]
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">子供アカウントを作成</h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @errorMessage
+                        </div>
+                    }
+
+                    <EditForm Model="@request" OnValidSubmit="HandleSubmit">
+                        <DataAnnotationsValidator />
+
+                        <!-- 名前入力 -->
+                        <div class="mb-3">
+                            <label for="name" class="form-label">名前 <span class="text-danger">*</span></label>
+                            <InputText id="name" class="form-control" @bind-Value="request.Name" placeholder="例: 太郎" />
+                            <ValidationMessage For="@(() => request.Name)" />
+                        </div>
+
+                        <!-- 学年選択 -->
+                        <div class="mb-3">
+                            <label for="grade" class="form-label">学年 <span class="text-danger">*</span></label>
+                            <InputSelect id="grade" class="form-select" @bind-Value="request.GradeLevel">
+                                <option value="0">選択してください</option>
+                                <option value="1">1年生</option>
+                                <option value="2">2年生</option>
+                                <option value="3">3年生</option>
+                                <option value="4">4年生</option>
+                                <option value="5">5年生</option>
+                                <option value="6">6年生</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => request.GradeLevel)" />
+                        </div>
+
+                        <!-- アバター選択 -->
+                        <div class="mb-4">
+                            <label class="form-label">アバター <span class="text-danger">*</span></label>
+                            @if (isLoadingAvatars)
+                            {
+                                <p class="text-muted">アバターを読み込んでいます...</p>
+                            }
+                            else
+                            {
+                                <AvatarSelector 
+                                    Avatars="@avatars" 
+                                    SelectedAvatarId="@request.PresetAvatarId" 
+                                    OnAvatarSelected="@OnAvatarSelected" />
+                            }
+                            <ValidationMessage For="@(() => request.PresetAvatarId)" />
+                        </div>
+
+                        <!-- PIN入力 -->
+                        <div class="mb-4">
+                            <PINInput 
+                                Label="PINコード（4桁の数字）" 
+                                @bind-Value="request.PIN" 
+                                ErrorMessage="@pinError" />
+                            <ValidationMessage For="@(() => request.PIN)" />
+                            <small class="form-text text-muted">
+                                子供がログインする際に使用する4桁の数字を入力してください
+                            </small>
+                        </div>
+
+                        <!-- ボタン -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-secondary" @onclick="Cancel" disabled="@isSubmitting">
+                                キャンセル
+                            </button>
+                            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>作成中...</span>
+                                }
+                                else
+                                {
+                                    <span>作成</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ChildAccountCreateRequest request = new();
+    private List<PresetAvatarViewModel>? avatars;
+    private bool isLoadingAvatars = true;
+    private bool isSubmitting = false;
+    private string? errorMessage;
+    private string? pinError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAvatarsAsync();
+    }
+
+    private async Task LoadAvatarsAsync()
+    {
+        try
+        {
+            isLoadingAvatars = true;
+            avatars = await ChildAccountApi.GetPresetAvatarsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "アバターの読み込みに失敗しました: " + ex.Message;
+        }
+        finally
+        {
+            isLoadingAvatars = false;
+        }
+    }
+
+    private void OnAvatarSelected(int avatarId)
+    {
+        request.PresetAvatarId = avatarId;
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            isSubmitting = true;
+            errorMessage = null;
+            pinError = null;
+
+            // PIN検証
+            if (string.IsNullOrEmpty(request.PIN) || request.PIN.Length != 4)
+            {
+                pinError = "PINは4桁の数字を入力してください";
+                return;
+            }
+
+            if (!request.PIN.All(char.IsDigit))
+            {
+                pinError = "PINは数字のみ入力してください";
+                return;
+            }
+
+            // アカウント作成
+            var result = await ChildAccountApi.CreateChildAccountAsync(request);
+            
+            if (result != null)
+            {
+                // 成功時、一覧画面に戻る
+                Navigation.NavigateTo("/parent/children");
+            }
+            else
+            {
+                errorMessage = "アカウントの作成に失敗しました";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "エラーが発生しました: " + ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/parent/children");
+    }
+}

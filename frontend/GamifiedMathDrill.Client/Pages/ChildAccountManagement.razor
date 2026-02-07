@@ -1,0 +1,314 @@
+@page "/parent/children"
+@using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Services
+@inject ChildAccountApiClient ChildAccountApi
+@inject NavigationManager Navigation
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Parent")]
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>子供アカウント管理</h2>
+        <button class="btn btn-primary" @onclick="CreateNew">
+            <i class="bi bi-plus-circle me-2"></i>新しいアカウントを作成
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">読み込み中...</span>
+            </div>
+            <p class="mt-3 text-muted">アカウントを読み込んでいます...</p>
+        </div>
+    }
+    else if (childAccounts == null || !childAccounts.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-people" style="font-size: 4rem; color: #ccc;"></i>
+            <h4 class="mt-3 text-muted">子供アカウントがまだありません</h4>
+            <p class="text-muted">「新しいアカウントを作成」ボタンから子供アカウントを追加しましょう</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var child in childAccounts)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 @(!child.IsActive ? "child-card-suspended" : "")">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="@child.AvatarUrl" alt="@child.Name" class="child-avatar me-3" />
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-1">@child.Name</h5>
+                                    <p class="text-muted mb-0">@child.GradeLevel 年生</p>
+                                </div>
+                                @if (!child.IsActive)
+                                {
+                                    <span class="badge bg-warning text-dark">停止中</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">有効</span>
+                                }
+                            </div>
+                            
+                            <p class="card-text text-muted small">
+                                作成日: @child.CreatedAt.ToString("yyyy/MM/dd")
+                            </p>
+
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                        @onclick="() => EditChild(child.Id)">
+                                    <i class="bi bi-pencil me-1"></i>編集
+                                </button>
+                                @if (child.IsActive)
+                                {
+                                    <button type="button" class="btn btn-outline-warning btn-sm" 
+                                            @onclick="() => ShowSuspendConfirm(child)">
+                                        <i class="bi bi-pause-circle me-1"></i>停止
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-outline-success btn-sm" 
+                                            @onclick="() => ActivateChild(child.Id)">
+                                        <i class="bi bi-play-circle me-1"></i>再開
+                                    </button>
+                                }
+                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                        @onclick="() => ShowDeleteConfirm(child)">
+                                    <i class="bi bi-trash me-1"></i>削除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- 停止確認モーダル -->
+@if (showSuspendModal && selectedChild != null)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">アカウントを停止</h5>
+                    <button type="button" class="btn-close" @onclick="HideModals"></button>
+                </div>
+                <div class="modal-body">
+                    <p>「@selectedChild.Name」のアカウントを停止しますか？</p>
+                    <p class="text-muted">停止中はログインできなくなります。再度有効にすることで再開できます。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="HideModals">キャンセル</button>
+                    <button type="button" class="btn btn-warning" @onclick="() => SuspendChild(selectedChild.Id)">
+                        停止する
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
+<!-- 削除確認モーダル -->
+@if (showDeleteModal && selectedChild != null)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">アカウントを削除</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="HideModals"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>「@selectedChild.Name」のアカウントを完全に削除しますか？</strong></p>
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>警告:</strong> 学習データも全て削除されます。この操作は取り消せません。
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="HideModals">キャンセル</button>
+                    <button type="button" class="btn btn-danger" @onclick="() => DeleteChild(selectedChild.Id)">
+                        削除する
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
+@code {
+    private List<ChildAccountViewModel>? childAccounts;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private string? successMessage;
+    private bool showSuspendModal = false;
+    private bool showDeleteModal = false;
+    private ChildAccountViewModel? selectedChild;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadChildAccountsAsync();
+    }
+
+    private async Task LoadChildAccountsAsync()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            childAccounts = await ChildAccountApi.GetChildAccountsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "アカウントの読み込みに失敗しました: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void CreateNew()
+    {
+        Navigation.NavigateTo("/parent/children/create");
+    }
+
+    private void EditChild(string id)
+    {
+        Navigation.NavigateTo($"/parent/children/edit/{id}");
+    }
+
+    private void ShowSuspendConfirm(ChildAccountViewModel child)
+    {
+        selectedChild = child;
+        showSuspendModal = true;
+    }
+
+    private void ShowDeleteConfirm(ChildAccountViewModel child)
+    {
+        selectedChild = child;
+        showDeleteModal = true;
+    }
+
+    private void HideModals()
+    {
+        showSuspendModal = false;
+        showDeleteModal = false;
+        selectedChild = null;
+    }
+
+    private async Task SuspendChild(string id)
+    {
+        try
+        {
+            var success = await ChildAccountApi.SuspendChildAccountAsync(id);
+            if (success)
+            {
+                successMessage = "アカウントを停止しました";
+                await LoadChildAccountsAsync();
+            }
+            else
+            {
+                errorMessage = "アカウントの停止に失敗しました";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "エラーが発生しました: " + ex.Message;
+        }
+        finally
+        {
+            HideModals();
+        }
+    }
+
+    private async Task ActivateChild(string id)
+    {
+        try
+        {
+            var success = await ChildAccountApi.ActivateChildAccountAsync(id);
+            if (success)
+            {
+                successMessage = "アカウントを再開しました";
+                await LoadChildAccountsAsync();
+            }
+            else
+            {
+                errorMessage = "アカウントの再開に失敗しました";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "エラーが発生しました: " + ex.Message;
+        }
+    }
+
+    private async Task DeleteChild(string id)
+    {
+        try
+        {
+            var success = await ChildAccountApi.DeleteChildAccountAsync(id);
+            if (success)
+            {
+                successMessage = "アカウントを削除しました";
+                await LoadChildAccountsAsync();
+            }
+            else
+            {
+                errorMessage = "アカウントの削除に失敗しました";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "エラーが発生しました: " + ex.Message;
+        }
+        finally
+        {
+            HideModals();
+        }
+    }
+}
+
+<style>
+    .child-avatar {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+    }
+
+    .child-card-suspended {
+        opacity: 0.7;
+        background-color: #f8f9fa;
+    }
+
+    .modal {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+</style>
