@@ -1,0 +1,600 @@
+openapi: 3.0.3
+info:
+  title: Child Account Management API
+  description: 保護者が子供アカウントを作成・管理するためのAPI仕様
+  version: 1.0.0
+  contact:
+    name: Gamified Math Drill Development Team
+
+servers:
+  - url: https://api.gamified-math-drill.example.com/api
+    description: Production
+  - url: http://localhost:5000/api
+    description: Local Development
+
+tags:
+  - name: ChildAccount
+    description: 子供アカウントのCRUD操作
+  - name: PresetAvatar
+    description: プリセットアバター取得
+
+paths:
+  /child-accounts:
+    get:
+      tags:
+        - ChildAccount
+      summary: 子供アカウント一覧取得
+      description: 認証された保護者に紐づく子供アカウントの一覧を取得
+      operationId: listChildAccounts
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChildAccountDto"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      tags:
+        - ChildAccount
+      summary: 子供アカウント作成
+      description: 新しい子供アカウントを作成する
+      operationId: createChildAccount
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChildAccountCreateDto"
+      responses:
+        "201":
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChildAccountDto"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: 重複エラー（同名アカウント存在）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "同じ名前の子供アカウントが既に存在します"
+        "422":
+          description: ビジネスルール違反（上限10件）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "子供アカウントの上限（10件）に達しています"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /child-accounts/{id}:
+    get:
+      tags:
+        - ChildAccount
+      summary: 子供アカウント詳細取得
+      description: 指定IDの子供アカウント詳細（学習統計含む）を取得
+      operationId: getChildAccount
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 子供アカウントID（ApplicationUser.Id）
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChildAccountDetailDto"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: アクセス権限なし（他の保護者の子供）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    put:
+      tags:
+        - ChildAccount
+      summary: 子供アカウント更新
+      description: 子供アカウントの情報（名前、学年、アバター、PIN）を更新
+      operationId: updateChildAccount
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 子供アカウントID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChildAccountUpdateDto"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChildAccountDto"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: 重複エラー（同名アカウント存在）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    delete:
+      tags:
+        - ChildAccount
+      summary: 子供アカウント削除
+      description: 子供アカウントと関連する全ての学習データを削除
+      operationId: deleteChildAccount
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 子供アカウントID
+      responses:
+        "204":
+          description: 削除成功
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /child-accounts/{id}/suspend:
+    post:
+      tags:
+        - ChildAccount
+      summary: 子供アカウント一時停止
+      description: 子供アカウントを一時停止（ログイン不可）
+      operationId: suspendChildAccount
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 停止成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChildAccountDto"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /child-accounts/{id}/activate:
+    post:
+      tags:
+        - ChildAccount
+      summary: 子供アカウント再開
+      description: 停止中の子供アカウントを再開（ログイン可能に）
+      operationId: activateChildAccount
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 再開成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChildAccountDto"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /preset-avatars:
+    get:
+      tags:
+        - PresetAvatar
+      summary: プリセットアバター一覧取得
+      description: 利用可能なプリセットアバター画像の一覧を取得
+      operationId: listPresetAvatars
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PresetAvatarDto"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /auth/child/login:
+    post:
+      tags:
+        - ChildAccount
+      summary: 子供ログイン
+      description: 子供がアバター選択 + PIN入力でログイン
+      operationId: childLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChildLoginRequest"
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: PIN認証失敗
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "PINが正しくありません"
+        "403":
+          description: アカウント停止中またはロックアウト
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                suspended:
+                  value:
+                    error: "このアカウントは現在使用できません。保護者に相談してください"
+                lockedOut:
+                  value:
+                    error: "PINの入力に3回失敗しました。5分後に再試行してください"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: ASP.NET Core Identity JWT Token
+
+  schemas:
+    ChildAccountCreateDto:
+      type: object
+      required:
+        - name
+        - gradeLevel
+        - presetAvatarId
+        - pin
+      properties:
+        name:
+          type: string
+          maxLength: 50
+          description: 子供の名前
+          example: "太郎"
+        gradeLevel:
+          type: integer
+          minimum: 1
+          maximum: 6
+          description: 学年（1〜6年生）
+          example: 3
+        presetAvatarId:
+          type: integer
+          description: プリセットアバターID
+          example: 5
+        pin:
+          type: string
+          pattern: '^\d{4}$'
+          description: 4桁PINコード
+          example: "1234"
+
+    ChildAccountUpdateDto:
+      type: object
+      required:
+        - name
+        - gradeLevel
+        - presetAvatarId
+      properties:
+        name:
+          type: string
+          maxLength: 50
+          description: 子供の名前
+          example: "太郎"
+        gradeLevel:
+          type: integer
+          minimum: 1
+          maximum: 6
+          description: 学年（1〜6年生）
+          example: 4
+        presetAvatarId:
+          type: integer
+          description: プリセットアバターID
+          example: 8
+        newPin:
+          type: string
+          pattern: '^\d{4}$'
+          nullable: true
+          description: 新しいPIN（変更する場合のみ）
+          example: "5678"
+
+    ChildAccountDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 子供アカウントID（GUID）
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        name:
+          type: string
+          description: 子供の名前
+          example: "太郎"
+        gradeLevel:
+          type: integer
+          description: 学年
+          example: 3
+        avatarUrl:
+          type: string
+          description: アバター画像URL
+          example: "/avatars/cat-01.png"
+        isActive:
+          type: boolean
+          description: アカウント状態（true=有効, false=停止）
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+          example: "2026-02-07T10:00:00Z"
+
+    ChildAccountDetailDto:
+      allOf:
+        - $ref: "#/components/schemas/ChildAccountDto"
+        - type: object
+          properties:
+            learningStats:
+              $ref: "#/components/schemas/ChildLearningStatsDto"
+
+    ChildLearningStatsDto:
+      type: object
+      properties:
+        totalProblems:
+          type: integer
+          description: 総問題数
+          example: 150
+        correctAnswers:
+          type: integer
+          description: 正解数
+          example: 120
+        accuracyRate:
+          type: number
+          format: float
+          description: 正答率（%）
+          example: 80.0
+        totalPoints:
+          type: integer
+          description: 獲得ポイント総数
+          example: 1200
+        consecutiveDays:
+          type: integer
+          description: 連続学習日数
+          example: 7
+        lastStudyDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: 最終学習日
+          example: "2026-02-06T18:30:00Z"
+        recentActivity:
+          type: array
+          description: 過去7日間のアクティビティ
+          items:
+            $ref: "#/components/schemas/DailyActivity"
+
+    DailyActivity:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: 日付
+          example: "2026-02-06"
+        problemsCount:
+          type: integer
+          description: その日解いた問題数
+          example: 10
+
+    PresetAvatarDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: アバターID
+          example: 1
+        name:
+          type: string
+          description: アバター名
+          example: "猫"
+        imageUrl:
+          type: string
+          description: 画像URL
+          example: "/avatars/cat-01.png"
+        displayOrder:
+          type: integer
+          description: 表示順序
+          example: 1
+
+    ChildLoginRequest:
+      type: object
+      required:
+        - childAccountId
+        - pin
+      properties:
+        childAccountId:
+          type: string
+          description: 子供アカウントID（カード選択で決定）
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        pin:
+          type: string
+          pattern: '^\d{4}$'
+          description: 4桁PINコード
+          example: "1234"
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT認証トークン
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        expiresAt:
+          type: string
+          format: date-time
+          description: トークン有効期限
+          example: "2026-02-07T22:00:00Z"
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            name:
+              type: string
+              example: "太郎"
+            avatarUrl:
+              type: string
+              example: "/avatars/cat-01.png"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: エラーメッセージ
+          example: "PINが正しくありません"
+        details:
+          type: object
+          nullable: true
+          description: 詳細情報（バリデーションエラー時）
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+  responses:
+    BadRequest:
+      description: バリデーションエラー
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "入力値が不正です"
+            details:
+              pin: ["PINは4桁の数字で入力してください"]
+
+    Unauthorized:
+      description: 認証エラー（トークン不正または期限切れ）
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "認証が必要です"
+
+    Forbidden:
+      description: 権限エラー（他の保護者の子供アカウント操作）
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "この操作を実行する権限がありません"
+
+    NotFound:
+      description: リソースが見つからない
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "指定されたアカウントが見つかりません"
+
+    InternalServerError:
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "サーバーエラーが発生しました"
