@@ -1,0 +1,287 @@
+@page "/parent/children/edit/{Id}"
+@using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Services
+@inject ChildAccountApiClient ChildAccountApi
+@inject NavigationManager Navigation
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Parent")]
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">子供アカウントを編集</h3>
+                </div>
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">読み込み中...</span>
+                            </div>
+                            <p class="mt-2">読み込み中...</p>
+                        </div>
+                    }
+                    else if (request == null)
+                    {
+                        <div class="alert alert-danger">
+                            アカウント情報の読み込みに失敗しました
+                        </div>
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                @errorMessage
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(successMessage))
+                        {
+                            <div class="alert alert-success" role="alert">
+                                @successMessage
+                            </div>
+                        }
+
+                        <EditForm Model="@request" OnValidSubmit="HandleSubmit">
+                            <DataAnnotationsValidator />
+
+                            <!-- 名前入力 -->
+                            <div class="mb-3">
+                                <label for="name" class="form-label">名前 <span class="text-danger">*</span></label>
+                                <InputText id="name" class="form-control" @bind-Value="request.Name" placeholder="例: 太郎" />
+                                <ValidationMessage For="@(() => request.Name)" />
+                            </div>
+
+                            <!-- 学年選択 -->
+                            <div class="mb-3">
+                                <label for="grade" class="form-label">学年 <span class="text-danger">*</span></label>
+                                <InputSelect id="grade" class="form-select" @bind-Value="request.GradeLevel">
+                                    <option value="0">選択してください</option>
+                                    <option value="1">1年生</option>
+                                    <option value="2">2年生</option>
+                                    <option value="3">3年生</option>
+                                    <option value="4">4年生</option>
+                                    <option value="5">5年生</option>
+                                    <option value="6">6年生</option>
+                                </InputSelect>
+                                <ValidationMessage For="@(() => request.GradeLevel)" />
+                            </div>
+
+                            <!-- アバター選択 -->
+                            <div class="mb-4">
+                                <label class="form-label">アバター <span class="text-danger">*</span></label>
+                                @if (isLoadingAvatars)
+                                {
+                                    <p class="text-muted">アバターを読み込んでいます...</p>
+                                }
+                                else
+                                {
+                                    <AvatarSelector 
+                                        Avatars="@avatars" 
+                                        SelectedAvatarId="@request.PresetAvatarId" 
+                                        OnAvatarSelected="@OnAvatarSelected" />
+                                }
+                                <ValidationMessage For="@(() => request.PresetAvatarId)" />
+                            </div>
+
+                            <!-- PIN変更（オプション） -->
+                            <div class="mb-4">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="changePin" @bind="changePIN">
+                                    <label class="form-check-label" for="changePin">
+                                        PINを変更する
+                                    </label>
+                                </div>
+                                
+                                @if (changePIN)
+                                {
+                                    <PINInput 
+                                        Label="新しいPINコード（4桁の数字）" 
+                                        @bind-Value="request.NewPIN" 
+                                        ErrorMessage="@pinError" />
+                                    <small class="form-text text-muted">
+                                        新しいPINを入力してください。空欄の場合は変更されません。
+                                    </small>
+                                }
+                            </div>
+
+                            <!-- ボタン -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-secondary" @onclick="Cancel" disabled="@isSubmitting">
+                                    キャンセル
+                                </button>
+                                <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                                    @if (isSubmitting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span>保存中...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>保存</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private ChildAccountUpdateRequest? request;
+    private List<PresetAvatarViewModel>? avatars;
+    private bool isLoading = true;
+    private bool isLoadingAvatars = true;
+    private bool isSubmitting = false;
+    private bool changePIN = false;
+    private string? errorMessage;
+    private string? successMessage;
+    private string? pinError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(
+            LoadChildAccountAsync(),
+            LoadAvatarsAsync()
+        );
+    }
+
+    private async Task LoadChildAccountAsync()
+    {
+        try
+        {
+            isLoading = true;
+            
+            if (string.IsNullOrEmpty(Id))
+            {
+                errorMessage = "アカウントIDが指定されていません";
+                return;
+            }
+
+            var child = await ChildAccountApi.GetChildAccountAsync(Id);
+            
+            if (child == null)
+            {
+                errorMessage = "アカウントが見つかりません";
+                return;
+            }
+
+            // 既存データをリクエストオブジェクトに設定
+            request = new ChildAccountUpdateRequest
+            {
+                Name = child.Name,
+                GradeLevel = child.GradeLevel,
+                PresetAvatarId = child.PresetAvatarId,
+                NewPIN = string.Empty
+            };
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "アカウント情報の読み込みに失敗しました: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadAvatarsAsync()
+    {
+        try
+        {
+            isLoadingAvatars = true;
+            avatars = await ChildAccountApi.GetPresetAvatarsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "アバターの読み込みに失敗しました: " + ex.Message;
+        }
+        finally
+        {
+            isLoadingAvatars = false;
+        }
+    }
+
+    private void OnAvatarSelected(int avatarId)
+    {
+        if (request != null)
+        {
+            request.PresetAvatarId = avatarId;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (request == null || string.IsNullOrEmpty(Id))
+        {
+            return;
+        }
+
+        try
+        {
+            isSubmitting = true;
+            errorMessage = null;
+            successMessage = null;
+            pinError = null;
+
+            // PIN変更時の検証
+            if (changePIN && !string.IsNullOrEmpty(request.NewPIN))
+            {
+                if (request.NewPIN.Length != 4)
+                {
+                    pinError = "PINは4桁の数字を入力してください";
+                    return;
+                }
+
+                if (!request.NewPIN.All(char.IsDigit))
+                {
+                    pinError = "PINは数字のみ入力してください";
+                    return;
+                }
+            }
+            else if (changePIN)
+            {
+                request.NewPIN = string.Empty; // チェックボックスはONだが空欄の場合はクリア
+            }
+
+            // アカウント更新
+            var result = await ChildAccountApi.UpdateChildAccountAsync(Id, request);
+            
+            if (result != null)
+            {
+                successMessage = "アカウント情報を更新しました";
+                changePIN = false; // PIN変更フラグをリセット
+                request.NewPIN = string.Empty; // PINフィールドをクリア
+                
+                // 3秒後に一覧画面に戻る
+                await Task.Delay(3000);
+                Navigation.NavigateTo("/parent/children");
+            }
+            else
+            {
+                errorMessage = "アカウントの更新に失敗しました";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "エラーが発生しました: " + ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/parent/children");
+    }
+}

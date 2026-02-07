@@ -55,7 +55,7 @@ public class ChildAccountController : ControllerBase
     /// <summary>
     /// 子供アカウント詳細を取得
     /// </summary>
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetChildAccount")]
     public async Task<ActionResult<ChildAccountDto>> GetAsync(string id)
     {
         var parentId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -119,7 +119,7 @@ public class ChildAccountController : ControllerBase
                 Response.Headers["X-Pin-Warning"] = "他の子供と同じPINです。セキュリティ上推奨しません";
             }
 
-            return CreatedAtAction(nameof(GetAsync), new { id = child.Id }, child);
+            return Ok(child);
         }
         catch (InvalidOperationException ex)
         {
