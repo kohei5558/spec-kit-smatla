@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using GamifiedMathDrill.Api.DTOs;
 using GamifiedMathDrill.Core.DTOs;
 using Xunit;
 
@@ -224,4 +225,200 @@ public class ChildAccountTests : AuthenticatedTestBase
     }
 
     #endregion
+
+    #region T042: アカウント更新テスト (Phase 4, US2)
+
+    [Fact]
+    public async Task UpdateChildAccount_WithValidData_ReturnsSuccess()
+    {
+        // Arrange
+        await AuthenticateAsParentAsync();
+
+        // まず子供アカウントを作成
+        var createRequest = new ChildAccountCreateDto
+        {
+            Name = "次郎",
+            GradeLevel = 2,
+            PresetAvatarId = 1,
+            PIN = "2222"
+        };
+        var createResponse = await Client.PostAsJsonAsync("/api/child-accounts", createRequest);
+        var createdChild = await createResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(createdChild);
+
+        // 更新データを準備
+        var updateRequest = new ChildAccountUpdateDto
+        {
+            Name = "次郎（更新後）",
+            GradeLevel = 3,
+            PresetAvatarId = 2,
+            NewPIN = string.Empty // PIN変更なし
+        };
+
+        // Act
+        var response = await Client.PutAsJsonAsync($"/api/child-accounts/{createdChild.Id}", updateRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(result);
+        Assert.Equal("次郎（更新後）", result.Name);
+        Assert.Equal(3, result.GradeLevel);
+        // アバターURLが変更されていることを確認（詳細なURLチェックはスキップ）
+        Assert.NotEmpty(result.AvatarUrl);
+    }
+
+    [Fact]
+    public async Task UpdateChildAccount_WithDuplicateName_ReturnsBadRequest()
+    {
+        // Arrange
+        await AuthenticateAsParentAsync();
+
+        // 2つの子供アカウントを作成
+        var child1Request = new ChildAccountCreateDto
+        {
+            Name = "太郎",
+            GradeLevel = 1,
+            PresetAvatarId = 1,
+            PIN = "1111"
+        };
+        var child1Response = await Client.PostAsJsonAsync("/api/child-accounts", child1Request);
+        var child1 = await child1Response.Content.ReadFromJsonAsync<ChildAccountDto>();
+
+        var child2Request = new ChildAccountCreateDto
+        {
+            Name = "花子",
+            GradeLevel = 2,
+            PresetAvatarId = 2,
+            PIN = "2222"
+        };
+        var child2Response = await Client.PostAsJsonAsync("/api/child-accounts", child2Request);
+        var child2 = await child2Response.Content.ReadFromJsonAsync<ChildAccountDto>();
+
+        Assert.NotNull(child1);
+        Assert.NotNull(child2);
+
+        // child2の名前をchild1と同じにしようとする
+        var updateRequest = new ChildAccountUpdateDto
+        {
+            Name = "太郎",
+            GradeLevel = 2,
+            PresetAvatarId = 2,
+            NewPIN = string.Empty
+        };
+
+        // Act
+        var response = await Client.PutAsJsonAsync($"/api/child-accounts/{child2.Id}", updateRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var errorContent = await response.Content.ReadAsStringAsync();
+        Assert.Contains("既に存在", errorContent);
+    }
+
+    #endregion
+
+    #region T043: PIN変更テスト (Phase 4, US2)
+
+    [Fact]
+    public async Task UpdateChildAccount_WithNewPIN_SuccessfullyChangesPIN()
+    {
+        // Arrange
+        await AuthenticateAsParentAsync();
+
+        // 子供アカウントを作成
+        var createRequest = new ChildAccountCreateDto
+        {
+            Name = "三郎",
+            GradeLevel = 1,
+            PresetAvatarId = 1,
+            PIN = "3333"
+        };
+        var createResponse = await Client.PostAsJsonAsync("/api/child-accounts", createRequest);
+        var createdChild = await createResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(createdChild);
+
+        // PINを変更
+        var updateRequest = new ChildAccountUpdateDto
+        {
+            Name = "三郎",
+            GradeLevel = 1,
+            PresetAvatarId = 1,
+            NewPIN = "9999" // 新しいPIN
+        };
+
+        var updateResponse = await Client.PutAsJsonAsync($"/api/child-accounts/{createdChild.Id}", updateRequest);
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+        // 古いPINでログイン試行（失敗するはず）
+        var oldPinLoginRequest = new
+        {
+            ChildAccountId = createdChild.Id,
+            PIN = "3333"
+        };
+        var oldPinResponse = await Client.PostAsJsonAsync("/api/auth/child/login", oldPinLoginRequest);
+        Assert.Equal(HttpStatusCode.Unauthorized, oldPinResponse.StatusCode);
+
+        // 新しいPINでログイン試行（成功するはず）
+        var newPinLoginRequest = new
+        {
+            ChildAccountId = createdChild.Id,
+            PIN = "9999"
+        };
+        var newPinResponse = await Client.PostAsJsonAsync("/api/auth/child/login", newPinLoginRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, newPinResponse.StatusCode);
+        var loginResult = await newPinResponse.Content.ReadFromJsonAsync<LoginResponse>();
+        Assert.NotNull(loginResult);
+        Assert.NotEmpty(loginResult.Token);
+    }
+
+    [Fact]
+    public async Task UpdateChildAccount_WithEmptyNewPIN_DoesNotChangePIN()
+    {
+        // Arrange
+        await AuthenticateAsParentAsync();
+
+        // 子供アカウントを作成
+        var createRequest = new ChildAccountCreateDto
+        {
+            Name = "四郎",
+            GradeLevel = 1,
+            PresetAvatarId = 1,
+            PIN = "4444"
+        };
+        var createResponse = await Client.PostAsJsonAsync("/api/child-accounts", createRequest);
+        var createdChild = await createResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+        Assert.NotNull(createdChild);
+
+        // 名前だけ変更（NewPINは空文字）
+        var updateRequest = new ChildAccountUpdateDto
+        {
+            Name = "四郎（更新後）",
+            GradeLevel = 1,
+            PresetAvatarId = 1,
+            NewPIN = string.Empty
+        };
+
+        var updateResponse = await Client.PutAsJsonAsync($"/api/child-accounts/{createdChild.Id}", updateRequest);
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+        // 元のPINでログイン試行（成功するはず）
+        var loginRequest = new
+        {
+            ChildAccountId = createdChild.Id,
+            PIN = "4444"
+        };
+        var loginResponse = await Client.PostAsJsonAsync("/api/auth/child/login", loginRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+        var loginResult = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
+        Assert.NotNull(loginResult);
+        Assert.NotEmpty(loginResult.Token);
+    }
+
+    #endregion
 }
+

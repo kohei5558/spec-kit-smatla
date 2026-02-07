@@ -26,10 +26,11 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-            // インメモリデータベースを使用するDbContextを追加
+            // インメモリデータベースを使用するDbContextを追加（各テストで独立したDB）
+            var dbName = $"TestDb_{Guid.NewGuid()}";
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseInMemoryDatabase("TestDb");
+                options.UseInMemoryDatabase(dbName);
             });
 
             // DailyChallengeJobを削除（テスト環境では不要）
@@ -64,6 +65,19 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 new GamifiedMathDrill.Core.Models.Level { LevelNumber = 1, MinDifficulty = 1, MaxDifficulty = 3 },
                 new GamifiedMathDrill.Core.Models.Level { LevelNumber = 2, MinDifficulty = 4, MaxDifficulty = 6 },
                 new GamifiedMathDrill.Core.Models.Level { LevelNumber = 3, MinDifficulty = 7, MaxDifficulty = 10 }
+            );
+            db.SaveChanges();
+        }
+
+        // プリセットアバターデータをシード
+        if (!db.PresetAvatars.Any())
+        {
+            db.PresetAvatars.AddRange(
+                new GamifiedMathDrill.Core.Models.PresetAvatar { Name = "猫", FileName = "cat.png", DisplayOrder = 1 },
+                new GamifiedMathDrill.Core.Models.PresetAvatar { Name = "犬", FileName = "dog.png", DisplayOrder = 2 },
+                new GamifiedMathDrill.Core.Models.PresetAvatar { Name = "パンダ", FileName = "panda.png", DisplayOrder = 3 },
+                new GamifiedMathDrill.Core.Models.PresetAvatar { Name = "ライオン", FileName = "lion.png", DisplayOrder = 4 },
+                new GamifiedMathDrill.Core.Models.PresetAvatar { Name = "ウサギ", FileName = "rabbit.png", DisplayOrder = 5 }
             );
             db.SaveChanges();
         }

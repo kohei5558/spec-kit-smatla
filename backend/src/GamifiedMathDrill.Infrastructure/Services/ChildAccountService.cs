@@ -125,9 +125,11 @@ public class ChildAccountService : IChildAccountService
         }
 
         // ApplicationUser作成
+        var userName = Guid.NewGuid().ToString();
         var user = new ApplicationUser
         {
-            UserName = Guid.NewGuid().ToString(), // 子供にはメールアドレス不要
+            UserName = userName,
+            Email = $"{userName}@child.local", // 子供アカウントにはダミーメールアドレス
             DisplayName = dto.Name,
             Role = UserRole.Child,
             ParentId = parentId,
