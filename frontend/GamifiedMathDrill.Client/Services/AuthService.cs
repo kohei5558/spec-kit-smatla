@@ -21,14 +21,15 @@ public class AuthService
     /// <summary>
     /// 保護者ログイン
     /// </summary>
-    public async Task<(bool success, string? errorMessage)> LoginAsync(string email, string password)
+    public async Task<(bool success, string? errorMessage)> LoginAsync(string email, string password, bool rememberMe = false)
     {
         try
         {
             var request = new LoginRequest
             {
                 Email = email,
-                Password = password
+                Password = password,
+                RememberMe = rememberMe
             };
 
             var response = await _httpClient.PostAsJsonAsync("/api/auth/login", request);
@@ -36,18 +37,21 @@ public class AuthService
             if (response.IsSuccessStatusCode)
             {
                 var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                if (loginResponse != null)
+                if (loginResponse != null && loginResponse.Success)
                 {
                     await _tokenService.SaveTokenAsync(
-                        loginResponse.Token,
-                        loginResponse.UserId,
-                        loginResponse.DisplayName,
-                        loginResponse.Role.ToString(),
+                        loginResponse.Token!,
+                        loginResponse.UserId!,
+                        loginResponse.DisplayName!,
+                        loginResponse.Role!,
                         loginResponse.ParentId,
-                        loginResponse.ExpiresAt
+                        loginResponse.ExpiresAt!.Value,
+                        rememberMe
                     );
                     return (true, null);
                 }
+                
+                return (false, loginResponse?.ErrorMessage ?? "ログインに失敗しました");
             }
 
             var errorContent = await response.Content.ReadAsStringAsync();
@@ -85,18 +89,21 @@ public class AuthService
             if (response.IsSuccessStatusCode)
             {
                 var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                if (loginResponse != null)
+                if (loginResponse != null && loginResponse.Success)
                 {
                     await _tokenService.SaveTokenAsync(
-                        loginResponse.Token,
-                        loginResponse.UserId,
-                        loginResponse.DisplayName,
-                        loginResponse.Role.ToString(),
+                        loginResponse.Token!,
+                        loginResponse.UserId!,
+                        loginResponse.DisplayName!,
+                        loginResponse.Role!,
                         loginResponse.ParentId,
-                        loginResponse.ExpiresAt
+                        loginResponse.ExpiresAt!.Value,
+                        false  // 子供ログインはセッションストレージのみ
                     );
                     return (true, null);
                 }
+                
+                return (false, loginResponse?.ErrorMessage ?? "ログインに失敗しました");
             }
 
             var errorContent = await response.Content.ReadAsStringAsync();

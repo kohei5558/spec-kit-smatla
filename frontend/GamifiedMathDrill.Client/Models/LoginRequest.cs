@@ -14,4 +14,9 @@ public class LoginRequest
     /// パスワード
     /// </summary>
     public string Password { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// ログイン状態を保持する（true=ローカルストレージ30日、false=セッションストレージ60分）
+    /// </summary>
+    public bool RememberMe { get; set; } = false;
 }
