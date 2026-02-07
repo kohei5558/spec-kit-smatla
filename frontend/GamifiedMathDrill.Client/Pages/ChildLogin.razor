@@ -1,6 +1,7 @@
 @page "/child-login"
 @using GamifiedMathDrill.Client.Models
 @using GamifiedMathDrill.Client.Services
+@implements IDisposable
 @inject ChildAccountApiClient ChildAccountApi
 @inject AuthService AuthService
 @inject TokenService TokenService
@@ -123,9 +124,8 @@
         try
         {
             isLoading = true;
-            // 子供ログイン画面では認証不要なので、保護者APIとは別に直接取得
-            // TODO: 公開エンドポイントを用意するか、既存の保護者API経由で取得
-            childAccounts = await ChildAccountApi.GetChildAccountsAsync();
+            // 子供ログイン画面では認証不要の公開エンドポイントを使用
+            childAccounts = await ChildAccountApi.GetPublicChildAccountsAsync();
         }
         catch (Exception ex)
         {

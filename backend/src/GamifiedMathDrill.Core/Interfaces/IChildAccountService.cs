@@ -10,6 +10,7 @@ public interface IChildAccountService
     /// <summary>
     /// 保護者の子供アカウント一覧を取得
     /// </summary>
+    Task<List<ChildAccountDto>> ListAllActiveAsync();
     Task<List<ChildAccountDto>> ListAsync(string parentId);
 
     /// <summary>
@@ -66,6 +67,11 @@ public interface IChildAccountService
     /// PIN失敗回数を記録
     /// </summary>
     Task RecordFailedPinAttemptAsync(string childId);
+
+    /// <summary>
+    /// PIN失敗カウンターをクリア（ログイン成功時）
+    /// </summary>
+    Task ClearFailedPinAttemptsAsync(string childId);
 
     /// <summary>
     /// 同じPINを使用している兄弟がいるか確認

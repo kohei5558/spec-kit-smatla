@@ -39,6 +39,19 @@ public class ChildAccountService : IChildAccountService
     }
 
     /// <summary>
+    /// すべての有効な子供アカウント一覧を取得（認証不要、子供ログイン画面用）
+    /// </summary>
+    public async Task<List<ChildAccountDto>> ListAllActiveAsync()
+    {
+        var children = await _context.Users
+            .Where(u => u.Role == UserRole.Child && u.IsActive)
+            .OrderBy(u => u.DisplayName)
+            .ToListAsync();
+
+        return children.Select(MapToDto).ToList();
+    }
+
+    /// <summary>
     /// 保護者の子供アカウント一覧を取得
     /// </summary>
     public async Task<List<ChildAccountDto>> ListAsync(string parentId)
@@ -335,14 +348,19 @@ public class ChildAccountService : IChildAccountService
         var attemptsKey = $"pin_attempts_{childId}";
         var lockoutKey = $"pin_lockout_{childId}";
 
+        // キャッシュ競合を回避するため、GetOrCreateの戻り値をそのまま使用
         var attempts = _cache.GetOrCreate(attemptsKey, entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(5);
-            return 0;
+            return 1; // 初回は1回目の失敗
         });
 
-        attempts++;
-        _cache.Set(attemptsKey, attempts, TimeSpan.FromMinutes(5));
+        // 既存の値がある場合はインクリメント
+        if (attempts > 0)
+        {
+            attempts++;
+            _cache.Set(attemptsKey, attempts, TimeSpan.FromMinutes(5));
+        }
 
         if (attempts >= MaxPinAttempts)
         {
@@ -350,6 +368,16 @@ public class ChildAccountService : IChildAccountService
             _cache.Remove(attemptsKey);
         }
 
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// PIN失敗カウンターをクリア（ログイン成功時）
+    /// </summary>
+    public async Task ClearFailedPinAttemptsAsync(string childId)
+    {
+        var attemptsKey = $"pin_attempts_{childId}";
+        _cache.Remove(attemptsKey);
         await Task.CompletedTask;
     }
 

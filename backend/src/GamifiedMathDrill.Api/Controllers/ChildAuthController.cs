@@ -37,12 +37,33 @@ public class ChildAuthController : ControllerBase
             return BadRequest(new { message = "子供アカウントIDとPINは必須です" });
         }
 
+        // アカウント存在確認
+        var child = await _childAccountService.GetAsync(request.ChildAccountId, ""); // parentId不要（子供自身のログイン）
+        if (child == null)
+        {
+            return NotFound(new LoginResponse
+            {
+                Success = false,
+                ErrorMessage = "アカウントが見つかりません"
+            });
+        }
+
+        // IsActiveチェック（PIN検証前に実行して無駄な失敗カウントを防ぐ）
+        if (!child.IsActive)
+        {
+            return StatusCode(403, new LoginResponse
+            {
+                Success = false,
+                ErrorMessage = "アカウントは現在使用できません。保護者にお問い合わせください"
+            });
+        }
+
         // ロックアウトチェック
         var isLockedOut = await _childAccountService.IsLockedOutAsync(request.ChildAccountId);
         if (isLockedOut)
         {
             _logger.LogWarning("Child account {ChildId} is locked out", request.ChildAccountId);
-            return StatusCode(403, new LoginResponse
+            return StatusCode(429, new LoginResponse
             {
                 Success = false,
                 ErrorMessage = "3回間違えました。5分後に再度お試しください"
@@ -63,25 +84,8 @@ public class ChildAuthController : ControllerBase
             });
         }
 
-        // アカウント情報取得（IsActiveチェック含む）
-        var child = await _childAccountService.GetAsync(request.ChildAccountId, ""); // parentId不要（子供自身のログイン）
-        if (child == null)
-        {
-            return NotFound(new LoginResponse
-            {
-                Success = false,
-                ErrorMessage = "アカウントが見つかりません"
-            });
-        }
-
-        if (!child.IsActive)
-        {
-            return StatusCode(403, new LoginResponse
-            {
-                Success = false,
-                ErrorMessage = "アカウントは現在使用できません。保護者にお問い合わせください"
-            });
-        }
+        // PIN検証成功：失敗カウンターをクリア
+        await _childAccountService.ClearFailedPinAttemptsAsync(request.ChildAccountId);
 
         // JWT トークン生成（既存のAuthServiceを再利用）
         var (token, expiresAt) = await _authService.GenerateChildTokenAsync(request.ChildAccountId, child.Name);

@@ -18,7 +18,7 @@ public class ChildAccountApiClient
     }
 
     /// <summary>
-    /// 子供アカウント一覧を取得
+    /// 子供アカウント一覧を取得（認証済み保護者用）
     /// </summary>
     public async Task<List<ChildAccountViewModel>?> GetChildAccountsAsync()
     {
@@ -30,6 +30,22 @@ public class ChildAccountApiClient
         catch (Exception ex)
         {
             Console.WriteLine($"Error getting child accounts: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// すべての有効な子供アカウント一覧を取得（認証不要、子供ログイン画面用）
+    /// </summary>
+    public async Task<List<ChildAccountViewModel>?> GetPublicChildAccountsAsync()
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<List<ChildAccountViewModel>>("api/child-accounts/public");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting public child accounts: {ex.Message}");
             return null;
         }
     }
