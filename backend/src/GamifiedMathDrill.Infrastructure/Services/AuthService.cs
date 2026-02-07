@@ -139,6 +139,18 @@ public class AuthService : IAuthService
     }
 
     /// <summary>
+    /// 子供用JWTトークンを生成（簡易版）
+    /// </summary>
+    public async Task<(string token, DateTime expiresAt)> GenerateChildTokenAsync(string childId, string displayName)
+    {
+        var expiryMinutes = _configuration.GetValue<int>("Jwt:ExpiryMinutes", 60);
+        var token = GenerateJwtToken(childId, displayName, "Child", null, expiryMinutes);
+        var expiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes);
+        
+        return await Task.FromResult((token, expiresAt));
+    }
+
+    /// <summary>
     /// パスワードリセットメールを送信
     /// </summary>
     public async Task<bool> SendPasswordResetEmailAsync(string email, string ipAddress)

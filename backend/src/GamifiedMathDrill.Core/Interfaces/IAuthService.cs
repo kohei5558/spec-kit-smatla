@@ -36,6 +36,14 @@ public interface IAuthService
     string GenerateJwtToken(string userId, string displayName, string role, string? parentId = null, int? expiryMinutes = null);
 
     /// <summary>
+    /// 子供用JWTトークンを生成（簡易版）
+    /// </summary>
+    /// <param name="childId">子供アカウントID</param>
+    /// <param name="displayName">表示名</param>
+    /// <returns>トークンと有効期限</returns>
+    Task<(string token, DateTime expiresAt)> GenerateChildTokenAsync(string childId, string displayName);
+
+    /// <summary>
     /// パスワードリセットメールを送信
     /// </summary>
     /// <param name="email">メールアドレス</param>

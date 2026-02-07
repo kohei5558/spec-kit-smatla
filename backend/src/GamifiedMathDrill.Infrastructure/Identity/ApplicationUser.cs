@@ -35,6 +35,11 @@ public class ApplicationUser : IdentityUser
     public string? AvatarUrl { get; set; }
 
     /// <summary>
+    /// 学年（1-6年生、子供の場合のみ）
+    /// </summary>
+    public int? GradeLevel { get; set; }
+
+    /// <summary>
     /// 作成日時
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

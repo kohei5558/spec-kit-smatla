@@ -147,7 +147,7 @@ public static class AuthenticationHelper
 
         var loginRequest = new ChildLoginRequest
         {
-            ChildId = childId,
+            ChildAccountId = childId,
             PIN = pin
         };
 

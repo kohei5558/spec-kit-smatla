@@ -62,45 +62,6 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// 子供ログイン
-    /// </summary>
-    /// <param name="request">子供ログインリクエスト</param>
-    /// <returns>ログインレスポンス</returns>
-    [HttpPost("child-login")]
-    public async Task<ActionResult<LoginResponse>> ChildLogin([FromBody] ChildLoginRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.ChildId) || string.IsNullOrWhiteSpace(request.PIN))
-        {
-            return BadRequest(new { Error = "ChildId and PIN are required" });
-        }
-
-        var (userId, displayName, role, parentId, token, expiresAt) = await _authService.ChildLoginAsync(request.ChildId, request.PIN);
-        if (userId == null || token == null)
-        {
-            _logger.LogWarning("Failed child login attempt for childId: {ChildId}", request.ChildId);
-            return Unauthorized(new LoginResponse
-            {
-                Success = false,
-                ErrorMessage = "子供IDまたはPINが間違っています"
-            });
-        }
-
-        var response = new LoginResponse
-        {
-            Success = true,
-            Token = token,
-            UserId = userId,
-            DisplayName = displayName!,
-            Role = role!.Value.ToString(),
-            ParentId = parentId,
-            ExpiresAt = expiresAt!.Value
-        };
-
-        _logger.LogInformation("Child {UserId} logged in successfully", response.UserId);
-        return Ok(response);
-    }
-
-    /// <summary>
     /// パスワードリセットメール送信
     /// </summary>
     /// <param name="request">パスワードリセットリクエスト</param>

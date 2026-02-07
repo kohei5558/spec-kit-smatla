@@ -8,7 +8,7 @@ public class ChildLoginRequest
     /// <summary>
     /// 子供のユーザーID
     /// </summary>
-    public string ChildId { get; set; } = string.Empty;
+    public string ChildAccountId { get; set; } = string.Empty;
 
     /// <summary>
     /// PIN（4桁）

@@ -23,6 +23,9 @@ public static class DatabaseInitializer
             await UserSeeder.SeedUsersAsync(serviceProvider);
         }
 
+        // プリセットアバターデータを追加
+        await AvatarSeeder.SeedAsync(context);
+
         // シードデータが既に存在するかチェック
         if (await context.Levels.AnyAsync())
         {

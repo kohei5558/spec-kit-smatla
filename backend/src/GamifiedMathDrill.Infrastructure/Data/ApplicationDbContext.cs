@@ -25,6 +25,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<DailyChallenge> DailyChallenges => Set<DailyChallenge>();
     public DbSet<Level> Levels => Set<Level>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<PresetAvatar> PresetAvatars => Set<PresetAvatar>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -205,6 +206,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.TokenHash).IsUnique();
             entity.HasIndex(e => e.ExpiresAt);
+        });
+
+        // PresetAvatar
+        modelBuilder.Entity<PresetAvatar>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.FileName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.DisplayOrder).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+
+            entity.HasIndex(e => e.DisplayOrder);
         });
     }
 }

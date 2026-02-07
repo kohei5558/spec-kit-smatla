@@ -1,0 +1,94 @@
+@using GamifiedMathDrill.Client.Models
+
+<div class="avatar-selector">
+    @if (Avatars == null || !Avatars.Any())
+    {
+        <p class="text-muted">アバターを読み込んでいます...</p>
+    }
+    else
+    {
+        <div class="avatar-grid">
+            @foreach (var avatar in Avatars.OrderBy(a => a.DisplayOrder))
+            {
+                <div class="avatar-item @(IsSelected(avatar.Id) ? "selected" : "")" 
+                     @onclick="() => OnAvatarClick(avatar.Id)">
+                    <img src="@avatar.ImageUrl" alt="@avatar.Name" class="avatar-image" />
+                    <p class="avatar-name">@avatar.Name</p>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<PresetAvatarViewModel>? Avatars { get; set; }
+
+    [Parameter]
+    public int? SelectedAvatarId { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnAvatarSelected { get; set; }
+
+    private bool IsSelected(int avatarId) => SelectedAvatarId == avatarId;
+
+    private async Task OnAvatarClick(int avatarId)
+    {
+        SelectedAvatarId = avatarId;
+        await OnAvatarSelected.InvokeAsync(avatarId);
+    }
+}
+
+<style>
+    .avatar-selector {
+        padding: 20px 0;
+    }
+
+    .avatar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 16px;
+        max-width: 600px;
+    }
+
+    .avatar-item {
+        cursor: pointer;
+        text-align: center;
+        padding: 12px;
+        border: 3px solid transparent;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        background-color: #f8f9fa;
+    }
+
+    .avatar-item:hover {
+        border-color: #dee2e6;
+        transform: scale(1.05);
+    }
+
+    .avatar-item.selected {
+        border-color: #0d6efd;
+        background-color: #e7f1ff;
+    }
+
+    .avatar-image {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        margin: 0 auto;
+        display: block;
+    }
+
+    .avatar-name {
+        margin-top: 8px;
+        font-size: 14px;
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .text-muted {
+        color: #6c757d;
+        text-align: center;
+        padding: 20px;
+    }
+</style>
