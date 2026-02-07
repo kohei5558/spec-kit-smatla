@@ -100,6 +100,12 @@ public class ChildAccountController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ChildAccountDto>> CreateAsync([FromBody] ChildAccountCreateDto dto)
     {
+        // ModelState検証
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var parentId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(parentId))
         {
@@ -133,6 +139,12 @@ public class ChildAccountController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<ChildAccountDto>> UpdateAsync(string id, [FromBody] ChildAccountUpdateDto dto)
     {
+        // ModelState検証
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var parentId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(parentId))
         {

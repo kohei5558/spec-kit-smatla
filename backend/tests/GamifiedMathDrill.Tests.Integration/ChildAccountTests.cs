@@ -252,7 +252,7 @@ public class ChildAccountTests : AuthenticatedTestBase
             Name = "次郎（更新後）",
             GradeLevel = 3,
             PresetAvatarId = 2,
-            NewPIN = string.Empty // PIN変更なし
+            NewPIN = null // PIN変更なし
         };
 
         // Act
@@ -304,7 +304,7 @@ public class ChildAccountTests : AuthenticatedTestBase
             Name = "太郎",
             GradeLevel = 2,
             PresetAvatarId = 2,
-            NewPIN = string.Empty
+            NewPIN = null
         };
 
         // Act
@@ -399,7 +399,7 @@ public class ChildAccountTests : AuthenticatedTestBase
             Name = "四郎（更新後）",
             GradeLevel = 1,
             PresetAvatarId = 1,
-            NewPIN = string.Empty
+            NewPIN = null
         };
 
         var updateResponse = await Client.PutAsJsonAsync($"/api/child-accounts/{createdChild.Id}", updateRequest);
