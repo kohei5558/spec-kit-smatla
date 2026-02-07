@@ -1,0 +1,395 @@
+using GamifiedMathDrill.Core.DTOs;
+using GamifiedMathDrill.Core.Interfaces;
+using GamifiedMathDrill.Core.Models;
+using GamifiedMathDrill.Infrastructure.Data;
+using GamifiedMathDrill.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+
+namespace GamifiedMathDrill.Infrastructure.Services;
+
+/// <summary>
+/// 子供アカウント管理サービス実装
+/// </summary>
+public class ChildAccountService : IChildAccountService
+{
+    private readonly ApplicationDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
+    private readonly IMemoryCache _cache;
+    private readonly IPresetAvatarRepository _avatarRepository;
+
+    private const int MaxChildAccounts = 10;
+    private const int MaxPinAttempts = 3;
+    private static readonly TimeSpan PinLockoutDuration = TimeSpan.FromMinutes(5);
+
+    public ChildAccountService(
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager,
+        IPasswordHasher<ApplicationUser> passwordHasher,
+        IMemoryCache cache,
+        IPresetAvatarRepository avatarRepository)
+    {
+        _context = context;
+        _userManager = userManager;
+        _passwordHasher = passwordHasher;
+        _cache = cache;
+        _avatarRepository = avatarRepository;
+    }
+
+    /// <summary>
+    /// 保護者の子供アカウント一覧を取得
+    /// </summary>
+    public async Task<List<ChildAccountDto>> ListAsync(string parentId)
+    {
+        var children = await _context.Users
+            .Where(u => u.ParentId == parentId && u.Role == UserRole.Child)
+            .OrderBy(u => u.CreatedAt)
+            .ToListAsync();
+
+        return children.Select(MapToDto).ToList();
+    }
+
+    /// <summary>
+    /// 子供アカウント詳細を取得
+    /// </summary>
+    public async Task<ChildAccountDto?> GetAsync(string childId, string parentId)
+    {
+        // parentIdが空の場合は子供自身のログイン（IsActiveチェックのみ）
+        var query = _context.Users.Where(u => u.Id == childId && u.Role == UserRole.Child);
+        
+        if (!string.IsNullOrEmpty(parentId))
+        {
+            query = query.Where(u => u.ParentId == parentId);
+        }
+
+        var child = await query.FirstOrDefaultAsync();
+
+        return child != null ? MapToDto(child) : null;
+    }
+
+    /// <summary>
+    /// 子供アカウント詳細（学習統計含む）を取得
+    /// </summary>
+    public async Task<ChildAccountDto?> GetDetailAsync(string childId, string parentId)
+    {
+        var dto = await GetAsync(childId, parentId);
+        if (dto == null) return null;
+
+        dto.LearningStats = await GetLearningStatsAsync(childId);
+        return dto;
+    }
+
+    /// <summary>
+    /// 子供アカウントを作成
+    /// </summary>
+    public async Task<ChildAccountDto> CreateAsync(string parentId, ChildAccountCreateDto dto)
+    {
+        // 上限チェック
+        var existingCount = await _context.Users
+            .CountAsync(u => u.ParentId == parentId && u.Role == UserRole.Child);
+        
+        if (existingCount >= MaxChildAccounts)
+        {
+            throw new InvalidOperationException($"子供アカウントは{MaxChildAccounts}件までです");
+        }
+
+        // 重複名チェック
+        var nameExists = await _context.Users
+            .AnyAsync(u => u.ParentId == parentId && u.Role == UserRole.Child && u.DisplayName == dto.Name);
+        
+        if (nameExists)
+        {
+            throw new InvalidOperationException("同じ名前の子供アカウントが既に存在します");
+        }
+
+        // プリセットアバター存在チェック
+        var avatar = await _avatarRepository.GetByIdAsync(dto.PresetAvatarId);
+        if (avatar == null)
+        {
+            throw new InvalidOperationException("指定されたアバターが見つかりません");
+        }
+
+        // ApplicationUser作成
+        var user = new ApplicationUser
+        {
+            UserName = Guid.NewGuid().ToString(), // 子供にはメールアドレス不要
+            DisplayName = dto.Name,
+            Role = UserRole.Child,
+            ParentId = parentId,
+            GradeLevel = dto.GradeLevel,
+            AvatarUrl = $"/avatars/{avatar.FileName}",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // PINをハッシュ化して保存
+        user.PIN = _passwordHasher.HashPassword(user, dto.PIN);
+
+        var result = await _userManager.CreateAsync(user);
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException($"アカウント作成に失敗しました: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
+
+        // Student作成（1:1関係）
+        var student = new Student
+        {
+            Name = user.DisplayName,
+            ParentUserId = user.Id,
+            AvatarUrl = user.AvatarUrl
+        };
+
+        _context.Students.Add(student);
+        await _context.SaveChangesAsync();
+
+        return MapToDto(user);
+    }
+
+    /// <summary>
+    /// 子供アカウントを更新
+    /// </summary>
+    public async Task<ChildAccountDto> UpdateAsync(string childId, string parentId, ChildAccountUpdateDto dto)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == childId && u.ParentId == parentId && u.Role == UserRole.Child);
+
+        if (user == null)
+        {
+            throw new InvalidOperationException("子供アカウントが見つかりません");
+        }
+
+        // 重複名チェック（自分以外）
+        var nameExists = await _context.Users
+            .AnyAsync(u => u.ParentId == parentId && u.Role == UserRole.Child && u.DisplayName == dto.Name && u.Id != childId);
+        
+        if (nameExists)
+        {
+            throw new InvalidOperationException("同じ名前の子供アカウントが既に存在します");
+        }
+
+        // プリセットアバター存在チェック
+        var avatar = await _avatarRepository.GetByIdAsync(dto.PresetAvatarId);
+        if (avatar == null)
+        {
+            throw new InvalidOperationException("指定されたアバターが見つかりません");
+        }
+
+        // 更新
+        user.DisplayName = dto.Name;
+        user.GradeLevel = dto.GradeLevel;
+        user.AvatarUrl = $"/avatars/{avatar.FileName}";
+
+        // PIN変更
+        if (!string.IsNullOrEmpty(dto.NewPIN))
+        {
+            user.PIN = _passwordHasher.HashPassword(user, dto.NewPIN);
+        }
+
+        await _userManager.UpdateAsync(user);
+
+        // Student同期更新
+        var student = await _context.Students.FirstOrDefaultAsync(s => s.ParentUserId == user.Id);
+        if (student != null)
+        {
+            student.Name = user.DisplayName;
+            student.AvatarUrl = user.AvatarUrl;
+            await _context.SaveChangesAsync();
+        }
+
+        return MapToDto(user);
+    }
+
+    /// <summary>
+    /// 子供アカウントを一時停止
+    /// </summary>
+    public async Task SuspendAsync(string childId, string parentId)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == childId && u.ParentId == parentId && u.Role == UserRole.Child);
+
+        if (user == null)
+        {
+            throw new InvalidOperationException("子供アカウントが見つかりません");
+        }
+
+        user.IsActive = false;
+        await _userManager.UpdateAsync(user);
+    }
+
+    /// <summary>
+    /// 子供アカウントを再開
+    /// </summary>
+    public async Task ActivateAsync(string childId, string parentId)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == childId && u.ParentId == parentId && u.Role == UserRole.Child);
+
+        if (user == null)
+        {
+            throw new InvalidOperationException("子供アカウントが見つかりません");
+        }
+
+        user.IsActive = true;
+        await _userManager.UpdateAsync(user);
+    }
+
+    /// <summary>
+    /// 子供アカウントを削除
+    /// </summary>
+    public async Task DeleteAsync(string childId, string parentId)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == childId && u.ParentId == parentId && u.Role == UserRole.Child);
+
+        if (user == null)
+        {
+            throw new InvalidOperationException("子供アカウントが見つかりません");
+        }
+
+        // Student削除（連鎖削除でLearningRecordsも削除される）
+        var student = await _context.Students.FirstOrDefaultAsync(s => s.ParentUserId == user.Id);
+        if (student != null)
+        {
+            _context.Students.Remove(student);
+        }
+
+        await _userManager.DeleteAsync(user);
+        await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// 子供の学習統計を取得
+    /// </summary>
+    public async Task<ChildLearningStatsDto> GetLearningStatsAsync(string childId)
+    {
+        var student = await _context.Students
+            .FirstOrDefaultAsync(s => s.ParentUserId == childId);
+
+        if (student == null)
+        {
+            return new ChildLearningStatsDto();
+        }
+
+        // 過去7日間のアクティビティ
+        var sevenDaysAgo = DateTime.UtcNow.Date.AddDays(-6);
+        var recentActivity = await _context.LearningRecords
+            .Where(r => r.StudentId == student.Id && r.SolvedAt >= sevenDaysAgo)
+            .GroupBy(r => r.SolvedAt.Date)
+            .Select(g => new DailyActivity
+            {
+                Date = g.Key,
+                ProblemsCount = g.Count()
+            })
+            .OrderBy(a => a.Date)
+            .ToListAsync();
+
+        var accuracyRate = student.TotalProblems > 0
+            ? Math.Round((decimal)student.CorrectAnswers / student.TotalProblems * 100, 1)
+            : 0;
+
+        return new ChildLearningStatsDto
+        {
+            TotalProblems = student.TotalProblems,
+            CorrectAnswers = student.CorrectAnswers,
+            AccuracyRate = accuracyRate,
+            TotalPoints = student.TotalPoints,
+            ConsecutiveDays = student.ConsecutiveDays,
+            LastStudyDate = student.LastLoginAt,
+            RecentActivity = recentActivity
+        };
+    }
+
+    /// <summary>
+    /// 子供アカウントのPINを検証
+    /// </summary>
+    public async Task<bool> VerifyPinAsync(string childId, string pin)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == childId && u.Role == UserRole.Child);
+
+        if (user == null || user.PIN == null)
+        {
+            return false;
+        }
+
+        var result = _passwordHasher.VerifyHashedPassword(user, user.PIN, pin);
+        return result == PasswordVerificationResult.Success;
+    }
+
+    /// <summary>
+    /// PINロックアウト状態を確認
+    /// </summary>
+    public async Task<bool> IsLockedOutAsync(string childId)
+    {
+        var lockoutKey = $"pin_lockout_{childId}";
+        return _cache.TryGetValue(lockoutKey, out _);
+    }
+
+    /// <summary>
+    /// PIN失敗回数を記録
+    /// </summary>
+    public async Task RecordFailedPinAttemptAsync(string childId)
+    {
+        var attemptsKey = $"pin_attempts_{childId}";
+        var lockoutKey = $"pin_lockout_{childId}";
+
+        var attempts = _cache.GetOrCreate(attemptsKey, entry =>
+        {
+            entry.SlidingExpiration = TimeSpan.FromMinutes(5);
+            return 0;
+        });
+
+        attempts++;
+        _cache.Set(attemptsKey, attempts, TimeSpan.FromMinutes(5));
+
+        if (attempts >= MaxPinAttempts)
+        {
+            _cache.Set(lockoutKey, true, PinLockoutDuration);
+            _cache.Remove(attemptsKey);
+        }
+
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 同じPINを使用している兄弟がいるか確認
+    /// </summary>
+    public async Task<bool> HasDuplicatePinAsync(string parentId, string pin, string? excludeChildId = null)
+    {
+        var siblings = await _context.Users
+            .Where(u => u.ParentId == parentId && u.Role == UserRole.Child && u.Id != excludeChildId)
+            .ToListAsync();
+
+        foreach (var sibling in siblings)
+        {
+            if (sibling.PIN != null)
+            {
+                var result = _passwordHasher.VerifyHashedPassword(sibling, sibling.PIN, pin);
+                if (result == PasswordVerificationResult.Success)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// ApplicationUserをDTOにマッピング
+    /// </summary>
+    private static ChildAccountDto MapToDto(ApplicationUser user)
+    {
+        return new ChildAccountDto
+        {
+            Id = user.Id,
+            Name = user.DisplayName,
+            GradeLevel = user.GradeLevel ?? 1,
+            AvatarUrl = user.AvatarUrl ?? string.Empty,
+            IsActive = user.IsActive,
+            CreatedAt = user.CreatedAt
+        };
+    }
+}
