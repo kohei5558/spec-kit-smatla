@@ -118,14 +118,14 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 
 ### Frontend Tasks
 
-- [ ] T024 [P] [US1] ChildAccountViewModel作成 - frontend/GamifiedMathDrill.Client/Models/ChildAccountViewModel.cs
-- [ ] T025 [P] [US1] ChildAccountServiceクライアント実装（API呼び出しラッパー） - frontend/GamifiedMathDrill.Client/Services/ChildAccountService.cs
-- [ ] T026 [US1] ChildAccountManagement.razor実装（子供一覧表示、新規追加ボタン） - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
-- [ ] T027 [US1] CreateChildAccount.razor実装（名前、学年、アバター選択、PIN入力フォーム） - frontend/GamifiedMathDrill.Client/Pages/Parent/CreateChildAccount.razor
-- [ ] T028 [P] [US1] AvatarSelector.razorコンポーネント実装（プリセット一覧、グリッド表示） - frontend/GamifiedMathDrill.Client/Components/AvatarSelector.razor
-- [ ] T029 [P] [US1] PINInput.razorコンポーネント実装（4桁数字入力、マスク表示） - frontend/GamifiedMathDrill.Client/Components/PINInput.razor
-- [ ] T030 [US1] 子供ログイン画面のカード形式UI実装（ChildAccountCard.razorコンポーネント、CSS Grid） - frontend/GamifiedMathDrill.Client/Components/ChildAccountCard.razor
-- [ ] T031 [US1] 子供ログイン画面実装（カード一覧、PIN入力、ログイン処理） - frontend/GamifiedMathDrill.Client/Pages/Auth/ChildLogin.razor
+- [x] T024 [P] [US1] ChildAccountViewModel作成 - frontend/GamifiedMathDrill.Client/Models/ChildAccountViewModel.cs
+- [x] T025 [P] [US1] ChildAccountServiceクライアント実装（API呼び出しラッパー） - frontend/GamifiedMathDrill.Client/Services/ChildAccountApiClient.cs
+- [x] T026 [US1] ChildAccountManagement.razor実装（子供一覧表示、新規追加ボタン） - frontend/GamifiedMathDrill.Client/Pages/ChildAccountManagement.razor
+- [x] T027 [US1] CreateChildAccount.razor実装（名前、学年、アバター選択、PIN入力フォーム） - frontend/GamifiedMathDrill.Client/Pages/CreateChildAccount.razor
+- [x] T028 [P] [US1] AvatarSelector.razorコンポーネント実装（プリセット一覧、グリッド表示） - frontend/GamifiedMathDrill.Client/Components/AvatarSelector.razor
+- [x] T029 [P] [US1] PINInput.razorコンポーネント実装（4桁数字入力、マスク表示） - frontend/GamifiedMathDrill.Client/Components/PINInput.razor
+- [x] T030 [US1] 子供ログイン画面のカード形式UI実装（ChildAccountCard.razorコンポーネント、CSS Grid） - frontend/GamifiedMathDrill.Client/Components/ChildAccountCard.razor
+- [x] T031 [US1] 子供ログイン画面実装（カード一覧、PIN入力、ログイン処理） - frontend/GamifiedMathDrill.Client/Pages/ChildLogin.razor
 
 ### Tests
 
