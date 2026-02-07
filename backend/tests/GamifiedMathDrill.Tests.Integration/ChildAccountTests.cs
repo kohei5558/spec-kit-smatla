@@ -371,6 +371,7 @@ public class ChildAccountTests : AuthenticatedTestBase
         Assert.Equal(HttpStatusCode.OK, newPinResponse.StatusCode);
         var loginResult = await newPinResponse.Content.ReadFromJsonAsync<LoginResponse>();
         Assert.NotNull(loginResult);
+        Assert.NotNull(loginResult.Token);
         Assert.NotEmpty(loginResult.Token);
     }
 
@@ -416,6 +417,7 @@ public class ChildAccountTests : AuthenticatedTestBase
         Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
         var loginResult = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
         Assert.NotNull(loginResult);
+        Assert.NotNull(loginResult.Token);
         Assert.NotEmpty(loginResult.Token);
     }
 
