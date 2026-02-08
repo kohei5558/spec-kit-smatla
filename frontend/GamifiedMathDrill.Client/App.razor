@@ -38,15 +38,15 @@
 </Router>
 
 @code {
+    private static readonly Type[] PublicPages = new[]
+    {
+        typeof(Pages.Login),
+        typeof(Pages.ChildLogin)
+    };
+    
     private bool IsPublicPage(Type pageType)
     {
         // ログインページは認証不要
-        var publicPages = new[]
-        {
-            typeof(Pages.Login),
-            typeof(Pages.ChildLogin)
-        };
-        
-        return publicPages.Contains(pageType);
+        return PublicPages.Contains(pageType);
     }
 }
