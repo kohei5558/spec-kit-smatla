@@ -1,0 +1,8 @@
+@inject NavigationManager Navigation
+@code {
+    protected override void OnInitialized()
+    {
+        // 未認証の場合は子供ログイン画面にリダイレクト
+        Navigation.NavigateTo("/child-login", forceLoad: true);
+    }
+}
