@@ -1,10 +1,17 @@
 ﻿<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-            <NotAuthorized>
-                <RedirectToLogin />
-            </NotAuthorized>
-        </AuthorizeRouteView>
+        @if (IsPublicPage(routeData.PageType))
+        {
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        }
+        else
+        {
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        }
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
@@ -29,3 +36,17 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+    private bool IsPublicPage(Type pageType)
+    {
+        // ログインページは認証不要
+        var publicPages = new[]
+        {
+            typeof(Pages.Login),
+            typeof(Pages.ChildLogin)
+        };
+        
+        return publicPages.Contains(pageType);
+    }
+}
