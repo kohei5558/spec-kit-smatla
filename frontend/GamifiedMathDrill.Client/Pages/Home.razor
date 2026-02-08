@@ -3,12 +3,13 @@
 @using GamifiedMathDrill.Client.Models
 @using GamifiedMathDrill.Client.Components.Home
 @using GamifiedMathDrill.Client.Components
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Child")]
 @inject StudentApiClient StudentApi
 @inject DailyChallengeApiClient DailyChallengeApi
 @inject RewardApiClient RewardApi
 @inject ExchangeRequestApiClient ExchangeRequestApi
 @inject CategoryStateService CategoryState
-@inject TokenService TokenService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -234,14 +235,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // 保護者がこのページにアクセスした場合、親ダッシュボードにリダイレクト
-        var role = await TokenService.GetUserRoleAsync();
-        if (!string.IsNullOrEmpty(role) && role.Equals("Parent", StringComparison.OrdinalIgnoreCase))
-        {
-            Navigation.NavigateTo("/parent-dashboard", forceLoad: true);
-            return;
-        }
-
         await LoadStudent();
         if (student != null)
         {
