@@ -1,8 +1,14 @@
 @inject NavigationManager Navigation
 @code {
-    protected override void OnInitialized()
+    private bool _hasRedirected = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // 未認証の場合は子供ログイン画面にリダイレクト
-        Navigation.NavigateTo("/child-login", forceLoad: true);
+        if (firstRender && !_hasRedirected)
+        {
+            _hasRedirected = true;
+            // 未認証の場合は子供ログイン画面にリダイレクト
+            Navigation.NavigateTo("/child-login", forceLoad: true);
+        }
     }
 }
