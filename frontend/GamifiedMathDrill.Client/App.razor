@@ -1,6 +1,6 @@
 ﻿<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        @if (IsPublicPage(routeData.PageType))
+        @if (routeData.PageType != null && IsPublicPage(routeData.PageType))
         {
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         }
