@@ -105,14 +105,24 @@
 
         <!-- 子供一覧 -->
         <MudPaper Class="pa-6 mb-6" Elevation="2">
-            <MudText Typo="Typo.h5" Class="mb-4">
-                <MudIcon Icon="@Icons.Material.Filled.ChildCare" Class="mr-2" />
-                子供の学習状況
-            </MudText>
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                <MudText Typo="Typo.h5">
+                    <MudIcon Icon="@Icons.Material.Filled.ChildCare" Class="mr-2" />
+                    子供の学習状況
+                </MudText>
+                <MudButton Variant="Variant.Filled" 
+                          Color="Color.Primary"
+                          Href="/parent/children"
+                          StartIcon="@Icons.Material.Filled.Settings">
+                    子供アカウント管理
+                </MudButton>
+            </MudStack>
             
             @if (summary.Children.Count == 0)
             {
-                <MudText Typo="Typo.body1" Color="Color.Secondary">登録されている子供はいません。</MudText>
+                <MudAlert Severity="Severity.Info" Class="mb-4">
+                    登録されている子供はいません。「子供アカウント管理」から新しいアカウントを作成してください。
+                </MudAlert>
             }
             else
             {
