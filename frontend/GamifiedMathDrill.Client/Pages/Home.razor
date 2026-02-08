@@ -3,6 +3,8 @@
 @using GamifiedMathDrill.Client.Models
 @using GamifiedMathDrill.Client.Components.Home
 @using GamifiedMathDrill.Client.Components
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Child")]
 @inject StudentApiClient StudentApi
 @inject DailyChallengeApiClient DailyChallengeApi
 @inject RewardApiClient RewardApi
