@@ -2,7 +2,7 @@
 @code {
     private bool _hasRedirected = false;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && !_hasRedirected)
         {
@@ -10,5 +10,6 @@
             // 未認証の場合は子供ログイン画面にリダイレクト
             Navigation.NavigateTo("/child-login", forceLoad: true);
         }
+        return Task.CompletedTask;
     }
 }
