@@ -1,3 +1,4 @@
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -10,14 +11,12 @@ namespace GamifiedMathDrill.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Add GradeLevel column to AspNetUsers
             migrationBuilder.AddColumn<int>(
                 name: "GradeLevel",
                 table: "AspNetUsers",
-                type: "integer",
+                type: "INTEGER",
                 nullable: true);
 
-            // Create PresetAvatars table
             migrationBuilder.CreateTable(
                 name: "PresetAvatars",
                 columns: table => new
@@ -34,7 +33,6 @@ namespace GamifiedMathDrill.Infrastructure.Migrations
                     table.PrimaryKey("PK_PresetAvatars", x => x.Id);
                 });
 
-            // Create index on DisplayOrder
             migrationBuilder.CreateIndex(
                 name: "IX_PresetAvatars_DisplayOrder",
                 table: "PresetAvatars",
@@ -44,11 +42,9 @@ namespace GamifiedMathDrill.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Drop PresetAvatars table
             migrationBuilder.DropTable(
                 name: "PresetAvatars");
 
-            // Drop GradeLevel column from AspNetUsers
             migrationBuilder.DropColumn(
                 name: "GradeLevel",
                 table: "AspNetUsers");
