@@ -290,6 +290,184 @@ APIは `https://localhost:7000` で起動します。
 }
 ```
 
+## デバッグ
+
+### VS Codeでのデバッグ
+
+1. **ブレークポイントの設定**
+   - VS Codeでソースコードファイルを開き、行番号の左側をクリックしてブレークポイントを設定
+
+2. **デバッグ構成**
+   - `.vscode/launch.json` でデバッグ構成を確認（自動生成されます）
+
+   ```json
+   {
+     "version": "0.2.0",
+     "configurations": [
+       {
+         "name": ".NET Core Launch (web)",
+         "type": "coreclr",
+         "request": "launch",
+         "preLaunchTask": "build",
+         "program": "${workspaceFolder}/src/GamifiedMathDrill.Api/bin/Debug/net8.0/GamifiedMathDrill.Api.dll",
+         "args": [],
+         "cwd": "${workspaceFolder}/src/GamifiedMathDrill.Api",
+         "stopAtEntry": false,
+         "serverReadyAction": {
+           "action": "openExternally",
+           "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+         },
+         "env": {
+           "ASPNETCORE_ENVIRONMENT": "Development"
+         }
+       }
+     ]
+   }
+   ```
+
+3. **デバッグ開始**
+   - F5キーを押すか、「実行とデバッグ」パネルから「.NET Core Launch (web)」を選択
+   - アプリケーションが起動し、ブレークポイントで実行が停止します
+
+### Visual Studioでのデバッグ
+
+1. `GamifiedMathDrill.sln` をVisual Studioで開く
+2. `GamifiedMathDrill.Api` をスタートアッププロジェクトに設定
+3. F5キーでデバッグ開始
+
+### ログを使用したデバッグ
+
+アプリケーションはSerilogを使用して詳細なログを出力します。
+
+**ログファイルの場所:**
+
+- `src/GamifiedMathDrill.Api/logs/log-YYYYMMDD.txt`
+- `src/GamifiedMathDrill.Api/api.log` (最新のログ)
+
+**ログレベルの変更:**
+
+`appsettings.Development.json` でログレベルを調整：
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Debug",
+      "Microsoft.AspNetCore": "Information",
+      "GamifiedMathDrill": "Debug"
+    }
+  }
+}
+```
+
+**ログの確認:**
+
+```bash
+# リアルタイムでログを監視
+tail -f src/GamifiedMathDrill.Api/api.log
+
+# 最新50行を表示
+tail -50 src/GamifiedMathDrill.Api/api.log
+
+# エラーログのみ抽出
+grep -i "error" src/GamifiedMathDrill.Api/api.log
+```
+
+### データベースのデバッグ
+
+**SQLiteデータベースの確認:**
+
+```bash
+# データベースに接続
+cd src/GamifiedMathDrill.Api
+sqlite3 gamifiedmathdrill.db
+
+# テーブル一覧
+.tables
+
+# テーブル構造の確認
+.schema AspNetUsers
+
+# データの確認
+SELECT * FROM AspNetUsers;
+
+# 終了
+.quit
+```
+
+**データベースのリセット:**
+
+```bash
+# データベースファイルを削除
+rm src/GamifiedMathDrill.Api/gamifiedmathdrill.db
+
+# マイグレーションを再実行
+cd src/GamifiedMathDrill.Infrastructure
+dotnet ef database update --startup-project ../GamifiedMathDrill.Api
+```
+
+### APIエンドポイントのデバッグ
+
+**HTTPクライアントファイルの使用:**
+
+VS Code REST Client拡張機能をインストールして、`GamifiedMathDrill.Api.http` を使用：
+
+```bash
+# REST Client拡張機能のインストール
+code --install-extension humao.rest-client
+```
+
+`GamifiedMathDrill.Api.http` ファイルで「Send Request」をクリック
+
+**curlコマンドでのテスト:**
+
+```bash
+# 保護者ログイン
+curl -X POST https://localhost:7000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"parent@example.com","password":"Parent123!"}'
+
+# トークンを使用してAPI呼び出し
+curl -X GET https://localhost:7000/api/rewards \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+### よくあるデバッグシナリオ
+
+**問題: データベースマイグレーションエラー**
+
+```bash
+# マイグレーションの状態確認
+cd src/GamifiedMathDrill.Infrastructure
+dotnet ef migrations list --startup-project ../GamifiedMathDrill.Api
+
+# データベースを削除して再作成
+dotnet ef database drop --startup-project ../GamifiedMathDrill.Api
+dotnet ef database update --startup-project ../GamifiedMathDrill.Api
+```
+
+**問題: ポートが既に使用されている**
+
+```bash
+# 使用中のプロセスを確認（macOS/Linux）
+lsof -i :7000
+
+# プロセスを終了
+kill -9 <PID>
+```
+
+**問題: 認証エラー**
+
+- JWT設定が正しいか確認
+- トークンの有効期限を確認
+- ログファイルで詳細なエラーメッセージを確認
+
+**問題: NullReferenceException**
+
+- ブレークポイントを設定して変数の値を確認
+- ログで例外のスタックトレースを確認
+- Dependency Injectionのサービス登録を確認
+
 ## テスト実行
 
 ### すべてのテストを実行

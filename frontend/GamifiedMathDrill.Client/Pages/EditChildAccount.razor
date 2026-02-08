@@ -179,7 +179,7 @@
             {
                 Name = child.Name,
                 GradeLevel = child.GradeLevel,
-                PresetAvatarId = child.PresetAvatarId,
+                PresetAvatarId = child.PresetAvatarId ?? 0,
                 NewPIN = string.Empty
             };
         }

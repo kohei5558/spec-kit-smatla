@@ -1,0 +1,10 @@
+ビルドしています...
+Parent user already exists: parent@example.com
+[17:36:14 INF] DailyChallengeJob is starting
+[17:36:14 INF] Daily challenge created for 02/08/2026: ProblemId=298, BonusPoints=40
+[17:36:14 INF] Next daily challenge will be created at 02/09/2026 00:00:00 UTC (in 15:23:45.0973660)
+[17:38:29 WRN] Failed to determine the https port for redirect.
+[17:38:29 INF] User 773ed083-c152-47ec-8444-b422c495ad67 logged in successfully (RememberMe: False, ExpiresAt: 02/08/2026 09:38:29)
+[17:39:40 WRN] Invalid PIN attempt for child account 9b4c2d46-876e-4cb6-bf30-39c24c95fa78
+[17:43:02 INF] DailyChallengeJob is stopping
+[17:43:02 INF] DailyChallengeJob has stopped

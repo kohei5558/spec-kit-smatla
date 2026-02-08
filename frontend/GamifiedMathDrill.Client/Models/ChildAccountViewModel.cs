@@ -26,6 +26,11 @@ public class ChildAccountViewModel
     public string AvatarUrl { get; set; } = string.Empty;
 
     /// <summary>
+    /// プリセットアバターID
+    /// </summary>
+    public int? PresetAvatarId { get; set; }
+
+    /// <summary>
     /// アクティブ状態（true: 有効, false: 停止中）
     /// </summary>
     public bool IsActive { get; set; }
