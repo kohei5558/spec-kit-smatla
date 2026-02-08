@@ -165,6 +165,25 @@ public class TokenService
     }
 
     /// <summary>
+    /// トークンのみを保存する簡易メソッド（自動ログイン用）
+    /// </summary>
+    public async Task SetTokenAsync(string token, bool rememberMe)
+    {
+        var storage = rememberMe ? (object)_localStorage : _sessionStorage;
+        
+        if (storage is ILocalStorageService localStorage)
+        {
+            await localStorage.SetItemAsync(TokenKey, token);
+            await localStorage.SetItemAsync(RememberMeKey, rememberMe);
+        }
+        else if (storage is ISessionStorageService sessionStorage)
+        {
+            await sessionStorage.SetItemAsync(TokenKey, token);
+            await sessionStorage.SetItemAsync(RememberMeKey, rememberMe);
+        }
+    }
+
+    /// <summary>
     /// トークンとユーザー情報を削除（両方のストレージから）
     /// </summary>
     public async Task RemoveTokenAsync()

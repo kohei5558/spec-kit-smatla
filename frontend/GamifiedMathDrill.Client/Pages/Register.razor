@@ -53,41 +53,41 @@
                 
                 @* パスワード要件チェックリスト *@
                 <MudText Typo="Typo.caption" Class="mb-1">パスワード要件:</MudText>
-                <MudList Dense="true" Class="mb-3" Style="padding: 0;">
-                    <MudListItem Dense="true" Style="min-height: 24px; padding: 2px 0;">
+                <MudList T="string" Dense="true" Class="mb-3" Style="padding: 0;">
+                    <MudListItem T="string" Dense="true" Style="min-height: 24px; padding: 2px 0;">
                         <MudIcon Icon="@(passwordChecks.HasMinLength ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)" 
                                  Color="@(passwordChecks.HasMinLength ? Color.Success : Color.Default)" 
                                  Size="Size.Small" 
                                  Class="mr-1" />
                         <MudText Typo="Typo.caption">8文字以上</MudText>
                     </MudListItem>
-                    <MudListItem Dense="true" Style="min-height: 24px; padding: 2px 0;">
+                    <MudListItem T="string" Dense="true" Style="min-height: 24px; padding: 2px 0;">
                         <MudIcon Icon="@(passwordChecks.HasUpperCase ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)" 
                                  Color="@(passwordChecks.HasUpperCase ? Color.Success : Color.Default)" 
                                  Size="Size.Small" 
                                  Class="mr-1" />
                         <MudText Typo="Typo.caption">大文字を含む</MudText>
                     </MudListItem>
-                    <MudListItem Dense="true" Style="min-height: 24px; padding: 2px 0;">
+                    <MudListItem T="string" Dense="true" Style="min-height: 24px; padding: 2px 0;">
                         <MudIcon Icon="@(passwordChecks.HasLowerCase ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)" 
                                  Color="@(passwordChecks.HasLowerCase ? Color.Success : Color.Default)" 
                                  Size="Size.Small" 
                                  Class="mr-1" />
                         <MudText Typo="Typo.caption">小文字を含む</MudText>
                     </MudListItem>
-                    <MudListItem Dense="true" Style="min-height: 24px; padding: 2px 0;">
+                    <MudListItem T="string" Dense="true" Style="min-height: 24px; padding: 2px 0;">
                         <MudIcon Icon="@(passwordChecks.HasDigit ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)" 
                                  Color="@(passwordChecks.HasDigit ? Color.Success : Color.Default)" 
                                  Size="Size.Small" 
                                  Class="mr-1" />
                         <MudText Typo="Typo.caption">数字を含む</MudText>
                     </MudListItem>
-                    <MudListItem Dense="true" Style="min-height: 24px; padding: 2px 0;">
+                    <MudListItem T="string" Dense="true" Style="min-height: 24px; padding: 2px 0;">
                         <MudIcon Icon="@(passwordChecks.HasSpecialChar ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)" 
                                  Color="@(passwordChecks.HasSpecialChar ? Color.Success : Color.Default)" 
                                  Size="Size.Small" 
                                  Class="mr-1" />
-                        <MudText Typo="Typo.caption">記号を含む (@$!%*?&)</MudText>
+                        <MudText Typo="Typo.caption">記号を含む (at-dollar-exclamation-percent-asterisk-question-ampersand)</MudText>
                     </MudListItem>
                 </MudList>
             }

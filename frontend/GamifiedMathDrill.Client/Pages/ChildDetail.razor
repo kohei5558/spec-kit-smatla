@@ -44,7 +44,7 @@
                     </MudItem>
                     <MudItem xs="12" sm="6" md="3">
                         <MudText Typo="Typo.body2" Color="Color.Secondary">状態</MudText>
-                        <MudChip Color="@(childAccount.IsActive ? Color.Success : Color.Default)" Size="Size.Small" Class="mt-2">
+                        <MudChip T="string" Color="@(childAccount.IsActive ? Color.Success : Color.Default)" Size="Size.Small" Class="mt-2">
                             @(childAccount.IsActive ? "有効" : "停止中")
                         </MudChip>
                     </MudItem>
