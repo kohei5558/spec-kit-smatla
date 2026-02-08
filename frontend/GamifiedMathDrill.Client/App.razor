@@ -1,6 +1,35 @@
 ﻿<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <NotAuthorized>
+                @if (context.User?.Identity?.IsAuthenticated == true)
+                {
+                    <PageTitle>アクセス拒否 - 計算ドリル</PageTitle>
+                    <LayoutView Layout="@typeof(MainLayout)">
+                        <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+                            <MudPaper Class="pa-8 text-center" Elevation="3">
+                                <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Error" Style="font-size: 6rem;" Class="mb-4" />
+                                <MudText Typo="Typo.h3" Class="mb-4">アクセス拒否</MudText>
+                                <MudText Typo="Typo.body1" Class="mb-6">
+                                    このページにアクセスする権限がありません。
+                                </MudText>
+                                <MudButton Variant="Variant.Filled" 
+                                          Color="Color.Primary" 
+                                          Size="Size.Large"
+                                          Href="/parent-dashboard"
+                                          StartIcon="@Icons.Material.Filled.Home">
+                                    保護者ダッシュボードに戻る
+                                </MudButton>
+                            </MudPaper>
+                        </MudContainer>
+                    </LayoutView>
+                }
+                else
+                {
+                    <RedirectToLogin />
+                }
+            </NotAuthorized>
+        </AuthorizeRouteView>
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
