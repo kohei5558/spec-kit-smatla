@@ -6,9 +6,9 @@ namespace GamifiedMathDrill.Client.Models;
 public class ChildLoginRequest
 {
     /// <summary>
-    /// 子供のユーザーID
+    /// 子供のアカウントID
     /// </summary>
-    public string ChildId { get; set; } = string.Empty;
+    public string ChildAccountId { get; set; } = string.Empty;
     
     /// <summary>
     /// PIN（4桁）

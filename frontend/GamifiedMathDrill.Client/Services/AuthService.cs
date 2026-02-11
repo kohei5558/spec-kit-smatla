@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using GamifiedMathDrill.Client.Models;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace GamifiedMathDrill.Client.Services;
 
@@ -11,11 +12,13 @@ public class AuthService
 {
     private readonly HttpClient _httpClient;
     private readonly TokenService _tokenService;
+    private readonly Func<AuthenticationStateProvider> _authStateProviderFunc;
 
-    public AuthService(HttpClient httpClient, TokenService tokenService)
+    public AuthService(HttpClient httpClient, TokenService tokenService, Func<AuthenticationStateProvider> authStateProviderFunc)
     {
         _httpClient = httpClient;
         _tokenService = tokenService;
+        _authStateProviderFunc = authStateProviderFunc;
     }
 
     /// <summary>
@@ -48,6 +51,7 @@ public class AuthService
                         loginResponse.ExpiresAt!.Value,
                         rememberMe
                     );
+                    NotifyAuthenticationStateChanged();
                     return (true, null);
                 }
                 
@@ -96,11 +100,11 @@ public class AuthService
         {
             var request = new ChildLoginRequest
             {
-                ChildId = childId,
+                ChildAccountId = childId,
                 PIN = pin
             };
 
-            var response = await _httpClient.PostAsJsonAsync("/api/auth/child-login", request);
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/child/login", request);
 
             if (response.IsSuccessStatusCode)
             {
@@ -116,6 +120,7 @@ public class AuthService
                         loginResponse.ExpiresAt!.Value,
                         false  // 子供ログインはセッションストレージのみ
                     );
+                    NotifyAuthenticationStateChanged();
                     return (true, null);
                 }
                 
@@ -145,6 +150,18 @@ public class AuthService
     public async Task LogoutAsync()
     {
         await _tokenService.RemoveTokenAsync();
+        NotifyAuthenticationStateChanged();
+    }
+
+    /// <summary>
+    /// 認証状態の変更を通知
+    /// </summary>
+    private void NotifyAuthenticationStateChanged()
+    {
+        if (_authStateProviderFunc() is CustomAuthenticationStateProvider provider)
+        {
+            provider.NotifyAuthenticationStateChanged();
+        }
     }
 
     /// <summary>
