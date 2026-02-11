@@ -24,7 +24,8 @@
                   Style="font-size: 2rem;"
                   Immediate="true"
                   InputMode="InputMode.numeric"
-                  Pattern="[0-9]*" />
+                  Pattern="[0-9]*"
+                  OnKeyDown="@HandleKeyDown" />
 </div>
 
 <div class="text-center mt-6">
@@ -106,6 +107,15 @@
         else if (string.IsNullOrEmpty(numbersOnly))
         {
             await OnAnswerChange.InvokeAsync(null);
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        // Enterキーが押されたら、回答を送信
+        if (e.Key == "Enter" && !IsSubmitting && Answer.HasValue)
+        {
+            await OnSubmit.InvokeAsync();
         }
     }
 
