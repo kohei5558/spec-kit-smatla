@@ -38,8 +38,8 @@ public class UpdateRewardRequest
     public IFormFile? Image { get; set; }
 
     /// <summary>
-    /// 楽観的同時実行制御用のバージョン
+    /// 楽観的同時実行制御用のバージョン（Base64文字列で受け取ります）
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です")]
-    public byte[]? RowVersion { get; set; }
+    public string? RowVersion { get; set; }
 }

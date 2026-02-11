@@ -42,8 +42,15 @@ public class ImageStorageService : IImageStorageService
                 throw new ArgumentException($"ファイルサイズが大きすぎます（最大5MB）: {imageStream.Length} bytes");
             }
 
+            // WebRootPath が設定されていない場合は ContentRootPath/wwwroot をフォールバック
+            var webRoot = _environment.WebRootPath;
+            if (string.IsNullOrEmpty(webRoot))
+            {
+                webRoot = Path.Combine(_environment.ContentRootPath ?? Directory.GetCurrentDirectory(), "wwwroot");
+            }
+
             // アップロードディレクトリ作成
-            var uploadPath = Path.Combine(_environment.WebRootPath, UploadFolder);
+            var uploadPath = Path.Combine(webRoot, UploadFolder);
             Directory.CreateDirectory(uploadPath);
 
             // ユニークなファイル名生成
@@ -80,7 +87,22 @@ public class ImageStorageService : IImageStorageService
 
             // URLから物理パスを構築
             var fileName = Path.GetFileName(imageUrl);
-            var filePath = Path.Combine(_environment.WebRootPath, UploadFolder, fileName);
+            var webRootForDelete = _environment?.WebRootPath;
+            if (string.IsNullOrEmpty(webRootForDelete))
+            {
+                webRootForDelete = Path.Combine(_environment?.ContentRootPath ?? Directory.GetCurrentDirectory(), "wwwroot");
+            }
+
+            if (string.IsNullOrEmpty(webRootForDelete))
+            {
+                // 最終フォールバック
+                webRootForDelete = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            }
+
+            // 詳細ログ: 組み立てるパスの中身を記録（デバッグ用）
+            _logger.LogDebug("Deleting image - webRoot: {WebRoot}, uploadFolder: {UploadFolder}, fileName: {FileName}", webRootForDelete, UploadFolder, fileName);
+
+            var filePath = Path.Combine(webRootForDelete, UploadFolder, fileName);
 
             if (File.Exists(filePath))
             {

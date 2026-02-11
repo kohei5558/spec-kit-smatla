@@ -19,6 +19,7 @@ public class OptimisticLockingTests
         var mockRewardRepo = new Mock<IRewardRepository>();
         var mockStudentRepo = new Mock<IStudentRepository>();
         var mockExchangeRequestRepo = new Mock<IExchangeRequestRepository>();
+        var mockAcquiredRewardRepo = new Mock<IAcquiredRewardRepository>();
 
         var reward = new Reward
         {
@@ -74,7 +75,8 @@ public class OptimisticLockingTests
         var service = new ExchangeRequestService(
             mockExchangeRequestRepo.Object,
             mockRewardRepo.Object,
-            mockStudentRepo.Object);
+            mockStudentRepo.Object,
+            mockAcquiredRewardRepo.Object);
 
         // Act
         var request1Task = service.CreateRequestAsync(1, 1);

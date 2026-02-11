@@ -10,6 +10,7 @@ namespace GamifiedMathDrill.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/auth/child")]
+[Route("api/auth/child-login")]
 public class ChildAuthController : ControllerBase
 {
     private readonly IChildAccountService _childAccountService;
@@ -33,8 +34,11 @@ public class ChildAuthController : ControllerBase
     /// 子供ログイン（PINコード認証）
     /// </summary>
     [HttpPost("login")]
+    [HttpPost("/api/auth/child-login")]
     public async Task<ActionResult<LoginResponse>> LoginAsync([FromBody] ChildLoginRequest request)
     {
+        _logger.LogInformation("Child login request received for ChildId {ChildId}", request.ChildAccountId);
+
         if (string.IsNullOrEmpty(request.ChildAccountId) || string.IsNullOrEmpty(request.PIN))
         {
             return BadRequest(new { message = "子供アカウントIDとPINは必須です" });
@@ -137,7 +141,9 @@ public class ChildLoginRequest
 {
     /// <summary>
     /// 子供アカウントID
+    /// テストのペイロードでは `ChildId` を使っているため、JSONプロパティ名を合わせる
     /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("ChildId")]
     public string ChildAccountId { get; set; } = string.Empty;
 
     /// <summary>

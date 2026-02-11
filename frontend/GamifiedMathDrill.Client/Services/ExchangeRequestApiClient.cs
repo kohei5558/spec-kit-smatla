@@ -25,7 +25,7 @@ public class ExchangeRequestApiClient : ApiClientBase
         await SetAuthorizationHeaderAsync();
         
         var request = new CreateExchangeRequestRequest { RewardId = rewardId };
-        var response = await _httpClient.PostAsJsonAsync("api/exchangerequests", request);
+            var response = await _httpClient.PostAsJsonAsync("api/exchange-requests", request);
 
         if (response.IsSuccessStatusCode)
         {
@@ -52,7 +52,7 @@ public class ExchangeRequestApiClient : ApiClientBase
     {
         await SetAuthorizationHeaderAsync();
 
-        var response = await _httpClient.GetAsync("api/exchangerequests/my");
+        var response = await _httpClient.GetAsync("api/exchange-requests/my");
 
         if (response.IsSuccessStatusCode)
         {
@@ -78,7 +78,7 @@ public class ExchangeRequestApiClient : ApiClientBase
     {
         await SetAuthorizationHeaderAsync();
 
-        var response = await _httpClient.PutAsync($"api/exchangerequests/{requestId}/cancel", null);
+        var response = await _httpClient.PutAsync($"api/exchange-requests/{requestId}/cancel", null);
 
         if (response.IsSuccessStatusCode)
         {
@@ -104,7 +104,7 @@ public class ExchangeRequestApiClient : ApiClientBase
     {
         await SetAuthorizationHeaderAsync();
 
-        var url = "api/exchangerequests";
+        var url = "api/exchange-requests";
         if (!string.IsNullOrEmpty(status))
         {
             url += $"?status={status}";
@@ -136,7 +136,7 @@ public class ExchangeRequestApiClient : ApiClientBase
     {
         await SetAuthorizationHeaderAsync();
 
-        var response = await _httpClient.GetAsync($"api/exchangerequests/{requestId}");
+        var response = await _httpClient.GetAsync($"api/exchange-requests/{requestId}");
 
         if (response.IsSuccessStatusCode)
         {
@@ -172,7 +172,7 @@ public class ExchangeRequestApiClient : ApiClientBase
         await SetAuthorizationHeaderAsync();
 
         var requestBody = new { ParentNote = parentNote };
-        var response = await _httpClient.PutAsJsonAsync($"api/exchangerequests/{requestId}/approve", requestBody);
+        var response = await _httpClient.PutAsJsonAsync($"api/exchange-requests/{requestId}/approve", requestBody);
 
         if (response.IsSuccessStatusCode)
         {
@@ -201,7 +201,7 @@ public class ExchangeRequestApiClient : ApiClientBase
         await SetAuthorizationHeaderAsync();
 
         var requestBody = new { Reason = reason, ParentNote = parentNote };
-        var response = await _httpClient.PutAsJsonAsync($"api/exchangerequests/{requestId}/reject", requestBody);
+        var response = await _httpClient.PutAsJsonAsync($"api/exchange-requests/{requestId}/reject", requestBody);
 
         if (response.IsSuccessStatusCode)
         {

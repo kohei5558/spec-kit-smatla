@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using GamifiedMathDrill.Client.Models;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -7,16 +8,19 @@ namespace GamifiedMathDrill.Client.Services;
 public class RewardApiClient
 {
     private readonly HttpClient _httpClient;
+    private readonly TokenService _tokenService;
 
-    public RewardApiClient(HttpClient httpClient)
+    public RewardApiClient(HttpClient httpClient, TokenService tokenService)
     {
         _httpClient = httpClient;
+        _tokenService = tokenService;
     }
 
     public async Task<List<RewardDto>> GetRewardsAsync(string? category = null, int? maxPoints = null)
     {
         try
         {
+            await SetAuthorizationHeaderAsync();
             var queryParams = new List<string>();
             if (!string.IsNullOrWhiteSpace(category))
             {
@@ -44,6 +48,7 @@ public class RewardApiClient
     {
         try
         {
+            await SetAuthorizationHeaderAsync();
             var request = new ExchangeRewardRequest { StudentId = studentId };
             var response = await _httpClient.PostAsJsonAsync($"api/Rewards/{rewardId}/exchange", request);
             
@@ -79,6 +84,7 @@ public class RewardApiClient
     {
         try
         {
+            await SetAuthorizationHeaderAsync();
             var response = await _httpClient.GetAsync($"api/Rewards/acquired?studentId={studentId}");
             response.EnsureSuccessStatusCode();
 
@@ -99,6 +105,7 @@ public class RewardApiClient
     {
         try
         {
+            await SetAuthorizationHeaderAsync();
             using var content = new MultipartFormDataContent();
             
             content.Add(new StringContent(name), "Name");
@@ -140,6 +147,7 @@ public class RewardApiClient
     {
         try
         {
+            await SetAuthorizationHeaderAsync();
             using var content = new MultipartFormDataContent();
             
             content.Add(new StringContent(name), "Name");
@@ -186,6 +194,7 @@ public class RewardApiClient
     {
         try
         {
+            await SetAuthorizationHeaderAsync();
             var response = await _httpClient.DeleteAsync($"api/Rewards/{id}");
             response.EnsureSuccessStatusCode();
             
@@ -205,6 +214,7 @@ public class RewardApiClient
     {
         try
         {
+            await SetAuthorizationHeaderAsync();
             var response = await _httpClient.GetAsync($"api/Rewards/{id}");
             response.EnsureSuccessStatusCode();
             
@@ -214,6 +224,14 @@ public class RewardApiClient
         {
             Console.WriteLine($"Error fetching reward: {ex.Message}");
             throw;
+        }
+    }
+    private async Task SetAuthorizationHeaderAsync()
+    {
+        var token = await _tokenService.GetTokenAsync();
+        if (!string.IsNullOrEmpty(token))
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
     }
 }
