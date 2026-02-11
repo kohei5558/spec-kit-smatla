@@ -5,6 +5,7 @@
 @inject RewardApiClient RewardApi
 @inject StudentApiClient StudentApi
 @inject NavigationManager Navigation
+@inject TokenService TokenService
 
 <PageTitle>景品交換 - 計算ドリル</PageTitle>
 
@@ -153,11 +154,15 @@
         isLoading = true;
         try
         {
-            // Load student to get current points (demo: student ID = 1)
-            var student = await StudentApi.GetByIdAsync(1);
-            if (student != null)
+            // 子供アカウントの場合: StudentIdを取得
+            var studentId = await TokenService.GetStudentIdAsync();
+            if (studentId.HasValue)
             {
-                currentPoints = student.TotalPoints;
+                var student = await StudentApi.GetByIdAsync(studentId.Value);
+                if (student != null)
+                {
+                    currentPoints = student.TotalPoints;
+                }
             }
 
             // Load all rewards

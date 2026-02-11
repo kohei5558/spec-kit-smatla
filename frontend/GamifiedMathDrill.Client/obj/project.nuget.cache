@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "AnUJvqg1B4k=",
+  "dgSpecHash": "utDM7DflwIU=",
   "success": true,
   "projectFilePath": "/Users/murayama/dev/ai/spec-kit-smatla/frontend/GamifiedMathDrill.Client/GamifiedMathDrill.Client.csproj",
   "expectedPackageFiles": [
@@ -9,6 +9,7 @@
     "/Users/murayama/.nuget/packages/microsoft.aspnetcore.authorization/8.0.22/microsoft.aspnetcore.authorization.8.0.22.nupkg.sha512",
     "/Users/murayama/.nuget/packages/microsoft.aspnetcore.components/8.0.22/microsoft.aspnetcore.components.8.0.22.nupkg.sha512",
     "/Users/murayama/.nuget/packages/microsoft.aspnetcore.components.analyzers/8.0.22/microsoft.aspnetcore.components.analyzers.8.0.22.nupkg.sha512",
+    "/Users/murayama/.nuget/packages/microsoft.aspnetcore.components.authorization/8.0.0/microsoft.aspnetcore.components.authorization.8.0.0.nupkg.sha512",
     "/Users/murayama/.nuget/packages/microsoft.aspnetcore.components.forms/8.0.22/microsoft.aspnetcore.components.forms.8.0.22.nupkg.sha512",
     "/Users/murayama/.nuget/packages/microsoft.aspnetcore.components.web/8.0.22/microsoft.aspnetcore.components.web.8.0.22.nupkg.sha512",
     "/Users/murayama/.nuget/packages/microsoft.aspnetcore.components.webassembly/8.0.22/microsoft.aspnetcore.components.webassembly.8.0.22.nupkg.sha512",

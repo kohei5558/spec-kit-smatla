@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Components.Authorization;
 using GamifiedMathDrill.Client;
 using GamifiedMathDrill.Client.Services;
 using MudBlazor.Services;
@@ -17,12 +18,30 @@ builder.Services.AddMudServices();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddBlazoredSessionStorage();
 
-// Configure HttpClient with API base address
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5242") });
+// Register TokenService first
+builder.Services.AddScoped<TokenService>();
+
+// Configure HttpClient with API base address and authorization handler
+builder.Services.AddScoped(sp =>
+{
+    var httpClient = new HttpClient(new AuthorizationMessageHandler(sp))
+    {
+        BaseAddress = new Uri("http://localhost:5242")
+    };
+    return httpClient;
+});
 
 // Register authentication services
-builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
+    provider.GetRequiredService<CustomAuthenticationStateProvider>());
+builder.Services.AddScoped<AuthService>(provider =>
+{
+    var httpClient = provider.GetRequiredService<HttpClient>();
+    var tokenService = provider.GetRequiredService<TokenService>();
+    return new AuthService(httpClient, tokenService, () => provider.GetRequiredService<AuthenticationStateProvider>());
+});
+builder.Services.AddAuthorizationCore();
 
 // Register API clients
 builder.Services.AddScoped<ProblemApiClient>();

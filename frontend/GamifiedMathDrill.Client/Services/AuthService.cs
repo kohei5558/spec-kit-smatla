@@ -48,6 +48,7 @@ public class AuthService
                         loginResponse.DisplayName!,
                         loginResponse.Role!,
                         loginResponse.ParentId,
+                        null,  // 保護者はStudentIdなし
                         loginResponse.ExpiresAt!.Value,
                         rememberMe
                     );
@@ -117,6 +118,7 @@ public class AuthService
                         loginResponse.DisplayName!,
                         loginResponse.Role!,
                         loginResponse.ParentId,
+                        loginResponse.StudentId,  // 学生ID
                         loginResponse.ExpiresAt!.Value,
                         false  // 子供ログインはセッションストレージのみ
                     );

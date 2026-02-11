@@ -7,8 +7,8 @@
         if (firstRender && !_hasRedirected)
         {
             _hasRedirected = true;
-            // 未認証の場合は子供ログイン画面にリダイレクト
-            Navigation.NavigateTo("/child-login", forceLoad: true);
+            // 未認証の場合は保護者ログイン画面にリダイレクト
+            Navigation.NavigateTo("/login", forceLoad: true);
         }
         return Task.CompletedTask;
     }

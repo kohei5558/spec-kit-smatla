@@ -77,4 +77,9 @@ public interface IChildAccountService
     /// 同じPINを使用している兄弟がいるか確認
     /// </summary>
     Task<bool> HasDuplicatePinAsync(string parentId, string pin, string? excludeChildId = null);
+
+    /// <summary>
+    /// 子供アカウントにStudentIdを設定
+    /// </summary>
+    Task UpdateStudentIdAsync(string childId, int studentId);
 }

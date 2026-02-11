@@ -417,6 +417,21 @@ public class ChildAccountService : IChildAccountService
     }
 
     /// <summary>
+    /// 子供アカウントにStudentIdを設定
+    /// </summary>
+    public async Task UpdateStudentIdAsync(string childId, int studentId)
+    {
+        var user = await _context.Users.FindAsync(childId);
+        if (user == null || user.Role != UserRole.Child)
+        {
+            throw new InvalidOperationException("Child account not found");
+        }
+
+        user.StudentId = studentId;
+        await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// ApplicationUserをDTOにマッピング
     /// </summary>
     private static ChildAccountDto MapToDto(ApplicationUser user)
@@ -428,6 +443,7 @@ public class ChildAccountService : IChildAccountService
             GradeLevel = user.GradeLevel ?? 1,
             AvatarUrl = user.AvatarUrl ?? string.Empty,
             IsActive = user.IsActive,
+            StudentId = user.StudentId ?? 0,  // StudentIdを追加
             CreatedAt = user.CreatedAt
         };
     }

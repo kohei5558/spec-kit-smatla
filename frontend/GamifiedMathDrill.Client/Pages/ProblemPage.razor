@@ -6,6 +6,7 @@
 @inject CategoryStateService CategoryState
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject TokenService TokenService
 
 <PageTitle>問題を解く - 計算ドリル</PageTitle>
 
@@ -119,25 +120,57 @@
         // カテゴリ状態を取得
         selectedCategory = await CategoryState.GetSelectedCategoryAsync();
         
-        // テスト用: Student ID 1を使用（実際にはログイン機能で取得）
-        await LoadStudent(1);
-        await LoadNextProblem();
+        // 現在ログイン中のユーザーロールを確認
+        var role = await TokenService.GetUserRoleAsync();
+        Console.WriteLine($"[ProblemPage] User Role: '{role}'");
+        
+        if (role == "Child")
+        {
+            // 子供アカウントの場合: StudentIdを取得
+            var studentId = await TokenService.GetStudentIdAsync();
+            Console.WriteLine($"[ProblemPage] Retrieved StudentID: {studentId}");
+            
+            if (studentId.HasValue)
+            {
+                await LoadStudent(studentId.Value);
+                await LoadNextProblem();
+            }
+            else
+            {
+                Console.WriteLine("[ProblemPage] StudentID is null, redirecting to login");
+                Snackbar.Add("学生情報の取得に失敗しました。再度ログインしてください。", Severity.Error);
+                Navigation.NavigateTo("/child-login");
+            }
+        }
+        else
+        {
+            // 保護者または未ログインの場合
+            Console.WriteLine("[ProblemPage] Not a child account, redirecting to login");
+            Snackbar.Add("子供アカウントでログインしてください。", Severity.Warning);
+            Navigation.NavigateTo("/child-login");
+        }
     }
 
     private async Task LoadStudent(int studentId)
     {
-        student = await StudentApi.GetStudentAsync(studentId);
-        
-        // 学生が存在しない場合は作成
-        if (student == null)
+        try
         {
-            student = await StudentApi.CreateStudentAsync("テストユーザー");
+            student = await StudentApi.GetStudentAsync(studentId);
+            
+            // ログイン更新
+            if (student != null)
+            {
+                await StudentApi.UpdateLoginAsync(student.Id);
+            }
+            else
+            {
+                Snackbar.Add("学生情報の取得に失敗しました。", Severity.Error);
+            }
         }
-        
-        // ログイン更新
-        if (student != null)
+        catch (Exception ex)
         {
-            await StudentApi.UpdateLoginAsync(student.Id);
+            Console.WriteLine($"Error loading student: {ex.Message}");
+            Snackbar.Add("学生情報の読み込み中にエラーが発生しました。", Severity.Error);
         }
     }
 

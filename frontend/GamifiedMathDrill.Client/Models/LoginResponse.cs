@@ -41,6 +41,11 @@ public class LoginResponse
     public string? ParentId { get; set; }
     
     /// <summary>
+    /// 学生ID（子供アカウントの場合のみ）
+    /// </summary>
+    public int? StudentId { get; set; }
+    
+    /// <summary>
     /// トークン有効期限
     /// </summary>
     public DateTime? ExpiresAt { get; set; }

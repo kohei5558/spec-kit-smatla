@@ -168,38 +168,18 @@
 
         try
         {
-            var request = new ChildLoginRequestModel
-            {
-                ChildAccountId = selectedChild.Id,
-                PIN = pinInput
-            };
+            // AuthServiceを使用してログイン
+            var (success, error) = await AuthService.ChildLoginAsync(selectedChild.Id, pinInput);
 
-            var response = await ChildAccountApi.ChildLoginAsync(request);
-
-            if (response != null && !string.IsNullOrEmpty(response.Token))
+            if (success)
             {
-                // トークンを保存
-                await TokenService.SaveTokenAsync(
-                    response.Token,
-                    response.UserId ?? string.Empty,
-                    response.DisplayName ?? string.Empty,
-                    response.Role ?? "Child",
-                    response.ParentId,
-                    response.ExpiresAt ?? DateTime.UtcNow.AddHours(1),
-                    rememberMe: false
-                );
-                
                 // 子供ホーム画面に遷移
                 Navigation.NavigateTo("/", forceLoad: true);
             }
             else
             {
-                pinError = "PINが間違っています";
+                pinError = error ?? "PINが間違っています";
                 pinInput = string.Empty;
-                
-                // TODO: ロックアウト状態をチェック（サーバー側で実装済み）
-                // エラーレスポンスからロックアウト情報を取得できる場合は、
-                // lockoutRemainingを設定してタイマーを開始
             }
         }
         catch (HttpRequestException ex)

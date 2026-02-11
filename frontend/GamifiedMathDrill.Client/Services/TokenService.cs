@@ -16,6 +16,7 @@ public class TokenService
     private const string UserNameKey = "userName";
     private const string UserRoleKey = "userRole";
     private const string ParentIdKey = "parentId";
+    private const string StudentIdKey = "studentId";  // 学生ID
     private const string TokenExpiryKey = "tokenExpiry";
     private const string RememberMeKey = "rememberMe";
 
@@ -29,7 +30,7 @@ public class TokenService
     /// トークンとユーザー情報を保存
     /// rememberMe=trueの場合はローカルストレージ、falseの場合はセッションストレージを使用
     /// </summary>
-    public async Task SaveTokenAsync(string token, string userId, string userName, string role, string? parentId, DateTime expiresAt, bool rememberMe)
+    public async Task SaveTokenAsync(string token, string userId, string userName, string role, string? parentId, int? studentId, DateTime expiresAt, bool rememberMe)
     {
         var storage = rememberMe ? (object)_localStorage : _sessionStorage;
         
@@ -43,6 +44,10 @@ public class TokenService
             {
                 await localStorage.SetItemAsync(ParentIdKey, parentId);
             }
+            if (studentId.HasValue)
+            {
+                await localStorage.SetItemAsync(StudentIdKey, studentId.Value);
+            }
             await localStorage.SetItemAsync(TokenExpiryKey, expiresAt.ToString("o"));
             await localStorage.SetItemAsync(RememberMeKey, rememberMe);
         }
@@ -55,6 +60,10 @@ public class TokenService
             if (!string.IsNullOrEmpty(parentId))
             {
                 await sessionStorage.SetItemAsync(ParentIdKey, parentId);
+            }
+            if (studentId.HasValue)
+            {
+                await sessionStorage.SetItemAsync(StudentIdKey, studentId.Value);
             }
             await sessionStorage.SetItemAsync(TokenExpiryKey, expiresAt.ToString("o"));
             await sessionStorage.SetItemAsync(RememberMeKey, rememberMe);
@@ -124,6 +133,19 @@ public class TokenService
             return parentId;
         }
         return await _localStorage.GetItemAsync<string>(ParentIdKey);
+    }
+
+    /// <summary>
+    /// 学生IDを取得（子供アカウントの場合のみ）
+    /// </summary>
+    public async Task<int?> GetStudentIdAsync()
+    {
+        var studentId = await _sessionStorage.GetItemAsync<int?>(StudentIdKey);
+        if (studentId.HasValue)
+        {
+            return studentId.Value;
+        }
+        return await _localStorage.GetItemAsync<int?>(StudentIdKey);
     }
 
     /// <summary>

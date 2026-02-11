@@ -40,6 +40,11 @@ public class ApplicationUser : IdentityUser
     public int? GradeLevel { get; set; }
 
     /// <summary>
+    /// 学生ID（Studentテーブルへの参照、子供の場合のみ）
+    /// </summary>
+    public int? StudentId { get; set; }
+
+    /// <summary>
     /// 作成日時
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

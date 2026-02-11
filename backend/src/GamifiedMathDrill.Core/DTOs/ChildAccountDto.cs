@@ -31,6 +31,11 @@ public class ChildAccountDto
     public bool IsActive { get; set; }
 
     /// <summary>
+    /// 学生ID（Studentテーブルの外部キー）
+    /// </summary>
+    public int StudentId { get; set; }
+
+    /// <summary>
     /// 作成日時
     /// </summary>
     public DateTime CreatedAt { get; set; }

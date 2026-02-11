@@ -14,15 +14,18 @@ public class ChildAuthController : ControllerBase
 {
     private readonly IChildAccountService _childAccountService;
     private readonly IAuthService _authService;
+    private readonly IStudentService _studentService;
     private readonly ILogger<ChildAuthController> _logger;
 
     public ChildAuthController(
         IChildAccountService childAccountService,
         IAuthService authService,
+        IStudentService studentService,
         ILogger<ChildAuthController> logger)
     {
         _childAccountService = childAccountService;
         _authService = authService;
+        _studentService = studentService;
         _logger = logger;
     }
 
@@ -84,6 +87,31 @@ public class ChildAuthController : ControllerBase
             });
         }
 
+        // StudentIdが0の場合、自動的にStudentを作成して紐付ける
+        if (child.StudentId == 0)
+        {
+            _logger.LogInformation("Creating Student for child account {ChildId}", request.ChildAccountId);
+            
+            var newStudent = new GamifiedMathDrill.Core.Models.Student
+            {
+                Name = child.Name,
+                TotalPoints = 0,
+                CurrentLevelId = 1,
+                CorrectAnswers = 0,
+                ConsecutiveDays = 0,
+                LastLoginAt = DateTime.UtcNow
+            };
+            
+            var student = await _studentService.CreateAsync(newStudent);
+            
+            // ChildAccountにStudentIdを設定
+            await _childAccountService.UpdateStudentIdAsync(request.ChildAccountId, student.Id);
+            child.StudentId = student.Id;
+            
+            _logger.LogInformation("Student {StudentId} created and linked to child account {ChildId}", 
+                student.Id, request.ChildAccountId);
+        }
+
         // JWT トークン生成（既存のAuthServiceを再利用）
         var (token, expiresAt) = await _authService.GenerateChildTokenAsync(request.ChildAccountId, child.Name);
 
@@ -96,7 +124,8 @@ public class ChildAuthController : ControllerBase
             DisplayName = child.Name,
             Role = "Child",
             Token = token,
-            ExpiresAt = expiresAt
+            ExpiresAt = expiresAt,
+            StudentId = child.StudentId  // Student IDを追加
         });
     }
 }
