@@ -136,6 +136,7 @@
     private List<RewardDto> allRewards = new();
     private List<RewardDto> filteredRewards = new();
     private int currentPoints = 0;
+    private int? currentStudentId = null;
     private int activeTab = 0;
     private bool isLoading = true;
     private bool showExchangeDialog = false;
@@ -158,6 +159,7 @@
             var studentId = await TokenService.GetStudentIdAsync();
             if (studentId.HasValue)
             {
+                currentStudentId = studentId.Value;
                 var student = await StudentApi.GetByIdAsync(studentId.Value);
                 if (student != null)
                 {
@@ -226,12 +228,20 @@
     {
         if (selectedReward == null) return;
 
+        // studentIdが取得できていない場合はエラー
+        if (!currentStudentId.HasValue)
+        {
+            exchangeSuccess = false;
+            exchangeMessage = "ログイン情報が取得できませんでした。";
+            return;
+        }
+
         isExchanging = true;
         exchangeMessage = "";
 
         try
         {
-            var response = await RewardApi.ExchangeRewardAsync(selectedReward.Id, 1); // Demo: student ID = 1
+            var response = await RewardApi.ExchangeRewardAsync(selectedReward.Id, currentStudentId.Value);
 
             if (response != null && response.Success)
             {
