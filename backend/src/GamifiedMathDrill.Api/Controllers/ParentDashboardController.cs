@@ -33,10 +33,21 @@ public class ParentDashboardController : ControllerBase
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
+                _logger.LogWarning("User ID not found in claims");
                 return Unauthorized(new { message = "ユーザーIDが見つかりません。" });
             }
 
+            _logger.LogInformation("Getting dashboard summary for user {UserId}", userId);
             var summary = await _dashboardService.GetDashboardSummaryAsync(userId);
+
+            _logger.LogInformation(
+                "Dashboard summary retrieved: PendingRequests={PendingRequests}, Children={Children}, RecentRequests={RecentRequests}, TotalRewards={TotalRewards}, ActiveRewards={ActiveRewards}",
+                summary.PendingRequestsCount,
+                summary.Children.Count,
+                summary.RecentRequests.Count,
+                summary.TotalRewardsCreated,
+                summary.ActiveRewardsCount
+            );
 
             var dto = new DashboardSummaryDto
             {

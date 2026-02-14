@@ -152,7 +152,7 @@ public class ChildAccountService : IChildAccountService
         var student = new Student
         {
             Name = user.DisplayName,
-            ParentUserId = user.Id,
+            ParentUserId = parentId,  // 保護者のUserIdを設定
             AvatarUrl = user.AvatarUrl
         };
 

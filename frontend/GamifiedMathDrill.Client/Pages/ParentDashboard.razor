@@ -242,10 +242,24 @@
         try
         {
             summary = await DashboardApi.GetDashboardSummaryAsync();
+            if (summary != null)
+            {
+                Console.WriteLine($"Dashboard loaded successfully:");
+                Console.WriteLine($"  PendingRequestsCount: {summary.PendingRequestsCount}");
+                Console.WriteLine($"  Children.Count: {summary.Children.Count}");
+                Console.WriteLine($"  RecentRequests.Count: {summary.RecentRequests.Count}");
+                Console.WriteLine($"  TotalRewardsCreated: {summary.TotalRewardsCreated}");
+                Console.WriteLine($"  ActiveRewardsCount: {summary.ActiveRewardsCount}");
+            }
+            else
+            {
+                Console.WriteLine("Dashboard summary is null");
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading dashboard: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
         }
         finally
         {

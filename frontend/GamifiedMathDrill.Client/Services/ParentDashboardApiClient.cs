@@ -25,11 +25,25 @@ public class ParentDashboardApiClient
         try
         {
             await SetAuthorizationHeaderAsync();
-            return await _httpClient.GetFromJsonAsync<DashboardSummaryDto>("api/parent/dashboard");
+            Console.WriteLine("Calling API: api/parent/dashboard");
+            var result = await _httpClient.GetFromJsonAsync<DashboardSummaryDto>("api/parent/dashboard");
+            Console.WriteLine($"API Response: {(result != null ? "Success" : "Null")}");
+            if (result != null)
+            {
+                Console.WriteLine($"  PendingRequestsCount: {result.PendingRequestsCount}");
+                Console.WriteLine($"  Children.Count: {result.Children?.Count ?? 0}");
+                Console.WriteLine($"  RecentRequests.Count: {result.RecentRequests?.Count ?? 0}");
+            }
+            return result;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error getting dashboard summary: {ex.Message}");
+            Console.WriteLine($"Exception type: {ex.GetType().Name}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            }
             return null;
         }
     }
