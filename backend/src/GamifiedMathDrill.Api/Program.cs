@@ -167,14 +167,17 @@ if (app.Environment.EnvironmentName != "Testing")
 // Configure the HTTP request pipeline.
 app.UseErrorHandling();
 
-// Request/response logging for debugging tests
-app.Use(async (context, next) =>
+// Request/response logging for debugging tests (Testing environment only)
+if (app.Environment.IsEnvironment("Testing"))
 {
-    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-    logger.LogInformation("Incoming request {Method} {Path}", context.Request.Method, context.Request.Path);
-    await next();
-    logger.LogInformation("Outgoing response {StatusCode} for {Path} (Content-Length: {Length})", context.Response.StatusCode, context.Request.Path, context.Response.ContentLength);
-});
+    app.Use(async (context, next) =>
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Incoming request {Method} {Path}", context.Request.Method, context.Request.Path);
+        await next();
+        logger.LogInformation("Outgoing response {StatusCode} for {Path} (Content-Length: {Length})", context.Response.StatusCode, context.Request.Path, context.Response.ContentLength);
+    });
+}
 
 // Security headers
 app.Use(async (context, next) =>

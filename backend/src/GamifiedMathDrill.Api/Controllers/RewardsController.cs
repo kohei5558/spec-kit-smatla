@@ -199,9 +199,9 @@ public class RewardsController : ControllerBase
                 {
                     rowVersionBytes = Convert.FromBase64String(request.RowVersion);
                 }
-                catch
+                catch (FormatException)
                 {
-                    rowVersionBytes = null;
+                    return BadRequest(new { message = "Invalid RowVersion format. Expected Base64 string." });
                 }
             }
 

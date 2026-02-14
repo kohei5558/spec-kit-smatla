@@ -44,7 +44,6 @@ public class ExchangeRequestsController : ControllerBase
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.LogInformation("CreateRequest called by user {UserId} with payload: {@Request}", userId, request);
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized(new { message = "ユーザー情報が取得できません。" });
@@ -333,7 +332,7 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = exchangeRequest.Student?.Name ?? "",
                 RewardId = exchangeRequest.RewardId,
                 RewardName = exchangeRequest.Reward?.Name ?? "",
-                RewardImageUrl = exchangeRequest.Reward?.ImageUrl,
+                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : $"{Request.Scheme}://{Request.Host}{exchangeRequest.Reward!.ImageUrl}",
                 RequiredPoints = exchangeRequest.RequiredPoints,
                 Status = exchangeRequest.Status,
                 RequestedAt = exchangeRequest.RequestedAt,
