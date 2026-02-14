@@ -60,6 +60,13 @@ public class RewardService : IRewardService
         reward.UpdatedAt = DateTime.UtcNow;
         reward.IsActive = true;
 
+        // Ensure RowVersion is initialized for databases that don't auto-generate rowversion (e.g., SQLite)
+        if (reward.RowVersion == null)
+        {
+            var ticks = DateTime.UtcNow.Ticks;
+            reward.RowVersion = BitConverter.GetBytes(ticks);
+        }
+
         return await _rewardRepository.AddAsync(reward);
     }
 

@@ -66,8 +66,13 @@ public class ExchangeRequestsController : ControllerBase
             var studentId = student.Id;
             _logger.LogInformation($"Found student {studentId} for user {user.DisplayName}");
 
+            _logger.LogInformation("Creating exchange request for student {StudentId}, reward {RewardId}", studentId, request.RewardId);
+
             var exchangeRequest = await _exchangeRequestService.CreateRequestAsync(studentId, request.RewardId);
 
+            _logger.LogInformation("ExchangeRequest created: {RequestId} for student {StudentId}", exchangeRequest.Id, exchangeRequest.StudentId);
+
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
             var dto = new ExchangeRequestDto
             {
                 Id = exchangeRequest.Id,
@@ -75,7 +80,7 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = exchangeRequest.Student?.Name ?? "",
                 RewardId = exchangeRequest.RewardId,
                 RewardName = exchangeRequest.Reward?.Name ?? "",
-                RewardImageUrl = exchangeRequest.Reward?.ImageUrl,
+                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : $"{baseUrl}{exchangeRequest.Reward!.ImageUrl}",
                 RequiredPoints = exchangeRequest.RequiredPoints,
                 Status = exchangeRequest.Status,
                 RequestedAt = exchangeRequest.RequestedAt
@@ -130,6 +135,7 @@ public class ExchangeRequestsController : ControllerBase
 
             var requests = await _exchangeRequestService.GetRequestsByStudentAsync(studentId);
 
+            var baseUrlMy = $"{Request.Scheme}://{Request.Host}";
             var dtos = requests.Select(er => new ExchangeRequestDto
             {
                 Id = er.Id,
@@ -137,7 +143,7 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = er.Student?.Name ?? "",
                 RewardId = er.RewardId,
                 RewardName = er.Reward?.Name ?? "",
-                RewardImageUrl = er.Reward?.ImageUrl,
+                RewardImageUrl = string.IsNullOrEmpty(er.Reward?.ImageUrl) ? null : $"{baseUrlMy}{er.Reward!.ImageUrl}",
                 RequiredPoints = er.RequiredPoints,
                 Status = er.Status,
                 RequestedAt = er.RequestedAt,
@@ -179,7 +185,7 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = request.Student?.Name ?? "",
                 RewardId = request.RewardId,
                 RewardName = request.Reward?.Name ?? "",
-                RewardImageUrl = request.Reward?.ImageUrl,
+                RewardImageUrl = string.IsNullOrEmpty(request.Reward?.ImageUrl) ? null : $"{Request.Scheme}://{Request.Host}{request.Reward!.ImageUrl}",
                 RequiredPoints = request.RequiredPoints,
                 Status = request.Status,
                 RequestedAt = request.RequestedAt,
@@ -277,7 +283,7 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = exchangeRequest.Student?.Name ?? "",
                 RewardId = exchangeRequest.RewardId,
                 RewardName = exchangeRequest.Reward?.Name ?? "",
-                RewardImageUrl = exchangeRequest.Reward?.ImageUrl,
+                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : $"{Request.Scheme}://{Request.Host}{exchangeRequest.Reward!.ImageUrl}",
                 RequiredPoints = exchangeRequest.RequiredPoints,
                 Status = exchangeRequest.Status,
                 RequestedAt = exchangeRequest.RequestedAt,
@@ -326,7 +332,7 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = exchangeRequest.Student?.Name ?? "",
                 RewardId = exchangeRequest.RewardId,
                 RewardName = exchangeRequest.Reward?.Name ?? "",
-                RewardImageUrl = exchangeRequest.Reward?.ImageUrl,
+                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : $"{Request.Scheme}://{Request.Host}{exchangeRequest.Reward!.ImageUrl}",
                 RequiredPoints = exchangeRequest.RequiredPoints,
                 Status = exchangeRequest.Status,
                 RequestedAt = exchangeRequest.RequestedAt,
@@ -364,6 +370,7 @@ public class ExchangeRequestsController : ControllerBase
             // TODO: 保護者の子供のみフィルタリング
             var requests = await _exchangeRequestRepository.GetAllAsync();
 
+            var baseUrlAll = $"{Request.Scheme}://{Request.Host}";
             var dtos = requests.Select(er => new ExchangeRequestDto
             {
                 Id = er.Id,
@@ -371,7 +378,7 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = er.Student?.Name ?? "",
                 RewardId = er.RewardId,
                 RewardName = er.Reward?.Name ?? "",
-                RewardImageUrl = er.Reward?.ImageUrl,
+                RewardImageUrl = string.IsNullOrEmpty(er.Reward?.ImageUrl) ? null : $"{baseUrlAll}{er.Reward!.ImageUrl}",
                 RequiredPoints = er.RequiredPoints,
                 Status = er.Status,
                 RequestedAt = er.RequestedAt,

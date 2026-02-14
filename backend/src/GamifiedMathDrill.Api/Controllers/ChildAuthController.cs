@@ -10,6 +10,7 @@ namespace GamifiedMathDrill.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/auth/child")]
+[Route("api/auth/child-login")]
 public class ChildAuthController : ControllerBase
 {
     private readonly IChildAccountService _childAccountService;
@@ -33,8 +34,11 @@ public class ChildAuthController : ControllerBase
     /// 子供ログイン（PINコード認証）
     /// </summary>
     [HttpPost("login")]
+    [HttpPost("/api/auth/child-login")]
     public async Task<ActionResult<LoginResponse>> LoginAsync([FromBody] ChildLoginRequest request)
     {
+        _logger.LogInformation("Child login request received for ChildId {ChildId}", request.ChildAccountId);
+
         if (string.IsNullOrEmpty(request.ChildAccountId) || string.IsNullOrEmpty(request.PIN))
         {
             return BadRequest(new { message = "子供アカウントIDとPINは必須です" });
@@ -65,7 +69,7 @@ public class ChildAuthController : ControllerBase
         var isLockedOut = await _childAccountService.IsLockedOutAsync(request.ChildAccountId);
         if (isLockedOut)
         {
-            _logger.LogWarning("Child account {ChildId} is locked out", request.ChildAccountId);
+            _logger.LogWarning("Child account is locked out");
             return StatusCode(429, new LoginResponse
             {
                 Success = false,
@@ -77,7 +81,7 @@ public class ChildAuthController : ControllerBase
         var isValidPin = await _childAccountService.VerifyPinAsync(request.ChildAccountId, request.PIN);
         if (!isValidPin)
         {
-            _logger.LogWarning("Invalid PIN attempt for child account {ChildId}", request.ChildAccountId);
+            _logger.LogWarning("Invalid PIN attempt for child account");
             await _childAccountService.RecordFailedPinAttemptAsync(request.ChildAccountId);
             
             return Unauthorized(new LoginResponse
@@ -90,7 +94,7 @@ public class ChildAuthController : ControllerBase
         // StudentIdが0の場合、自動的にStudentを作成して紐付ける
         if (child.StudentId == 0)
         {
-            _logger.LogInformation("Creating Student for child account {ChildId}", request.ChildAccountId);
+            _logger.LogInformation("Creating Student for child account");
             
             var newStudent = new GamifiedMathDrill.Core.Models.Student
             {
@@ -108,14 +112,13 @@ public class ChildAuthController : ControllerBase
             await _childAccountService.UpdateStudentIdAsync(request.ChildAccountId, student.Id);
             child.StudentId = student.Id;
             
-            _logger.LogInformation("Student {StudentId} created and linked to child account {ChildId}", 
-                student.Id, request.ChildAccountId);
+            _logger.LogInformation("Student created and linked to child account");
         }
 
         // JWT トークン生成（既存のAuthServiceを再利用）
         var (token, expiresAt) = await _authService.GenerateChildTokenAsync(request.ChildAccountId, child.Name);
 
-        _logger.LogInformation("Child account {ChildId} logged in successfully", request.ChildAccountId);
+        _logger.LogInformation("Child account logged in successfully");
 
         return Ok(new LoginResponse
         {
@@ -137,7 +140,9 @@ public class ChildLoginRequest
 {
     /// <summary>
     /// 子供アカウントID
+    /// テストのペイロードでは `ChildId` を使っているため、JSONプロパティ名を合わせる
     /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("ChildId")]
     public string ChildAccountId { get; set; } = string.Empty;
 
     /// <summary>

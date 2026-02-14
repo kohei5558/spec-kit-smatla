@@ -258,6 +258,22 @@
 
             if (IsEditMode && Id.HasValue)
             {
+                // Ensure we have RowVersion; if it's null (e.g., stale UI), fetch latest
+                if (model.RowVersion == null)
+                {
+                    try
+                    {
+                        var latest = await RewardApi.GetRewardByIdAsync(Id.Value);
+                        if (latest != null)
+                        {
+                            model.RowVersion = latest.RowVersion;
+                        }
+                    }
+                    catch
+                    {
+                        // ignore and let server validation handle missing RowVersion
+                    }
+                }
                 // Update existing reward
                 var result = await RewardApi.UpdateRewardAsync(
                     Id.Value,

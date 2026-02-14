@@ -12,11 +12,13 @@ namespace GamifiedMathDrill.Api.Controllers;
 public class RewardsController : ControllerBase
 {
     private readonly IRewardService _rewardService;
+    private readonly IExchangeRequestService _exchangeRequestService;
     private readonly ILogger<RewardsController> _logger;
 
-    public RewardsController(IRewardService rewardService, ILogger<RewardsController> logger)
+    public RewardsController(IRewardService rewardService, IExchangeRequestService exchangeRequestService, ILogger<RewardsController> logger)
     {
         _rewardService = rewardService;
+        _exchangeRequestService = exchangeRequestService;
         _logger = logger;
     }
 
@@ -37,6 +39,7 @@ public class RewardsController : ControllerBase
                 rewards = rewards.Where(r => r.IsActive);
             }
 
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
             var responseDtos = rewards.Select(r => new RewardDto
             {
                 Id = r.Id,
@@ -44,7 +47,7 @@ public class RewardsController : ControllerBase
                 Description = r.Description ?? string.Empty,
                 RequiredPoints = r.RequiredPoints,
                 Category = r.Category,
-                ImageUrl = r.ImageUrl,
+                ImageUrl = string.IsNullOrEmpty(r.ImageUrl) ? null : $"{baseUrl}{r.ImageUrl}",
                 Stock = r.Stock,
                 IsPhysical = r.IsPhysical,
                 CreatedBy = r.CreatedBy,
@@ -75,6 +78,7 @@ public class RewardsController : ControllerBase
                 return NotFound(new { message = "景品が見つかりません。" });
             }
 
+            var baseUrlSingle = $"{Request.Scheme}://{Request.Host}";
             var dto = new RewardDto
             {
                 Id = reward.Id,
@@ -82,7 +86,7 @@ public class RewardsController : ControllerBase
                 Description = reward.Description ?? string.Empty,
                 RequiredPoints = reward.RequiredPoints,
                 Category = reward.Category,
-                ImageUrl = reward.ImageUrl,
+                ImageUrl = string.IsNullOrEmpty(reward.ImageUrl) ? null : $"{baseUrlSingle}{reward.ImageUrl}",
                 Stock = reward.Stock,
                 IsPhysical = reward.IsPhysical,
                 CreatedBy = reward.CreatedBy,
@@ -139,6 +143,7 @@ public class RewardsController : ControllerBase
                 createdReward = await _rewardService.CreateRewardAsync(reward, null, null, null, userId);
             }
 
+            var baseUrlCreated = $"{Request.Scheme}://{Request.Host}";
             var dto = new RewardDto
             {
                 Id = createdReward.Id,
@@ -146,7 +151,7 @@ public class RewardsController : ControllerBase
                 Description = createdReward.Description ?? string.Empty,
                 RequiredPoints = createdReward.RequiredPoints,
                 Category = createdReward.Category,
-                ImageUrl = createdReward.ImageUrl,
+                ImageUrl = string.IsNullOrEmpty(createdReward.ImageUrl) ? null : $"{baseUrlCreated}{createdReward.ImageUrl}",
                 Stock = createdReward.Stock,
                 IsPhysical = createdReward.IsPhysical,
                 CreatedBy = createdReward.CreatedBy,
@@ -187,6 +192,19 @@ public class RewardsController : ControllerBase
                 return Unauthorized(new { message = "ユーザー情報が取得できません。" });
             }
 
+            byte[]? rowVersionBytes = null;
+            if (!string.IsNullOrEmpty(request.RowVersion))
+            {
+                try
+                {
+                    rowVersionBytes = Convert.FromBase64String(request.RowVersion);
+                }
+                catch (FormatException)
+                {
+                    return BadRequest(new { message = "Invalid RowVersion format. Expected Base64 string." });
+                }
+            }
+
             var reward = new Reward
             {
                 Name = request.Name,
@@ -196,7 +214,7 @@ public class RewardsController : ControllerBase
                 IsPhysical = request.IsPhysical,
                 Stock = request.Stock,
                 IsActive = request.IsActive,
-                RowVersion = request.RowVersion
+                RowVersion = rowVersionBytes
             };
 
             Reward updatedReward;
@@ -210,6 +228,7 @@ public class RewardsController : ControllerBase
                 updatedReward = await _rewardService.UpdateRewardAsync(id, reward, null, null, null, userId);
             }
 
+            var baseUrlUpdated = $"{Request.Scheme}://{Request.Host}";
             var dto = new RewardDto
             {
                 Id = updatedReward.Id,
@@ -217,7 +236,7 @@ public class RewardsController : ControllerBase
                 Description = updatedReward.Description ?? string.Empty,
                 RequiredPoints = updatedReward.RequiredPoints,
                 Category = updatedReward.Category,
-                ImageUrl = updatedReward.ImageUrl,
+                ImageUrl = string.IsNullOrEmpty(updatedReward.ImageUrl) ? null : $"{baseUrlUpdated}{updatedReward.ImageUrl}",
                 Stock = updatedReward.Stock,
                 IsPhysical = updatedReward.IsPhysical,
                 CreatedBy = updatedReward.CreatedBy,
@@ -280,6 +299,36 @@ public class RewardsController : ControllerBase
             if (request.StudentId <= 0)
             {
                 return BadRequest(new { message = "無効な生徒IDです。" });
+            }
+
+            // If the reward requires parent approval (physical items), create an exchange request
+            var reward = await _rewardService.GetRewardByIdAsync(id);
+            if (reward == null)
+            {
+                return NotFound(new { message = "景品が見つかりません。" });
+            }
+
+            if (reward.IsPhysical)
+            {
+                try
+                {
+                    var exchangeRequest = await _exchangeRequestService.CreateRequestAsync(request.StudentId, id);
+
+                    var resp = new ExchangeRewardResponseDto
+                    {
+                        Success = true,
+                        Message = "交換申請を送信しました。保護者の承認をお待ちください。",
+                        AcquiredRewardId = 0,
+                        PointsSpent = 0,
+                        AcquiredAt = DateTime.MinValue
+                    };
+
+                    return Accepted(resp);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return BadRequest(new { message = ex.Message });
+                }
             }
 
             var (success, message, acquiredReward) = await _rewardService.ExchangeRewardAsync(request.StudentId, id);

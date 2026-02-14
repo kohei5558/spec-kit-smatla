@@ -11,15 +11,18 @@ public class ExchangeRequestService : IExchangeRequestService
     private readonly IExchangeRequestRepository _exchangeRequestRepository;
     private readonly IRewardRepository _rewardRepository;
     private readonly IStudentRepository _studentRepository;
+    private readonly IAcquiredRewardRepository _acquiredRewardRepository;
 
     public ExchangeRequestService(
         IExchangeRequestRepository exchangeRequestRepository,
         IRewardRepository rewardRepository,
-        IStudentRepository studentRepository)
+        IStudentRepository studentRepository,
+        IAcquiredRewardRepository acquiredRewardRepository)
     {
         _exchangeRequestRepository = exchangeRequestRepository;
         _rewardRepository = rewardRepository;
         _studentRepository = studentRepository;
+        _acquiredRewardRepository = acquiredRewardRepository;
     }
 
     public async Task<ExchangeRequest> CreateRequestAsync(int studentId, int rewardId)
@@ -158,7 +161,21 @@ public class ExchangeRequestService : IExchangeRequestService
         request.ApprovedBy = approverId;
         request.ParentNote = parentNote;
 
-        return await _exchangeRequestRepository.UpdateAsync(request);
+        var updatedRequest = await _exchangeRequestRepository.UpdateAsync(request);
+
+        // 承認時に獲得商品を作成（保護者承認後に表示されるべきレコード）
+        var acquiredReward = new AcquiredReward
+        {
+            StudentId = request.StudentId,
+            RewardId = request.RewardId,
+            PointsSpent = request.RequiredPoints,
+            AcquiredAt = DateTime.UtcNow,
+            Reward = request.Reward
+        };
+
+        await _acquiredRewardRepository.AddAsync(acquiredReward);
+
+        return updatedRequest;
     }
 
     public async Task<ExchangeRequest> RejectRequestAsync(int requestId, string reason, string? parentNote)

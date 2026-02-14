@@ -3,6 +3,7 @@
 @using GamifiedMathDrill.Client.Services
 @inject RewardApiClient RewardApi
 @inject NavigationManager Navigation
+@inject TokenService TokenService
 
 <PageTitle>獲得景品 - 計算ドリル</PageTitle>
 
@@ -94,8 +95,14 @@
         isLoading = true;
         try
         {
-            // Demo: student ID = 1
-            acquiredRewards = await RewardApi.GetAcquiredRewardsAsync(1);
+            var studentId = await TokenService.GetStudentIdAsync();
+            if (!studentId.HasValue)
+            {
+                acquiredRewards = new();
+                return;
+            }
+
+            acquiredRewards = await RewardApi.GetAcquiredRewardsAsync(studentId.Value);
         }
         catch (Exception ex)
         {

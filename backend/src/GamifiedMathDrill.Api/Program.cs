@@ -167,6 +167,18 @@ if (app.Environment.EnvironmentName != "Testing")
 // Configure the HTTP request pipeline.
 app.UseErrorHandling();
 
+// Request/response logging for debugging tests (Testing environment only)
+if (app.Environment.IsEnvironment("Testing"))
+{
+    app.Use(async (context, next) =>
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Incoming request {Method} {Path}", context.Request.Method, context.Request.Path);
+        await next();
+        logger.LogInformation("Outgoing response {StatusCode} for {Path} (Content-Length: {Length})", context.Response.StatusCode, context.Request.Path, context.Response.ContentLength);
+    });
+}
+
 // Security headers
 app.Use(async (context, next) =>
 {
@@ -195,7 +207,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// In testing environment we avoid HTTPS redirection to prevent redirect responses
+// (which can produce empty bodies in test clients when HTTPS port is not configured).
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.UseHttpsRedirection();
+}
+
+// Serve static files from wwwroot (uploads, etc.)
+app.UseStaticFiles();
 
 app.UseCors("AllowBlazorClient");
 

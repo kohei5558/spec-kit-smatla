@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace GamifiedMathDrill.Client.Models;
 
 /// <summary>
@@ -7,7 +9,9 @@ public class ChildLoginRequest
 {
     /// <summary>
     /// 子供のアカウントID
+    /// Backend expects JSON property `ChildId` so map accordingly.
     /// </summary>
+    [JsonPropertyName("ChildId")]
     public string ChildAccountId { get; set; } = string.Empty;
     
     /// <summary>
