@@ -1751,7 +1751,7 @@
     ]
   },
   "packageFolders": {
-    "/home/runner/.nuget/packages/": {}
+    "/tmp/codeql-scratch-03e2c86d332f4e97/dbs/csharp/working/packages": {}
   },
   "project": {
     "version": "1.0.0",
@@ -1759,7 +1759,7 @@
       "projectUniqueName": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj",
       "projectName": "GamifiedMathDrill.Infrastructure",
       "projectPath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj",
-      "packagesPath": "/home/runner/.nuget/packages/",
+      "packagesPath": "/tmp/codeql-scratch-03e2c86d332f4e97/dbs/csharp/working/packages",
       "outputPath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
@@ -1837,6 +1837,16 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[8.0.25, 8.0.25]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[8.0.25, 8.0.25]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"

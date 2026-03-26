@@ -295,7 +295,7 @@ public class ChildAccountService : IChildAccountService
             .Select(g => new DailyActivity
             {
                 Date = g.Key,
-                ProblemsCount = g.Count()
+                ProblemsSolved = g.Count()
             })
             .OrderBy(a => a.Date)
             .ToListAsync();
@@ -312,7 +312,7 @@ public class ChildAccountService : IChildAccountService
             TotalPoints = student.TotalPoints,
             ConsecutiveDays = student.ConsecutiveDays,
             LastStudyDate = student.LastLoginAt,
-            RecentActivity = recentActivity
+            Last7DaysActivity = recentActivity
         };
     }
 
@@ -359,19 +359,15 @@ public class ChildAccountService : IChildAccountService
         var attemptsKey = $"pin_attempts_{childId}";
         var lockoutKey = $"pin_lockout_{childId}";
 
-        // キャッシュ競合を回避するため、GetOrCreateの戻り値をそのまま使用
+        // 現在の失敗回数を取得してインクリメント（初回は0→1）
         var attempts = _cache.GetOrCreate(attemptsKey, entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(5);
-            return 1; // 初回は1回目の失敗
+            return 0;
         });
 
-        // 既存の値がある場合はインクリメント
-        if (attempts > 0)
-        {
-            attempts++;
-            _cache.Set(attemptsKey, attempts, TimeSpan.FromMinutes(5));
-        }
+        attempts++;
+        _cache.Set(attemptsKey, attempts, TimeSpan.FromMinutes(5));
 
         if (attempts >= MaxPinAttempts)
         {
