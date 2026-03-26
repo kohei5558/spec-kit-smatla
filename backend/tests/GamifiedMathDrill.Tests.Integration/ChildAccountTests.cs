@@ -25,7 +25,7 @@ public class ChildAccountTests : AuthenticatedTestBase
 
         var createRequest = new ChildAccountCreateDto
         {
-            Name = "花子",
+            Name = "T032_花子",
             GradeLevel = 3,
             PresetAvatarId = 1,
             PIN = "5678"
@@ -39,7 +39,7 @@ public class ChildAccountTests : AuthenticatedTestBase
         var result = await response.Content.ReadFromJsonAsync<ChildAccountDto>();
         Assert.NotNull(result);
         Assert.NotEmpty(result.Id);
-        Assert.Equal("花子", result.Name);
+        Assert.Equal("T032_花子", result.Name);
         Assert.Equal(3, result.GradeLevel);
         Assert.True(result.IsActive);
         Assert.NotEmpty(result.AvatarUrl);
@@ -188,40 +188,55 @@ public class ChildAccountTests : AuthenticatedTestBase
         // Arrange
         await AuthenticateAsParentAsync();
 
-        // 10個のアカウントを作成
-        for (int i = 1; i <= 10; i++)
+        // 現在の子供アカウント数を取得
+        var existingResponse = await Client.GetAsync("/api/child-accounts");
+        var existingList = await existingResponse.Content.ReadFromJsonAsync<List<ChildAccountDto>>();
+        var existingCount = existingList?.Count ?? 0;
+        var remainingSlots = 10 - existingCount;
+
+        // 上限まで子供アカウントを作成
+        var createdIds = new List<string>();
+        for (int i = 1; i <= remainingSlots; i++)
         {
             var request = new ChildAccountCreateDto
             {
-                Name = $"子供{i}",
-                GradeLevel = i % 6 + 1,
-                PresetAvatarId = i % 15 + 1,
-                PIN = $"{i:D4}"
+                Name = $"Limit子供_{i}",
+                GradeLevel = (i % 6) + 1,
+                PresetAvatarId = (i % 5) + 1, // アバターは1-5のみ使用（テストDBに5件のみ存在）
+                PIN = $"{(7000 + i):D4}"
             };
 
             var createResponse = await Client.PostAsJsonAsync("/api/child-accounts", request);
-            if (i <= 10)
+            Assert.True(createResponse.IsSuccessStatusCode, $"Failed to create limit test account {i}");
+            var created = await createResponse.Content.ReadFromJsonAsync<ChildAccountDto>();
+            if (created != null && !string.IsNullOrEmpty(created.Id))
             {
-                Assert.True(createResponse.IsSuccessStatusCode, $"Failed to create account {i}");
+                createdIds.Add(created.Id);
             }
         }
 
-        // 11個目のアカウント作成を試みる
-        var eleventhRequest = new ChildAccountCreateDto
+        // 11個目のアカウント作成を試みる（上限超過）
+        var overLimitRequest = new ChildAccountCreateDto
         {
-            Name = "子供11",
+            Name = "Limit_超過テスト",
             GradeLevel = 1,
             PresetAvatarId = 1,
-            PIN = "1111"
+            PIN = "7099"
         };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/api/child-accounts", eleventhRequest);
+        var response = await Client.PostAsJsonAsync("/api/child-accounts", overLimitRequest);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var errorContent = await response.Content.ReadAsStringAsync();
         Assert.Contains("10件", errorContent);
+
+        // 後続テストのためにこのテストで作成したアカウントを削除
+        foreach (var id in createdIds)
+        {
+            await Client.DeleteAsync($"/api/child-accounts/{id}");
+        }
     }
 
     #endregion
@@ -274,34 +289,36 @@ public class ChildAccountTests : AuthenticatedTestBase
         // Arrange
         await AuthenticateAsParentAsync();
 
-        // 2つの子供アカウントを作成
+        // 2つの子供アカウントを作成（シード済みの「太郎」と重複しない名前を使用）
         var child1Request = new ChildAccountCreateDto
         {
-            Name = "太郎",
+            Name = "T042_太郎",
             GradeLevel = 1,
             PresetAvatarId = 1,
-            PIN = "1111"
+            PIN = "8111"
         };
         var child1Response = await Client.PostAsJsonAsync("/api/child-accounts", child1Request);
         var child1 = await child1Response.Content.ReadFromJsonAsync<ChildAccountDto>();
 
         var child2Request = new ChildAccountCreateDto
         {
-            Name = "花子",
+            Name = "T042_花子",
             GradeLevel = 2,
             PresetAvatarId = 2,
-            PIN = "2222"
+            PIN = "8222"
         };
         var child2Response = await Client.PostAsJsonAsync("/api/child-accounts", child2Request);
         var child2 = await child2Response.Content.ReadFromJsonAsync<ChildAccountDto>();
 
         Assert.NotNull(child1);
         Assert.NotNull(child2);
+        Assert.NotEmpty(child1.Id);
+        Assert.NotEmpty(child2.Id);
 
         // child2の名前をchild1と同じにしようとする
         var updateRequest = new ChildAccountUpdateDto
         {
-            Name = "太郎",
+            Name = "T042_太郎",
             GradeLevel = 2,
             PresetAvatarId = 2,
             NewPIN = null
@@ -314,6 +331,18 @@ public class ChildAccountTests : AuthenticatedTestBase
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var errorContent = await response.Content.ReadAsStringAsync();
         Assert.Contains("既に存在", errorContent);
+
+        // 後続テストのためにこのテストで作成したアカウントを削除（共有DBのアカウント上限対策）
+        if (!string.IsNullOrEmpty(child1.Id))
+        {
+            var del1 = await Client.DeleteAsync($"/api/child-accounts/{child1.Id}");
+            Assert.Equal(HttpStatusCode.NoContent, del1.StatusCode);
+        }
+        if (!string.IsNullOrEmpty(child2.Id))
+        {
+            var del2 = await Client.DeleteAsync($"/api/child-accounts/{child2.Id}");
+            Assert.Equal(HttpStatusCode.NoContent, del2.StatusCode);
+        }
     }
 
     #endregion

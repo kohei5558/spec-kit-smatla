@@ -37,7 +37,7 @@ public class ChildAuthController : ControllerBase
     [HttpPost("/api/auth/child-login")]
     public async Task<ActionResult<LoginResponse>> LoginAsync([FromBody] ChildLoginRequest request)
     {
-        _logger.LogInformation("Child login request received for ChildId {ChildId}", request.ChildAccountId);
+        _logger.LogInformation("Child login request received for ChildAccountId {ChildAccountId}", request.ChildAccountId);
 
         if (string.IsNullOrEmpty(request.ChildAccountId) || string.IsNullOrEmpty(request.PIN))
         {
@@ -73,7 +73,7 @@ public class ChildAuthController : ControllerBase
             return StatusCode(429, new LoginResponse
             {
                 Success = false,
-                ErrorMessage = "3回間違えました。5分後に再度お試しください"
+                ErrorMessage = "3回間違えました。アカウントがロックされました。5分後に再度お試しください"
             });
         }
 
@@ -140,9 +140,7 @@ public class ChildLoginRequest
 {
     /// <summary>
     /// 子供アカウントID
-    /// テストのペイロードでは `ChildId` を使っているため、JSONプロパティ名を合わせる
     /// </summary>
-    [System.Text.Json.Serialization.JsonPropertyName("ChildId")]
     public string ChildAccountId { get; set; } = string.Empty;
 
     /// <summary>

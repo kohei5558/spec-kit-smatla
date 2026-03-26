@@ -38,7 +38,7 @@ public class ChildLearningStatsDto
     /// <summary>
     /// 過去7日間のアクティビティ
     /// </summary>
-    public List<DailyActivity> RecentActivity { get; set; } = new();
+    public List<DailyActivity> Last7DaysActivity { get; set; } = new();
 }
 
 /// <summary>
@@ -54,5 +54,5 @@ public class DailyActivity
     /// <summary>
     /// 解いた問題数
     /// </summary>
-    public int ProblemsCount { get; set; }
+    public int ProblemsSolved { get; set; }
 }

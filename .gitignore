@@ -63,3 +63,9 @@ Thumbs.db
 
 # Uploads
 wwwroot/uploads/
+backend/src/*/bin/
+backend/src/*/obj/
+backend/tests/*/bin/
+backend/tests/*/obj/
+frontend/*/bin/
+frontend/*/obj/
