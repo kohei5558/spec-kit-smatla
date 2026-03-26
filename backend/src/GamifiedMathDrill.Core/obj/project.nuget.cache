@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "04LWyv+4rLA=",
+  "dgSpecHash": "/pR5MF+WdWg=",
   "success": true,
-  "projectFilePath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj",
+  "projectFilePath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj": {}
+    "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj": {}
   },
   "projects": {
-    "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj": {
+    "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj",
+        "projectUniqueName": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj",
         "projectName": "GamifiedMathDrill.Api",
-        "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj",
-        "packagesPath": "/Users/murayama/.nuget/packages/",
-        "outputPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/obj/",
+        "projectPath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/GamifiedMathDrill.Api.csproj",
+        "packagesPath": "/home/runner/.nuget/packages/",
+        "outputPath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Api/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/murayama/.nuget/NuGet/NuGet.Config"
+          "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -26,11 +26,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj": {
-                "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj"
+              "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj": {
+                "projectPath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj"
               },
-              "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj": {
-                "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj"
+              "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj": {
+                "projectPath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj"
               }
             }
           }
@@ -44,7 +44,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -104,21 +105,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj": {
+    "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj",
+        "projectUniqueName": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj",
         "projectName": "GamifiedMathDrill.Core",
-        "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj",
-        "packagesPath": "/Users/murayama/.nuget/packages/",
-        "outputPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/obj/",
+        "projectPath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj",
+        "packagesPath": "/home/runner/.nuget/packages/",
+        "outputPath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/murayama/.nuget/NuGet/NuGet.Config"
+          "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -141,7 +142,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -162,21 +164,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj": {
+    "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj",
+        "projectUniqueName": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj",
         "projectName": "GamifiedMathDrill.Infrastructure",
-        "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj",
-        "packagesPath": "/Users/murayama/.nuget/packages/",
-        "outputPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/obj/",
+        "projectPath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/GamifiedMathDrill.Infrastructure.csproj",
+        "packagesPath": "/home/runner/.nuget/packages/",
+        "outputPath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Infrastructure/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/murayama/.nuget/NuGet/NuGet.Config"
+          "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -188,8 +190,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj": {
-                "projectPath": "/Users/murayama/dev/ai/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj"
+              "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj": {
+                "projectPath": "/home/runner/work/spec-kit-smatla/spec-kit-smatla/backend/src/GamifiedMathDrill.Core/GamifiedMathDrill.Core.csproj"
               }
             }
           }
@@ -203,7 +205,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -254,7 +257,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
