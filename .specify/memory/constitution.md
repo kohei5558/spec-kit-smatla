@@ -1,20 +1,17 @@
 <!--
 Sync Impact Report:
-Version: 0.0.0 → 1.0.0 (MAJOR - Initial Constitution)
-Modified Principles: N/A (initial creation)
-Added Sections:
-  - Core Principles (5 principles: User-Centric Design, Data Privacy & Child Safety, Specification-First Development, Test-Driven Quality, Continuous Learning & Adaptation)
-  - Technology Stack (ASP.NET Core, C#, online-only architecture, single-user model)
-  - Development Workflow (branching, review, documentation standards)
-  - Governance (amendment process, compliance verification)
+Version: 1.0.0 → 2.0.0 (MAJOR - Technology Stack の User Model を再定義)
+Modified Principles:
+  - Technology Stack / User Model: 「シングルユーザー専用（1 デバイス=1 児童）」→「1 家庭・複数児童（保護者が子供アカウントを管理）」
+    理由: 005-child-account-management で保護者1人が複数の子供アカウントを管理する設計を実装済みであり、実態に合わせる
+Added Sections: None
 Removed Sections: None
+Added Rules:
+  - Technology Stack: 子供の識別情報（名前・アバター等）は保護者の認証を経ない限り公開しない
 Templates Requiring Updates:
-  ✅ plan-template.md - Already includes "Constitution Check" section, no changes needed
-  ✅ spec-template.md - Already enforces spec-first principles (no implementation details, testable requirements), no changes needed
-  ✅ tasks-template.md - Already organized by user stories for independent testing, no changes needed
-  ✅ checklist-template.md - No changes needed (general quality checklist)
-  ✅ agent-file-template.md - No changes needed (agent guidance template)
-Follow-up TODOs: None - all placeholders filled, templates validated
+  ✅ plan-template.md / spec-template.md / tasks-template.md - User Model を直接参照していないため変更不要
+Follow-up TODOs:
+  - 認証なしで全子供アカウントを返す GET /api/child-accounts/public を新ルールに合わせて修正する
 -->
 
 # Gamified Math Drill App Constitution
@@ -103,7 +100,8 @@ Follow-up TODOs: None - all placeholders filled, templates validated
 - **Backend Framework**: ASP.NET Core
 - **Programming Language**: C#
 - **Architecture Style**: オンライン必須アーキテクチャ（インターネット接続が常に必要）
-- **User Model**: シングルユーザー専用（1 デバイス=1 児童）
+- **User Model**: 1 家庭・複数児童（保護者アカウントが子供アカウントを作成・管理し、子供は PIN でログインする）
+- **Child Identity Exposure**: 子供の識別情報（名前・アバター等）は、保護者の認証を経ない限り公開しない（子供のログイン画面も含む）
 
 **Guidelines:**
 
@@ -164,4 +162,4 @@ Follow-up TODOs: None - all placeholders filled, templates validated
 - 未文書化のローカルルール
 - 「いつもこうやってきた」という慣習
 
-**Version**: 1.0.0 | **Ratified**: 2025-12-30 | **Last Amended**: 2025-12-30
+**Version**: 2.0.0 | **Ratified**: 2025-12-30 | **Last Amended**: 2026-10-08
