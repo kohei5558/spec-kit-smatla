@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: |
+          dotnet restore backend/GamifiedMathDrill.sln
+          dotnet restore frontend/GamifiedMathDrill.Client
+
+      - name: Build backend
+        run: dotnet build backend/GamifiedMathDrill.sln --no-restore
+
+      - name: Build frontend
+        run: dotnet build frontend/GamifiedMathDrill.Client --no-restore
+
+      - name: Test
+        run: dotnet test backend/GamifiedMathDrill.sln --no-build --logger "console;verbosity=normal"
