@@ -42,7 +42,7 @@ public class ChildLoginTests : AuthenticatedTestBase
         // 子供ログインリクエスト
         var loginRequest = new
         {
-            ChildAccountId = childAccount.Id,
+            ChildId = childAccount.Id,
             PIN = "9876"
         };
 
@@ -84,7 +84,7 @@ public class ChildLoginTests : AuthenticatedTestBase
         // 間違ったPINでログイン
         var loginRequest = new
         {
-            ChildAccountId = childAccount.Id,
+            ChildId = childAccount.Id,
             PIN = "9999" // 間違ったPIN
         };
 
@@ -124,7 +124,7 @@ public class ChildLoginTests : AuthenticatedTestBase
         // 停止中のアカウントでログイン
         var loginRequest = new
         {
-            ChildAccountId = childAccount.Id,
+            ChildId = childAccount.Id,
             PIN = "5555"
         };
 
@@ -143,7 +143,7 @@ public class ChildLoginTests : AuthenticatedTestBase
         // Arrange
         var loginRequest = new
         {
-            ChildAccountId = "non-existent-id",
+            ChildId = "non-existent-id",
             PIN = "1234"
         };
 
@@ -179,7 +179,7 @@ public class ChildLoginTests : AuthenticatedTestBase
         // 子供でログイン
         var loginRequest = new
         {
-            ChildAccountId = childAccount.Id,
+            ChildId = childAccount.Id,
             PIN = "7777"
         };
 

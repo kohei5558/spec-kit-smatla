@@ -61,6 +61,12 @@ public class ProblemsController : ControllerBase
             return BadRequest(ApiResponse<ProblemDto>.ErrorResponse("Valid student ID is required."));
         }
 
+        // 自動ModelState検証は無効化されているため、不正なカテゴリ（バインド失敗・未定義の数値）をここで弾く
+        if (!ModelState.IsValid || (category.HasValue && !Enum.IsDefined(category.Value)))
+        {
+            return BadRequest(ApiResponse<ProblemDto>.ErrorResponse("Invalid category."));
+        }
+
         try
         {
             var problem = await _problemService.GetNextProblemAsync(studentId, excludeRecentIds, category);

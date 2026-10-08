@@ -25,7 +25,7 @@ public class ChildAccountTests : AuthenticatedTestBase
 
         var createRequest = new ChildAccountCreateDto
         {
-            Name = "花子",
+            Name = "作成テスト花子",
             GradeLevel = 3,
             PresetAvatarId = 1,
             PIN = "5678"
@@ -39,7 +39,7 @@ public class ChildAccountTests : AuthenticatedTestBase
         var result = await response.Content.ReadFromJsonAsync<ChildAccountDto>();
         Assert.NotNull(result);
         Assert.NotEmpty(result.Id);
-        Assert.Equal("花子", result.Name);
+        Assert.Equal("作成テスト花子", result.Name);
         Assert.Equal(3, result.GradeLevel);
         Assert.True(result.IsActive);
         Assert.NotEmpty(result.AvatarUrl);
@@ -188,28 +188,27 @@ public class ChildAccountTests : AuthenticatedTestBase
         // Arrange
         await AuthenticateAsParentAsync();
 
-        // 10個のアカウントを作成
-        for (int i = 1; i <= 10; i++)
+        // 同じクラスの他テストが同一保護者で作成したアカウントも上限に数えられるため、残り枠だけ作成して10件にする
+        var existing = await Client.GetFromJsonAsync<List<ChildAccountDto>>("/api/child-accounts");
+        var remaining = 10 - existing!.Count;
+        for (int i = 1; i <= remaining; i++)
         {
             var request = new ChildAccountCreateDto
             {
-                Name = $"子供{i}",
+                Name = $"上限テスト{i}",
                 GradeLevel = i % 6 + 1,
                 PresetAvatarId = i % 15 + 1,
-                PIN = $"{i:D4}"
+                PIN = $"{5000 + i}"
             };
 
             var createResponse = await Client.PostAsJsonAsync("/api/child-accounts", request);
-            if (i <= 10)
-            {
-                Assert.True(createResponse.IsSuccessStatusCode, $"Failed to create account {i}");
-            }
+            Assert.True(createResponse.IsSuccessStatusCode, $"Failed to create account {i}");
         }
 
         // 11個目のアカウント作成を試みる
         var eleventhRequest = new ChildAccountCreateDto
         {
-            Name = "子供11",
+            Name = "上限テスト11",
             GradeLevel = 1,
             PresetAvatarId = 1,
             PIN = "1111"
@@ -353,7 +352,7 @@ public class ChildAccountTests : AuthenticatedTestBase
         // 古いPINでログイン試行（失敗するはず）
         var oldPinLoginRequest = new
         {
-            ChildAccountId = createdChild.Id,
+            ChildId = createdChild.Id,
             PIN = "3333"
         };
         var oldPinResponse = await Client.PostAsJsonAsync("/api/auth/child/login", oldPinLoginRequest);
@@ -362,7 +361,7 @@ public class ChildAccountTests : AuthenticatedTestBase
         // 新しいPINでログイン試行（成功するはず）
         var newPinLoginRequest = new
         {
-            ChildAccountId = createdChild.Id,
+            ChildId = createdChild.Id,
             PIN = "9999"
         };
         var newPinResponse = await Client.PostAsJsonAsync("/api/auth/child/login", newPinLoginRequest);
@@ -408,7 +407,7 @@ public class ChildAccountTests : AuthenticatedTestBase
         // 元のPINでログイン試行（成功するはず）
         var loginRequest = new
         {
-            ChildAccountId = createdChild.Id,
+            ChildId = createdChild.Id,
             PIN = "4444"
         };
         var loginResponse = await Client.PostAsJsonAsync("/api/auth/child/login", loginRequest);

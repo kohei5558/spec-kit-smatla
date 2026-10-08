@@ -147,7 +147,7 @@ public static class AuthenticationHelper
             PIN = pin
         };
 
-        var response = await client.PostAsJsonAsync("/api/auth/child-login", loginRequest);
+        var response = await client.PostAsJsonAsync("/api/auth/child/login", loginRequest);
         response.EnsureSuccessStatusCode();
 
         var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();

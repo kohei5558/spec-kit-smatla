@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace GamifiedMathDrill.Api.DTOs;
 
 /// <summary>
@@ -6,8 +8,9 @@ namespace GamifiedMathDrill.Api.DTOs;
 public class ChildLoginRequest
 {
     /// <summary>
-    /// 子供のユーザーID
+    /// 子供アカウントID（JSON上のキーは "ChildId"。フロントエンドの ChildLoginRequest と一致させる）
     /// </summary>
+    [JsonPropertyName("ChildId")]
     public string ChildAccountId { get; set; } = string.Empty;
 
     /// <summary>
