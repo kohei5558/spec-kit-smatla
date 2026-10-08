@@ -1,5 +1,10 @@
 # Tasks: Authentication UI Pages
 
+> **棚卸し（2026-10-08）**: コードと突き合わせてチェックを更新。
+> - PR #1 でマージ済み（T139〜T141）。認証系 DTO には XML コメントあり（T127）
+> - bUnit テスト（T042/T043/T079〜T081/T105〜T107）は `frontend/tests` 自体が存在せず未着手
+> - Swagger 注釈（T126）、OpenAPI 照合（T128）、ルート README・CHANGELOG（T129/T131）、性能テスト（T135）は未着手
+
 **Feature Branch**: `004-auth-ui-pages`  
 **Input**: Design documents from `/specs/004-auth-ui-pages/`  
 **Prerequisites**: ✅ plan.md, ✅ spec.md, ✅ research.md, ✅ data-model.md, ✅ contracts/
@@ -283,7 +288,7 @@
 ### API Documentation
 
 - [ ] T126 [P] Update Swagger annotations for new endpoints in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
-- [ ] T127 [P] Add XML documentation comments to all new DTOs in backend/src/GamifiedMathDrill.Api/DTOs/
+- [x] T127 [P] Add XML documentation comments to all new DTOs in backend/src/GamifiedMathDrill.Api/DTOs/
 - [ ] T128 [P] Verify OpenAPI spec matches contracts/auth-api.yaml in backend/src/GamifiedMathDrill.Api/
 
 ### Developer Documentation
@@ -308,9 +313,9 @@
 - [x] T136 [P] Run `dotnet format` on all backend C# code in backend/
 - [x] T137 Fix any linter warnings or errors in backend code
 - [x] T138 Verify all tests pass: `dotnet test` in backend/
-- [ ] T139 Create pull request from `004-auth-ui-pages` to main branch
-- [ ] T140 Address code review feedback
-- [ ] T141 Squash and merge to main branch after approval
+- [x] T139 Create pull request from `004-auth-ui-pages` to main branch
+- [x] T140 Address code review feedback
+- [x] T141 Squash and merge to main branch after approval
 
 ---
 

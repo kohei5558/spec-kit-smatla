@@ -38,7 +38,7 @@ ASP.NET Core 10で実装されたゲーミフィケーション要素を持つ�
 **クエリパラメータ:**
 
 - `studentId` (int, 必須): 学習者ID
-- `calculationType` (string, オプション): 計算カテゴリ
+- `category` (string, オプション): 計算カテゴリ
   - `Addition`: 足し算
   - `Subtraction`: 引き算
   - `Multiplication`: 掛け算

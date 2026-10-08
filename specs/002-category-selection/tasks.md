@@ -1,5 +1,11 @@
 # Tasks: 問題カテゴリ選択機能
 
+> **棚卸し（2026-10-08）**: コードと突き合わせてチェックを更新。
+> - T012/T037/T038 は `CategorySelectionTests.cs`、T044/T045 は `CategoryPerformanceTests.cs` として実装済み（ファイル名は計画と異なる）
+> - T010/T011（単体テスト）は未作成。同等の振る舞いは結合テストで検証済み
+> - E2E テスト（T022〜T036、T043）は `frontend/tests` 自体が存在せず未着手
+> - T042（グラフ表示・任意）、T049（Swagger への XML コメント反映。`GenerateDocumentationFile` 未設定）は未着手
+
 **Feature**: 002-category-selection | **Branch**: `002-category-selection`  
 **Input**: Design documents from `/specs/002-category-selection/`  
 **Prerequisites**: plan.md ✅, spec.md ✅, research.md ✅, data-model.md ✅, contracts/ ✅, quickstart.md ✅
@@ -54,7 +60,7 @@
 
 ### Backend - 統合テスト（Foundational）
 
-- [ ] T012 [P] ProblemsController の category パラメータ付き API 呼び出しの統合テストを作成（backend/tests/GamifiedMathDrill.Tests.Integration/CategoryApiTests.cs）
+- [x] T012 [P] ProblemsController の category パラメータ付き API 呼び出しの統合テストを作成（backend/tests/GamifiedMathDrill.Tests.Integration/CategoryApiTests.cs）
 
 **Checkpoint**: 基盤完成 - ユーザーストーリーの実装を並列で開始可能
 
@@ -152,14 +158,14 @@
 
 ### Backend - カテゴリ別統計の取得確認
 
-- [ ] T037 [P] [US4] LearningRecordsController の calculationType パラメータが正しく機能することを確認（既存機能の検証）
-- [ ] T038 [P] [US4] カテゴリ別の学習履歴集計の統合テストを作成（backend/tests/GamifiedMathDrill.Tests.Integration/CategoryStatisticsTests.cs）
+- [x] T037 [P] [US4] LearningRecordsController の calculationType パラメータが正しく機能することを確認（既存機能の検証）
+- [x] T038 [P] [US4] カテゴリ別の学習履歴集計の統合テストを作成（backend/tests/GamifiedMathDrill.Tests.Integration/CategoryStatisticsTests.cs）
 
 ### Frontend - 結果画面の拡張
 
-- [ ] T039 [US4] ResultsPage.razor にカテゴリ別統計セクションを追加（frontend/GamifiedMathDrill.Client/Pages/ResultsPage.razor）
-- [ ] T040 [US4] 各カテゴリの正答率と取り組み回数を並列で取得（5 回の API 呼び出し：4 カテゴリ + すべて）
-- [ ] T041 [US4] カテゴリ別統計を MudDataGrid または MudSimpleTable で表形式表示
+- [x] T039 [US4] ResultsPage.razor にカテゴリ別統計セクションを追加（frontend/GamifiedMathDrill.Client/Pages/ResultsPage.razor）
+- [x] T040 [US4] 各カテゴリの正答率と取り組み回数を並列で取得（5 回の API 呼び出し：4 カテゴリ + すべて）
+- [x] T041 [US4] カテゴリ別統計を MudDataGrid または MudSimpleTable で表形式表示
 - [ ] T042 [US4] カテゴリ別統計を MudChart でグラフ形式表示（オプション：棒グラフまたは円グラフ）
 
 ### Frontend - E2E テスト（User Story 4）
@@ -176,17 +182,17 @@
 
 ### パフォーマンス最適化
 
-- [ ] T044 [P] カテゴリ選択から問題表示までの時間を測定し、2 秒以内であることを確認（SC-004）
-- [ ] T045 [P] カテゴリフィルタリングされた問題取得が 100ms 以内であることを確認（performance test）
+- [x] T044 [P] カテゴリ選択から問題表示までの時間を測定し、2 秒以内であることを確認（SC-004）
+- [x] T045 [P] カテゴリフィルタリングされた問題取得が 100ms 以内であることを確認（performance test）
 
 ### エラーハンドリング
 
-- [ ] T046 [P] 選択したカテゴリの問題が存在しない場合の適切なエラーメッセージを実装（backend/src/GamifiedMathDrill.Api/Controllers/ProblemsController.cs）
-- [ ] T047 [P] フロントエンドで API エラーを適切にハンドリングし、ユーザーにわかりやすいメッセージを表示（frontend/GamifiedMathDrill.Client/Pages/ProblemPage.razor）
+- [x] T046 [P] 選択したカテゴリの問題が存在しない場合の適切なエラーメッセージを実装（backend/src/GamifiedMathDrill.Api/Controllers/ProblemsController.cs）
+- [x] T047 [P] フロントエンドで API エラーを適切にハンドリングし、ユーザーにわかりやすいメッセージを表示（frontend/GamifiedMathDrill.Client/Pages/ProblemPage.razor）
 
 ### ドキュメント更新
 
-- [ ] T048 [P] README.md にカテゴリ選択機能の説明を追加（repository root）
+- [x] T048 [P] README.md にカテゴリ選択機能の説明を追加（repository root）
 - [ ] T049 [P] API ドキュメント（Swagger/OpenAPI）を更新し、category パラメータを記載
 
 ### 最終検証
