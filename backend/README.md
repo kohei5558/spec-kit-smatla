@@ -1,6 +1,6 @@
 # Gamified Math Drill - Backend
 
-ASP.NET Core 8.0で実装されたゲーミフィケーション要素を持つ算数ドリルアプリケーションのバックエンドAPI。
+ASP.NET Core 10で実装されたゲーミフィケーション要素を持つ算数ドリルアプリケーションのバックエンドAPI。
 
 ## 主な機能
 
@@ -227,9 +227,9 @@ backend/
 
 ## 技術スタック
 
-- **.NET 8.0**: 最新のLTSバージョン
+- **.NET 10**: LTSバージョン（2028年11月までサポート）
 - **ASP.NET Core Web API**: RESTful API実装
-- **Entity Framework Core 8.0**: ORM
+- **Entity Framework Core 10**: ORM
 - **SQLite** (開発): 軽量なローカルデータベース
 - **PostgreSQL** (本番): スケーラブルなリレーショナルデータベース
 - **Serilog**: 構造化ログ
@@ -239,7 +239,7 @@ backend/
 
 ### 前提条件
 
-- .NET 8.0 SDK以上
+- .NET 10 SDK以上
 - Visual Studio 2022 / VS Code / Rider
 
 ### インストール
@@ -309,7 +309,7 @@ APIは `https://localhost:7000` で起動します。
          "type": "coreclr",
          "request": "launch",
          "preLaunchTask": "build",
-         "program": "${workspaceFolder}/src/GamifiedMathDrill.Api/bin/Debug/net8.0/GamifiedMathDrill.Api.dll",
+         "program": "${workspaceFolder}/src/GamifiedMathDrill.Api/bin/Debug/net10.0/GamifiedMathDrill.Api.dll",
          "args": [],
          "cwd": "${workspaceFolder}/src/GamifiedMathDrill.Api",
          "stopAtEntry": false,
@@ -550,24 +550,20 @@ Serilogを使用した構造化ログを実装。ログは以下に出力され�
 
 #### JWT設定
 
-`appsettings.Development.json` に以下の設定を追加：
+JWT 署名キーはリポジトリに含めません。開発環境ではリポジトリ直下で次を実行し、User Secrets に登録します：
 
-```json
-{
-  "Jwt": {
-    "SecretKey": "ThisIsAVerySecureSecretKeyForJwtToken2024!@#$%",
-    "Issuer": "GamifiedMathDrill.Api",
-    "Audience": "GamifiedMathDrill.Client",
-    "ExpiryMinutes": 60
-  }
-}
+```bash
+./scripts/setup-dev-secrets.sh
 ```
+
+本番環境では環境変数で渡します（`Jwt__SecretKey`、`ConnectionStrings__DefaultConnection` など）。
+Issuer・Audience・有効期限は `appsettings.Development.json` の `Jwt` セクションで設定します。
 
 **重要**: 本番環境では環境変数または Azure Key Vault 等のシークレット管理サービスを使用してください。
 
 #### デフォルトユーザー
 
-初回起動時に以下のテストユーザーが自動作成されます：
+開発環境（`ASPNETCORE_ENVIRONMENT=Development`）の初回起動時のみ、以下のテストユーザーが自動作成されます（本番では作成されません）：
 
 **保護者アカウント:**
 

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using GamifiedMathDrill.Infrastructure.Data;
 using Microsoft.Extensions.Hosting;
 
@@ -17,14 +19,10 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureServices(services =>
         {
-            // 既存のDbContextを削除
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
-
-            if (descriptor != null)
-            {
-                services.Remove(descriptor);
-            }
+            // 既存のDbContext設定を削除
+            // EF Core 9以降はプロバイダー設定が IDbContextOptionsConfiguration<T> にも登録されるため、両方を外す
+            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
+            services.RemoveAll<IDbContextOptionsConfiguration<ApplicationDbContext>>();
 
             // インメモリデータベースを使用するDbContextを追加（各テストで独立したDB）
             var dbName = $"TestDb_{Guid.NewGuid()}";
