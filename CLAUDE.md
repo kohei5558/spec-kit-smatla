@@ -31,10 +31,11 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/src/GamifiedMath
 
 - 秘密情報（`Jwt:SecretKey`、本番接続文字列など）は appsettings に書かない。開発は User Secrets、本番は環境変数（`Jwt__SecretKey` 等）。
 - DB: 開発は SQLite、本番は PostgreSQL。起動時に `DatabaseInitializer` がマイグレーションとシードを実行（テスト環境 `Testing` では実行しない）。デモユーザー（`parent@example.com`）は Development のみ作成。
-- モデル変更時は EF マイグレーションを追加する（`dotnet ef migrations add <Name> --project backend/src/GamifiedMathDrill.Infrastructure --startup-project backend/src/GamifiedMathDrill.Api`）。
+- モデル変更時は EF マイグレーションを追加する（`dotnet tool restore` の後、`ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add <Name> --project backend/src/GamifiedMathDrill.Infrastructure --startup-project backend/src/GamifiedMathDrill.Api`）。既存マイグレーションは SQLite 用に生成されている。
 - `Program.cs` で `SuppressModelStateInvalidFilter = true` のため、DataAnnotations やバインド失敗は自動で 400 にならない。コントローラーで明示的に検証する。
 - 結合テストはテストクラス単位で DB を共有する（`IClassFixture`）。他テストのデータが残る前提で、名前は一意にし件数に依存しない書き方をする。
 - 子供ログインの JSON キーは `ChildId`（`Api/DTOs/ChildLoginRequest.cs` とフロントの同名クラスで一致させる）。
+- 子供の一覧取得と子供ログインには、保護者が登録した端末のトークン（`X-Device-Token` ヘッダー、`DevicesController` / `DeviceService`）が必須。結合テストでは `AuthenticationHelper.UseParentDeviceAsync` で設定する（006）。
 - PIN ロックアウトは `IMemoryCache` で 3 回失敗 → 5 分（`ChildAccountService`）。
 - MudBlazor は 7 系のまま。FluentAssertions は 6 系のまま（v8 以降は商用有償ライセンス）。
 - 子供向け UI の文言はやさしい日本語にする。

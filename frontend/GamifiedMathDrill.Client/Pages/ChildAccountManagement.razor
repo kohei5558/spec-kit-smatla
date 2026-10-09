@@ -2,6 +2,7 @@
 @using GamifiedMathDrill.Client.Models
 @using GamifiedMathDrill.Client.Services
 @inject ChildAccountApiClient ChildAccountApi
+@inject DeviceApiClient DeviceApi
 @inject NavigationManager Navigation
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Parent")]
 
@@ -108,7 +109,118 @@
             }
         </div>
     }
+
+    <!-- 子供用端末 -->
+    <div class="card mt-5">
+        <div class="card-body">
+            <h4 class="card-title">子供用の端末</h4>
+            <p class="text-muted small">
+                子供ログイン画面は、ここで登録した端末でだけ使えます。登録した端末には、この家庭の子供だけが表示されます。
+            </p>
+
+            @if (isThisDeviceRegistered)
+            {
+                <div class="alert alert-success mb-3">
+                    <i class="bi bi-check-circle me-2"></i>この端末は子供用に登録済みです
+                </div>
+            }
+            else
+            {
+                <button class="btn btn-outline-primary mb-3" @onclick="ShowRegisterDevice" disabled="@(devices == null)">
+                    <i class="bi bi-tablet me-2"></i>この端末を子供用に登録する
+                </button>
+            }
+
+            @if (devices == null)
+            {
+                <p class="text-muted small mb-0">端末の一覧を読み込んでいます...</p>
+            }
+            else if (!devices.Any())
+            {
+                <p class="text-muted small mb-0">登録済みの端末はありません</p>
+            }
+            else
+            {
+                <ul class="list-group">
+                    @foreach (var device in devices)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>@device.Name</strong>
+                                @if (device.Id == thisDeviceId)
+                                {
+                                    <span class="badge bg-primary ms-2">この端末</span>
+                                }
+                                <div class="text-muted small">
+                                    登録日: @device.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd")
+                                    ／ 最終利用: @device.LastUsedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowRevokeConfirm(device)">
+                                <i class="bi bi-x-circle me-1"></i>解除
+                            </button>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
 </div>
+
+<!-- 端末登録モーダル -->
+@if (showRegisterDeviceModal)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">この端末を子供用に登録</h5>
+                    <button type="button" class="btn-close" @onclick="HideModals"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="deviceName" class="form-label">端末名</label>
+                    <input id="deviceName" class="form-control" maxlength="30"
+                           placeholder="例: リビングのタブレット" @bind="newDeviceName" @bind:event="oninput" />
+                    <div class="form-text">あとで一覧から見分けられる名前を付けてください（30文字まで）</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="HideModals">キャンセル</button>
+                    <button type="button" class="btn btn-primary" @onclick="RegisterThisDevice"
+                            disabled="@(string.IsNullOrWhiteSpace(newDeviceName) || isRegisteringDevice)">
+                        登録する
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
+<!-- 端末解除確認モーダル -->
+@if (showRevokeModal && selectedDevice != null)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">端末の登録を解除</h5>
+                    <button type="button" class="btn-close" @onclick="HideModals"></button>
+                </div>
+                <div class="modal-body">
+                    <p>「@selectedDevice.Name」の登録を解除しますか？</p>
+                    <p class="text-muted">解除すると、その端末では子供ログイン画面が使えなくなります。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="HideModals">キャンセル</button>
+                    <button type="button" class="btn btn-danger" @onclick="() => RevokeDevice(selectedDevice.Id)">
+                        解除する
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
 
 <!-- 停止確認モーダル -->
 @if (showSuspendModal && selectedChild != null)
@@ -173,10 +285,93 @@
     private bool showSuspendModal = false;
     private bool showDeleteModal = false;
     private ChildAccountViewModel? selectedChild;
+    private List<RegisteredDeviceViewModel>? devices;
+    private int? thisDeviceId;
+    private bool isThisDeviceRegistered;
+    private bool showRegisterDeviceModal = false;
+    private bool showRevokeModal = false;
+    private bool isRegisteringDevice = false;
+    private string newDeviceName = string.Empty;
+    private RegisteredDeviceViewModel? selectedDevice;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadChildAccountsAsync();
+        await LoadDevicesAsync();
+    }
+
+    private async Task LoadDevicesAsync()
+    {
+        devices = await DeviceApi.GetDevicesAsync();
+        if (devices == null)
+        {
+            errorMessage = "端末の一覧の読み込みに失敗しました";
+            return;
+        }
+
+        // この端末の登録がサーバー側で解除されていたら、端末側の情報も消して再登録できる状態に戻す
+        thisDeviceId = await DeviceApi.GetDeviceIdAsync();
+        if (thisDeviceId != null && devices.All(d => d.Id != thisDeviceId))
+        {
+            await DeviceApi.ClearDeviceAsync();
+            thisDeviceId = null;
+        }
+        isThisDeviceRegistered = thisDeviceId != null;
+    }
+
+    private void ShowRegisterDevice()
+    {
+        newDeviceName = string.Empty;
+        showRegisterDeviceModal = true;
+    }
+
+    private async Task RegisterThisDevice()
+    {
+        isRegisteringDevice = true;
+        try
+        {
+            var (success, error) = await DeviceApi.RegisterThisDeviceAsync(newDeviceName);
+            if (success)
+            {
+                successMessage = "この端末を子供用に登録しました";
+                await LoadDevicesAsync();
+            }
+            else
+            {
+                errorMessage = error;
+            }
+        }
+        finally
+        {
+            isRegisteringDevice = false;
+            HideModals();
+        }
+    }
+
+    private void ShowRevokeConfirm(RegisteredDeviceViewModel device)
+    {
+        selectedDevice = device;
+        showRevokeModal = true;
+    }
+
+    private async Task RevokeDevice(int id)
+    {
+        try
+        {
+            if (await DeviceApi.RevokeDeviceAsync(id))
+            {
+                successMessage = "端末の登録を解除しました";
+                await LoadDevicesAsync();
+            }
+            else
+            {
+                errorMessage = "端末の登録の解除に失敗しました";
+            }
+        }
+        finally
+        {
+            HideModals();
+        }
     }
 
     private async Task LoadChildAccountsAsync()
@@ -228,7 +423,10 @@
     {
         showSuspendModal = false;
         showDeleteModal = false;
+        showRegisterDeviceModal = false;
+        showRevokeModal = false;
         selectedChild = null;
+        selectedDevice = null;
     }
 
     private async Task SuspendChild(string id)

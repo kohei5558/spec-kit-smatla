@@ -52,6 +52,7 @@ builder.Services.AddScoped<RewardApiClient>();
 builder.Services.AddScoped<ExchangeRequestApiClient>();
 builder.Services.AddScoped<ParentDashboardApiClient>();
 builder.Services.AddScoped<ChildAccountApiClient>();
+builder.Services.AddScoped<DeviceApiClient>();
 
 // Register state management services
 builder.Services.AddScoped<CategoryStateService>();

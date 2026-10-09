@@ -44,10 +44,10 @@
 - [x] T012 [US1] DevicesController 作成（POST /api/devices、GET /api/devices/current/children） - backend/src/GamifiedMathDrill.Api/Controllers/DevicesController.cs
 - [x] T013 [US1] ChildAuthController.LoginAsync に端末トークン検証と家庭一致チェックを追加 - backend/src/GamifiedMathDrill.Api/Controllers/ChildAuthController.cs
 - [x] T014 [US1] 既存の子供ログイン系テストを端末トークン付きに更新 - backend/tests/GamifiedMathDrill.Tests.Integration/ChildLoginTests.cs, ChildAccountSecurityTests.cs, ChildAccountTests.cs
-- [ ] T015 [P] [US1] DeviceApiClient 作成（登録・一覧・解除・子供一覧、`X-Device-Token` 付与、LocalStorage 保存） - frontend/GamifiedMathDrill.Client/Services/DeviceApiClient.cs
-- [ ] T016 [US1] AuthService.ChildLoginAsync で `X-Device-Token` を送る - frontend/GamifiedMathDrill.Client/Services/AuthService.cs
-- [ ] T017 [US1] 子供アカウント管理画面に「この端末を子供用に登録する」ボタンと端末名入力ダイアログ、「登録済み」表示を追加 - frontend/GamifiedMathDrill.Client/Pages/ChildAccountManagement.razor
-- [ ] T018 [US1] 子供ログイン画面を端末トークンで子供一覧を取得する形に変更 - frontend/GamifiedMathDrill.Client/Pages/ChildLogin.razor
+- [x] T015 [P] [US1] DeviceApiClient 作成（登録・一覧・解除・子供一覧、`X-Device-Token` 付与、LocalStorage 保存） - frontend/GamifiedMathDrill.Client/Services/DeviceApiClient.cs
+- [x] T016 [US1] AuthService.ChildLoginAsync で `X-Device-Token` を送る - frontend/GamifiedMathDrill.Client/Services/AuthService.cs
+- [x] T017 [US1] 子供アカウント管理画面に「この端末を子供用に登録する」ボタンと端末名入力ダイアログ、「登録済み」表示を追加 - frontend/GamifiedMathDrill.Client/Pages/ChildAccountManagement.razor
+- [x] T018 [US1] 子供ログイン画面を端末トークンで子供一覧を取得する形に変更 - frontend/GamifiedMathDrill.Client/Pages/ChildLogin.razor
 
 ## Phase 3: User Story 2 - 未登録の端末では子供の情報が見えない (P1)
 
@@ -60,8 +60,8 @@
 ### Implementation
 
 - [x] T022 [US2] `GET /api/child-accounts/public` と ListAllActiveAsync を削除 - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs, backend/src/GamifiedMathDrill.Core/Interfaces/IChildAccountService.cs, backend/src/GamifiedMathDrill.Infrastructure/Services/ChildAccountService.cs
-- [ ] T023 [US2] フロントの GetPublicChildAccountsAsync を削除 - frontend/GamifiedMathDrill.Client/Services/ChildAccountApiClient.cs
-- [ ] T024 [US2] 子供ログイン画面に未登録端末の案内（やさしい日本語、保護者ログインへのリンク）と、401時のトークン削除を追加 - frontend/GamifiedMathDrill.Client/Pages/ChildLogin.razor
+- [x] T023 [US2] フロントの GetPublicChildAccountsAsync を削除 - frontend/GamifiedMathDrill.Client/Services/ChildAccountApiClient.cs
+- [x] T024 [US2] 子供ログイン画面に未登録端末の案内（やさしい日本語、保護者ログインへのリンク）と、401時のトークン削除を追加 - frontend/GamifiedMathDrill.Client/Pages/ChildLogin.razor
 
 ## Phase 4: User Story 3 - 登録済み端末の確認・解除 (P2)
 
@@ -73,13 +73,13 @@
 ### Implementation
 
 - [x] T027 [US3] DevicesController に GET /api/devices、DELETE /api/devices/{id} を追加 - backend/src/GamifiedMathDrill.Api/Controllers/DevicesController.cs
-- [ ] T028 [US3] 子供アカウント管理画面に登録端末一覧（端末名・登録日・最終利用日・「この端末」表示）と解除ボタン・確認ダイアログを追加 - frontend/GamifiedMathDrill.Client/Pages/ChildAccountManagement.razor
+- [x] T028 [US3] 子供アカウント管理画面に登録端末一覧（端末名・登録日・最終利用日・「この端末」表示）と解除ボタン・確認ダイアログを追加 - frontend/GamifiedMathDrill.Client/Pages/ChildAccountManagement.razor
 
 ## Phase 5: 仕上げ
 
-- [ ] T029 全テスト実行、フロントエンドのビルド確認 - backend/, frontend/
-- [ ] T030 開発環境で手動確認（登録 → 子供ログイン → 解除 → 未登録案内） - specs/006-device-registration/quickstart.md に手順を記載
-- [ ] T031 CLAUDE.md と backend README の子供ログインの説明を更新 - CLAUDE.md, backend/README.md
+- [x] T029 全テスト実行、フロントエンドのビルド確認 - backend/, frontend/
+- [x] T030 開発環境で手動確認（登録 → 子供ログイン → 解除 → 未登録案内） - specs/006-device-registration/quickstart.md に手順を記載
+- [x] T031 CLAUDE.md と backend README の子供ログインの説明を更新 - CLAUDE.md, backend/README.md
 
 ## 依存関係
 

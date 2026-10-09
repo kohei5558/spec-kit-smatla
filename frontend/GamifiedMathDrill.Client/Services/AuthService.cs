@@ -95,7 +95,7 @@ public class AuthService
     /// <summary>
     /// 子供ログイン
     /// </summary>
-    public async Task<(bool success, string? errorMessage)> ChildLoginAsync(string childId, string pin)
+    public async Task<(bool success, string? errorMessage)> ChildLoginAsync(string childId, string pin, string deviceToken)
     {
         try
         {
@@ -105,7 +105,13 @@ public class AuthService
                 PIN = pin
             };
 
-            var response = await _httpClient.PostAsJsonAsync("/api/auth/child/login", request);
+            // 子供ログインは子供用に登録された端末からのみ受け付けられる
+            using var message = new HttpRequestMessage(HttpMethod.Post, "/api/auth/child/login")
+            {
+                Content = JsonContent.Create(request)
+            };
+            message.Headers.Add(DeviceApiClient.DeviceTokenHeader, deviceToken);
+            var response = await _httpClient.SendAsync(message);
 
             if (response.IsSuccessStatusCode)
             {
@@ -129,11 +135,12 @@ public class AuthService
                 return (false, loginResponse?.ErrorMessage ?? "ログインに失敗しました");
             }
 
+            // 子供ログインAPIはエラー時も LoginResponse（errorMessage）を返す
             var errorContent = await response.Content.ReadAsStringAsync();
             try
             {
-                var errorResponse = JsonSerializer.Deserialize<ApiResponse<object>>(errorContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                return (false, errorResponse?.Message ?? "ログインに失敗しました");
+                var errorResponse = JsonSerializer.Deserialize<LoginResponse>(errorContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return (false, errorResponse?.ErrorMessage ?? "ログインに失敗しました");
             }
             catch
             {

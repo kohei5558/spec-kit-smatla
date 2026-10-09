@@ -2,7 +2,7 @@
 
 **Feature Branch**: `006-device-registration`（作業は `claude/project-status-m9txmv` 上で実施）
 **Created**: 2026年10月8日
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "子供ログイン画面で全家庭の子供の名前が認証なしに見えてしまう問題を、端末登録方式で解消する。保護者が『この端末を子供用に登録する』ボタンを押したときだけ登録する"
 
 ## 背景

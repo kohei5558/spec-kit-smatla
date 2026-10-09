@@ -35,22 +35,6 @@ public class ChildAccountApiClient
     }
 
     /// <summary>
-    /// すべての有効な子供アカウント一覧を取得（認証不要、子供ログイン画面用）
-    /// </summary>
-    public async Task<List<ChildAccountViewModel>?> GetPublicChildAccountsAsync()
-    {
-        try
-        {
-            return await _httpClient.GetFromJsonAsync<List<ChildAccountViewModel>>("api/child-accounts/public");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error getting public child accounts: {ex.Message}");
-            return null;
-        }
-    }
-
-    /// <summary>
     /// 子供アカウントを作成
     /// </summary>
     public async Task<ChildAccountViewModel?> CreateChildAccountAsync(ChildAccountCreateRequest request)
@@ -189,29 +173,6 @@ public class ChildAccountApiClient
         catch (Exception ex)
         {
             Console.WriteLine($"Error getting preset avatars: {ex.Message}");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// 子供ログイン
-    /// </summary>
-    public async Task<LoginResponse?> ChildLoginAsync(ChildLoginRequestModel request)
-    {
-        try
-        {
-            var response = await _httpClient.PostAsJsonAsync("api/auth/child/login", request);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<LoginResponse>();
-            }
-            
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error during child login: {ex.Message}");
             return null;
         }
     }

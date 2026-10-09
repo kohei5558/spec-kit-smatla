@@ -571,12 +571,12 @@ Issuer・Audience・有効期限は `appsettings.Development.json` の `Jwt` セ
 - Password: `Parent123!`
 - Role: `Parent`
 
-**子供アカウント:**
+**子供アカウント（上記保護者の子供）:**
 
-- DisplayName: `太郎`
-- PIN: `1234`
-- Role: `Child`
-- ParentId: 保護者アカウントに紐付け
+- `花子`（PIN: `1234`）
+- `次郎`（PIN: `5678`）
+
+子供ログイン画面は、保護者が「子供アカウント管理」画面で「この端末を子供用に登録する」を押した端末でのみ使えます。
 
 ### 認証フロー
 
@@ -589,16 +589,24 @@ Issuer・Audience・有効期限は `appsettings.Development.json` の `Jwt` セ
    }
    ```
 
-2. **子供ログイン**: POST `/api/auth/child-login`
+2. **子供用端末の登録**（保護者ログイン中）: POST `/api/devices` → レスポンスの `token` を端末に保存
+
+   ```json
+   { "name": "リビングのタブレット" }
+   ```
+
+3. **子供一覧の取得**（子供ログイン画面）: GET `/api/devices/current/children`（ヘッダー `X-Device-Token` 必須）
+
+4. **子供ログイン**: POST `/api/auth/child/login`（ヘッダー `X-Device-Token` 必須。他家庭の子供は 404）
 
    ```json
    {
-     "displayName": "太郎",
-     "pin": "1234"
+     "ChildId": "子供アカウントID",
+     "PIN": "1234"
    }
    ```
 
-3. **レスポンス**:
+5. **レスポンス**:
 
    ```json
    {
