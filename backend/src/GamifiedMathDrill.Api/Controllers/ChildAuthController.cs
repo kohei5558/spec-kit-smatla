@@ -14,28 +14,33 @@ namespace GamifiedMathDrill.Api.Controllers;
 public class ChildAuthController : ControllerBase
 {
     private readonly IChildAccountService _childAccountService;
+    private readonly IDeviceService _deviceService;
     private readonly IAuthService _authService;
     private readonly IStudentService _studentService;
     private readonly ILogger<ChildAuthController> _logger;
 
     public ChildAuthController(
         IChildAccountService childAccountService,
+        IDeviceService deviceService,
         IAuthService authService,
         IStudentService studentService,
         ILogger<ChildAuthController> logger)
     {
         _childAccountService = childAccountService;
+        _deviceService = deviceService;
         _authService = authService;
         _studentService = studentService;
         _logger = logger;
     }
 
     /// <summary>
-    /// 子供ログイン（PINコード認証）
+    /// 子供ログイン（PINコード認証）。子供用に登録された端末からのみ受け付ける（X-Device-Token 必須）
     /// </summary>
     [HttpPost("login")]
     [HttpPost("/api/auth/child-login")]
-    public async Task<ActionResult<LoginResponse>> LoginAsync([FromBody] ChildLoginRequest request)
+    public async Task<ActionResult<LoginResponse>> LoginAsync(
+        [FromBody] ChildLoginRequest request,
+        [FromHeader(Name = DevicesController.DeviceTokenHeader)] string? deviceToken)
     {
         _logger.LogInformation("Child login request received for ChildId {ChildId}", request.ChildAccountId);
 
@@ -44,8 +49,19 @@ public class ChildAuthController : ControllerBase
             return BadRequest(new { message = "子供アカウントIDとPINは必須です" });
         }
 
-        // アカウント存在確認
-        var child = await _childAccountService.GetAsync(request.ChildAccountId, ""); // parentId不要（子供自身のログイン）
+        // 端末確認（未登録端末からのPIN試行は失敗回数に数えずに拒否する）
+        var deviceParentId = await _deviceService.ResolveParentIdAsync(deviceToken);
+        if (deviceParentId == null)
+        {
+            return Unauthorized(new LoginResponse
+            {
+                Success = false,
+                ErrorMessage = "この端末は子供用に登録されていません"
+            });
+        }
+
+        // アカウント存在確認（端末を登録した家庭の子供に限る。他家庭の子供も「見つからない」と同じ応答にする）
+        var child = await _childAccountService.GetAsync(request.ChildAccountId, deviceParentId);
         if (child == null)
         {
             return NotFound(new LoginResponse

@@ -26,17 +26,6 @@ public class ChildAccountController : ControllerBase
     }
 
     /// <summary>
-    /// すべての有効な子供アカウント一覧を取得（認証不要、子供ログイン画面用）
-    /// </summary>
-    [HttpGet("public")]
-    [AllowAnonymous]
-    public async Task<ActionResult<List<ChildAccountDto>>> ListPublicAsync()
-    {
-        var children = await _childAccountService.ListAllActiveAsync();
-        return Ok(children);
-    }
-
-    /// <summary>
     /// 保護者の子供アカウント一覧を取得
     /// </summary>
     [HttpGet]

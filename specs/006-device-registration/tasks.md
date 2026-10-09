@@ -15,7 +15,7 @@
 - クライアントは端末トークンを `X-Device-Token` ヘッダーで送る。フロントは LocalStorage の `deviceToken` / `deviceId` に保存する
 - API（保護者認証）: `POST /api/devices`（登録）、`GET /api/devices`（一覧）、`DELETE /api/devices/{id}`（解除）
 - API（端末トークン）: `GET /api/devices/current/children`（その家庭の有効な子供一覧）
-- 子供ログイン `POST /api/auth/child/login` に `X-Device-Token` を必須化。トークン不正・他家庭の子供は 401（PIN 失敗回数に数えない）
+- 子供ログイン `POST /api/auth/child/login` に `X-Device-Token` を必須化。トークン不正は 401、他家庭の子供は存在しない子供と同じ 404（いずれも PIN 失敗回数に数えない）
 - `GET /api/child-accounts/public` と `IChildAccountService.ListAllActiveAsync` は削除
 
 ---
@@ -35,15 +35,15 @@
 
 ### Tests（先に書く）
 
-- [ ] T009 [P] [US1] 端末登録の結合テスト（登録成功・トークン返却、未認証401、子供ロールで403、端末名の検証、11台目で400） - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
-- [ ] T010 [P] [US1] 登録端末で自家庭の有効な子供だけ取得できるテスト（停止中は除外、他家庭は含まれない） - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
-- [ ] T011 [P] [US1] 登録端末のトークンで子供ログインできるテスト - backend/tests/GamifiedMathDrill.Tests.Integration/ChildLoginTests.cs
+- [x] T009 [P] [US1] 端末登録の結合テスト（登録成功・トークン返却、未認証401、子供ロールで403、端末名の検証、11台目で400） - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
+- [x] T010 [P] [US1] 登録端末で自家庭の有効な子供だけ取得できるテスト（停止中は除外、他家庭は含まれない） - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
+- [x] T011 [P] [US1] 登録端末のトークンで子供ログインできるテスト - backend/tests/GamifiedMathDrill.Tests.Integration/ChildLoginTests.cs
 
 ### Implementation
 
-- [ ] T012 [US1] DevicesController 作成（POST /api/devices、GET /api/devices/current/children） - backend/src/GamifiedMathDrill.Api/Controllers/DevicesController.cs
-- [ ] T013 [US1] ChildAuthController.LoginAsync に端末トークン検証と家庭一致チェックを追加 - backend/src/GamifiedMathDrill.Api/Controllers/ChildAuthController.cs
-- [ ] T014 [US1] 既存の子供ログイン系テストを端末トークン付きに更新 - backend/tests/GamifiedMathDrill.Tests.Integration/ChildLoginTests.cs, ChildAccountSecurityTests.cs, ChildAccountTests.cs
+- [x] T012 [US1] DevicesController 作成（POST /api/devices、GET /api/devices/current/children） - backend/src/GamifiedMathDrill.Api/Controllers/DevicesController.cs
+- [x] T013 [US1] ChildAuthController.LoginAsync に端末トークン検証と家庭一致チェックを追加 - backend/src/GamifiedMathDrill.Api/Controllers/ChildAuthController.cs
+- [x] T014 [US1] 既存の子供ログイン系テストを端末トークン付きに更新 - backend/tests/GamifiedMathDrill.Tests.Integration/ChildLoginTests.cs, ChildAccountSecurityTests.cs, ChildAccountTests.cs
 - [ ] T015 [P] [US1] DeviceApiClient 作成（登録・一覧・解除・子供一覧、`X-Device-Token` 付与、LocalStorage 保存） - frontend/GamifiedMathDrill.Client/Services/DeviceApiClient.cs
 - [ ] T016 [US1] AuthService.ChildLoginAsync で `X-Device-Token` を送る - frontend/GamifiedMathDrill.Client/Services/AuthService.cs
 - [ ] T017 [US1] 子供アカウント管理画面に「この端末を子供用に登録する」ボタンと端末名入力ダイアログ、「登録済み」表示を追加 - frontend/GamifiedMathDrill.Client/Pages/ChildAccountManagement.razor
@@ -53,13 +53,13 @@
 
 ### Tests（先に書く）
 
-- [ ] T019 [P] [US2] トークンなし・不正トークンで子供一覧が401のテスト - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
-- [ ] T020 [P] [US2] トークンなし・他家庭トークンで子供ログインが401、PIN失敗回数が増えないテスト - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountSecurityTests.cs
-- [ ] T021 [P] [US2] `GET /api/child-accounts/public` が404のテスト - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
+- [x] T019 [P] [US2] トークンなし・不正トークンで子供一覧が401のテスト - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
+- [x] T020 [P] [US2] トークンなしで子供ログインが401・PIN失敗回数が増えない、他家庭トークンで404のテスト - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountSecurityTests.cs
+- [x] T021 [P] [US2] `GET /api/child-accounts/public` で子供の情報が返らない（401）テスト - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
 
 ### Implementation
 
-- [ ] T022 [US2] `GET /api/child-accounts/public` と ListAllActiveAsync を削除 - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs, backend/src/GamifiedMathDrill.Core/Interfaces/IChildAccountService.cs, backend/src/GamifiedMathDrill.Infrastructure/Services/ChildAccountService.cs
+- [x] T022 [US2] `GET /api/child-accounts/public` と ListAllActiveAsync を削除 - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs, backend/src/GamifiedMathDrill.Core/Interfaces/IChildAccountService.cs, backend/src/GamifiedMathDrill.Infrastructure/Services/ChildAccountService.cs
 - [ ] T023 [US2] フロントの GetPublicChildAccountsAsync を削除 - frontend/GamifiedMathDrill.Client/Services/ChildAccountApiClient.cs
 - [ ] T024 [US2] 子供ログイン画面に未登録端末の案内（やさしい日本語、保護者ログインへのリンク）と、401時のトークン削除を追加 - frontend/GamifiedMathDrill.Client/Pages/ChildLogin.razor
 
@@ -67,12 +67,12 @@
 
 ### Tests（先に書く）
 
-- [ ] T025 [P] [US3] 端末一覧（自分の端末のみ、トークンを含まない）のテスト - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
-- [ ] T026 [P] [US3] 解除後にトークンが無効になるテスト、他の保護者の端末は404で解除されないテスト - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
+- [x] T025 [P] [US3] 端末一覧（自分の端末のみ、トークンを含まない）のテスト - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
+- [x] T026 [P] [US3] 解除後にトークンが無効になるテスト、他の保護者の端末は404で解除されないテスト - backend/tests/GamifiedMathDrill.Tests.Integration/DeviceRegistrationTests.cs
 
 ### Implementation
 
-- [ ] T027 [US3] DevicesController に GET /api/devices、DELETE /api/devices/{id} を追加 - backend/src/GamifiedMathDrill.Api/Controllers/DevicesController.cs
+- [x] T027 [US3] DevicesController に GET /api/devices、DELETE /api/devices/{id} を追加 - backend/src/GamifiedMathDrill.Api/Controllers/DevicesController.cs
 - [ ] T028 [US3] 子供アカウント管理画面に登録端末一覧（端末名・登録日・最終利用日・「この端末」表示）と解除ボタン・確認ダイアログを追加 - frontend/GamifiedMathDrill.Client/Pages/ChildAccountManagement.razor
 
 ## Phase 5: 仕上げ

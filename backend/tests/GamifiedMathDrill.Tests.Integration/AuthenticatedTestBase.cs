@@ -17,6 +17,9 @@ public abstract class AuthenticatedTestBase : IClassFixture<TestWebApplicationFa
 
         // テストユーザーをシード
         AuthenticationHelper.EnsureTestUsersExistAsync(factory.Services).Wait();
+
+        // 子供ログインには登録端末のトークンが必要なため、テスト用保護者の端末を設定しておく
+        UseRegisteredDeviceAsync().Wait();
     }
 
     /// <summary>
@@ -32,15 +35,9 @@ public abstract class AuthenticatedTestBase : IClassFixture<TestWebApplicationFa
     /// <summary>
     /// テスト用保護者の登録端末トークンをクライアントに設定（子供一覧・子供ログインに必要）
     /// </summary>
-    protected async Task UseRegisteredDeviceAsync()
+    protected Task UseRegisteredDeviceAsync()
     {
-        if (Factory.ParentDeviceToken == null)
-        {
-            var parentJwt = await AuthenticationHelper.LoginAsParentAsync(Client, Factory.Services);
-            Factory.ParentDeviceToken = await AuthenticationHelper.RegisterDeviceAsync(Client, parentJwt);
-        }
-
-        AuthenticationHelper.SetDeviceToken(Client, Factory.ParentDeviceToken);
+        return AuthenticationHelper.UseParentDeviceAsync(Client, Factory);
     }
 
     /// <summary>

@@ -10,7 +10,6 @@ public interface IChildAccountService
     /// <summary>
     /// 保護者の子供アカウント一覧を取得
     /// </summary>
-    Task<List<ChildAccountDto>> ListAllActiveAsync();
     Task<List<ChildAccountDto>> ListAsync(string parentId);
 
     /// <summary>

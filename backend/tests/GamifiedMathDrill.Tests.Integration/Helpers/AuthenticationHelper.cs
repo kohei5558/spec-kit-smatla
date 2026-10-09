@@ -179,6 +179,21 @@ public static class AuthenticationHelper
     }
 
     /// <summary>
+    /// テスト用保護者（parent@example.com）の登録端末トークンをクライアントに設定する。
+    /// 端末の上限に達しないよう、トークンはファクトリー（テストクラス）単位で使い回す
+    /// </summary>
+    public static async Task UseParentDeviceAsync(HttpClient client, TestWebApplicationFactory factory)
+    {
+        if (factory.ParentDeviceToken == null)
+        {
+            var parentJwt = await LoginAsParentAsync(client, factory.Services);
+            factory.ParentDeviceToken = await RegisterDeviceAsync(client, parentJwt);
+        }
+
+        SetDeviceToken(client, factory.ParentDeviceToken);
+    }
+
+    /// <summary>
     /// HTTPクライアントに端末トークンを設定（null で削除）
     /// </summary>
     public static void SetDeviceToken(HttpClient client, string? token)
