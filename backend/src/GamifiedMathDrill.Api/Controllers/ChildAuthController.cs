@@ -1,6 +1,7 @@
 using GamifiedMathDrill.Api.DTOs;
 using GamifiedMathDrill.Core.DTOs;
 using GamifiedMathDrill.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GamifiedMathDrill.Api.Controllers;
@@ -9,6 +10,7 @@ namespace GamifiedMathDrill.Api.Controllers;
 /// 子供認証API
 /// </summary>
 [ApiController]
+[AllowAnonymous] // 認証は端末トークン + PIN で行う
 [Route("api/auth/child")]
 [Route("api/auth/child-login")]
 public class ChildAuthController : ControllerBase

@@ -146,6 +146,10 @@ public class ChildAccountService : IChildAccountService
         _context.Students.Add(student);
         await _context.SaveChangesAsync();
 
+        // 子供アカウントに学習者を紐付ける（未設定だと初回ログイン時に別の学習者が作られてしまう）
+        user.StudentId = student.Id;
+        await _context.SaveChangesAsync();
+
         return MapToDto(user);
     }
 

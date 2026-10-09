@@ -1,4 +1,5 @@
 using GamifiedMathDrill.Api.DTOs;
+using GamifiedMathDrill.Api.Extensions;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +14,12 @@ public class RewardsController : ControllerBase
 {
     private readonly IRewardService _rewardService;
     private readonly IExchangeRequestService _exchangeRequestService;
+    private readonly IStudentAccessService _studentAccess;
     private readonly ILogger<RewardsController> _logger;
 
-    public RewardsController(IRewardService rewardService, IExchangeRequestService exchangeRequestService, ILogger<RewardsController> logger)
+    public RewardsController(IRewardService rewardService, IExchangeRequestService exchangeRequestService, IStudentAccessService studentAccess, ILogger<RewardsController> logger)
     {
+        _studentAccess = studentAccess;
         _rewardService = rewardService;
         _exchangeRequestService = exchangeRequestService;
         _logger = logger;
@@ -301,6 +304,12 @@ public class RewardsController : ControllerBase
                 return BadRequest(new { message = "無効な生徒IDです。" });
             }
 
+            // 子供は自分のポイントでのみ交換できる
+            if (!await this.CanAccessStudentAsync(_studentAccess, request.StudentId))
+            {
+                return NotFound(new { message = "生徒が見つかりません。" });
+            }
+
             // If the reward requires parent approval (physical items), create an exchange request
             var reward = await _rewardService.GetRewardByIdAsync(id);
             if (reward == null)
@@ -372,6 +381,11 @@ public class RewardsController : ControllerBase
             if (studentId <= 0)
             {
                 return BadRequest(new { message = "無効な生徒IDです。" });
+            }
+
+            if (!await this.CanAccessStudentAsync(_studentAccess, studentId))
+            {
+                return NotFound(new { message = "生徒が見つかりません。" });
             }
 
             var acquiredRewards = await _rewardService.GetAcquiredRewardsAsync(studentId);

@@ -73,6 +73,7 @@ builder.Services.AddScoped<IParentDashboardService, ParentDashboardService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IChildAccountService, ChildAccountService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
+builder.Services.AddScoped<IStudentAccessService, StudentAccessService>();
 
 // Memory cache for PIN lockout
 builder.Services.AddMemoryCache();
@@ -125,6 +126,14 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
         ClockSkew = TimeSpan.Zero
     };
+});
+
+// 既定ですべてのAPIでログインを必須にする（未ログインで使うAPIは [AllowAnonymous] を明示する）
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
 });
 
 // Data Protection API (セッショントークン用)

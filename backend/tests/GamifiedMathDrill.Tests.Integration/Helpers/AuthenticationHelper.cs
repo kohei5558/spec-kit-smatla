@@ -96,6 +96,13 @@ public static class AuthenticationHelper
                 student.TotalPoints = 0;
             }
             await db.SaveChangesAsync();
+
+            // 子供アカウントと学習者を紐付ける（学習者へのアクセスは名前ではなくこの紐付けで判定される）
+            if (existingChild.StudentId != student.Id)
+            {
+                existingChild.StudentId = student.Id;
+                await userManager.UpdateAsync(existingChild);
+            }
         }
         finally
         {
@@ -153,6 +160,35 @@ public static class AuthenticationHelper
 
         var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
         return loginResponse?.Token ?? throw new InvalidOperationException("Failed to get JWT token");
+    }
+
+    /// <summary>
+    /// 新しい家庭（保護者）を登録して子供アカウントを1人作り、その学習者を返す。
+    /// クライアントはその保護者でログインした状態になる（保護者は自分の子供の学習者にだけアクセスできるため）
+    /// </summary>
+    public static async Task<TestStudentDto> CreateStudentInNewFamilyAsync(HttpClient client, string childName)
+    {
+        var register = await client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
+        {
+            Email = $"student_family_{Guid.NewGuid():N}@example.com",
+            DisplayName = "テスト保護者",
+            Password = "SecurePassword123!",
+            ConfirmPassword = "SecurePassword123!"
+        });
+        register.EnsureSuccessStatusCode();
+        var parentJwt = (await register.Content.ReadFromJsonAsync<RegisterResponse>())!.Token!;
+        AddAuthorizationHeader(client, parentJwt);
+
+        var create = await client.PostAsJsonAsync("/api/child-accounts", new ChildAccountCreateDto
+        {
+            Name = childName,
+            GradeLevel = 3,
+            PresetAvatarId = 1,
+            PIN = "1593"
+        });
+        create.EnsureSuccessStatusCode();
+        var child = (await create.Content.ReadFromJsonAsync<ChildAccountDto>())!;
+        return new TestStudentDto { Id = child.StudentId, Name = child.Name, Grade = child.GradeLevel };
     }
 
     /// <summary>
@@ -234,7 +270,7 @@ public static class AuthenticationHelper
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        var student = db.Students.FirstOrDefault(s => s.Name == "太郎");
-        return student?.Id ?? throw new Exception("Test student not found");
+        var child = db.Users.FirstOrDefault(u => u.DisplayName == "太郎" && u.Role == UserRole.Child);
+        return child?.StudentId ?? throw new Exception("Test student not found");
     }
 }

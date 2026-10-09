@@ -2,6 +2,7 @@ using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Core.Models.DTOs;
 using GamifiedMathDrill.Core.Models.Responses;
+using GamifiedMathDrill.Api.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,17 +14,25 @@ namespace GamifiedMathDrill.Api.Controllers;
 public class StudentsController : ControllerBase
 {
     private readonly IStudentService _studentService;
+    private readonly IStudentAccessService _studentAccess;
     private readonly ILogger<StudentsController> _logger;
 
-    public StudentsController(IStudentService studentService, ILogger<StudentsController> logger)
+    public StudentsController(IStudentService studentService, IStudentAccessService studentAccess, ILogger<StudentsController> logger)
     {
         _studentService = studentService;
+        _studentAccess = studentAccess;
         _logger = logger;
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<StudentDto>>> GetById(int id)
     {
+        // 自分（子供）または自分の子供（保護者）の学習者のみ。他家庭の学習者は存在しない扱い
+        if (!await this.CanAccessStudentAsync(_studentAccess, id))
+        {
+            return NotFound(ApiResponse<StudentDto>.ErrorResponse($"Student with ID {id} not found."));
+        }
+
         var student = await _studentService.GetByIdAsync(id);
         if (student == null)
         {
@@ -34,36 +43,14 @@ public class StudentsController : ControllerBase
         return Ok(ApiResponse<StudentDto>.SuccessResponse(studentDto));
     }
 
-    [HttpPost]
-    public async Task<ActionResult<ApiResponse<StudentDto>>> Create([FromBody] CreateStudentDto createDto)
-    {
-        if (string.IsNullOrWhiteSpace(createDto.Name))
-        {
-            return BadRequest(ApiResponse<StudentDto>.ErrorResponse("Student name is required."));
-        }
-
-        if (createDto.Name.Length > 50)
-        {
-            return BadRequest(ApiResponse<StudentDto>.ErrorResponse("Student name must be 50 characters or less."));
-        }
-
-        var student = new Student
-        {
-            Name = createDto.Name.Trim()
-        };
-
-        var createdStudent = await _studentService.CreateAsync(student);
-        var studentDto = MapToDto(createdStudent);
-
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = createdStudent.Id },
-            ApiResponse<StudentDto>.SuccessResponse(studentDto, "Student created successfully."));
-    }
-
     [HttpPatch("{id}/login")]
     public async Task<ActionResult<ApiResponse<StudentDto>>> UpdateLogin(int id)
     {
+        if (!await this.CanAccessStudentAsync(_studentAccess, id))
+        {
+            return NotFound(ApiResponse<StudentDto>.ErrorResponse($"Student with ID {id} not found."));
+        }
+
         try
         {
             var student = await _studentService.UpdateLoginAsync(id);

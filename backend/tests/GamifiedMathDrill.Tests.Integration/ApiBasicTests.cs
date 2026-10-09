@@ -29,8 +29,8 @@ public class ApiBasicTests : IClassFixture<TestWebApplicationFactory>
         var response = await _client.GetAsync("/");
 
         // Assert
-        // API が実行されていることを確認（404は正常、サーバーが動いている証拠）
-        Assert.True(response.StatusCode == HttpStatusCode.NotFound || response.IsSuccessStatusCode);
+        // API が実行されていることを確認（未ログインでは既定で401。404/成功もサーバーが動いている証拠）
+        Assert.True(response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Unauthorized || response.IsSuccessStatusCode);
     }
 
     [Fact]

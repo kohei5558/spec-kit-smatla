@@ -41,13 +41,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
         // Create student first
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Perf_{category[..3]}_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        var student = studentResponse!.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Perf_{category[..3]}_{Guid.NewGuid().ToString()[..8]}");
 
         // Warm-up call to exclude cold start time
         await _client.GetAsync($"/api/problems/next?studentId={student.Id}&category={category}");
@@ -77,13 +71,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
         // Create student and learning records
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Perf_Stats_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        var student = studentResponse!.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Perf_Stats_{Guid.NewGuid().ToString()[..8]}");
 
         // Create some learning records for different categories
         for (int i = 0; i < 10; i++)
@@ -131,13 +119,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
         // Create student
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Perf_Flow_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        var student = studentResponse!.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Perf_Flow_{Guid.NewGuid().ToString()[..8]}");
 
         // Warm-up
         await _client.GetAsync($"/api/problems/next?studentId={student.Id}&category=Addition");
@@ -171,13 +153,7 @@ public class CategoryPerformanceTests : IClassFixture<TestWebApplicationFactory>
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
         // Create student
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Perf_Conc_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        var student = studentResponse!.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Perf_Conc_{Guid.NewGuid().ToString()[..8]}");
 
         var categories = new[] { "Addition", "Subtraction", "Multiplication", "Division" };
 

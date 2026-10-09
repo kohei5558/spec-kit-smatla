@@ -1,6 +1,7 @@
 using GamifiedMathDrill.Api.DTOs;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GamifiedMathDrill.Api.Controllers;
@@ -10,6 +11,7 @@ namespace GamifiedMathDrill.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous] // ログイン・登録・パスワードリセットは未ログインで使う
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
