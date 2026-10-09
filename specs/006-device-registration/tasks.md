@@ -22,14 +22,14 @@
 
 ## Phase 1: Foundational（全ストーリーの前提）
 
-- [ ] T001 RegisteredDevice エンティティ作成（Id, ParentId, Name, TokenHash, CreatedAt, LastUsedAt） - backend/src/GamifiedMathDrill.Core/Models/RegisteredDevice.cs
-- [ ] T002 ApplicationDbContext に DbSet と設定追加（TokenHash 一意インデックス、ParentId インデックス、保護者削除で連鎖削除、Name 最大30文字） - backend/src/GamifiedMathDrill.Infrastructure/Data/ApplicationDbContext.cs
-- [ ] T003 EF マイグレーション AddRegisteredDevices 追加 - backend/src/GamifiedMathDrill.Infrastructure/Migrations/
-- [ ] T004 [P] DTO 作成（RegisterDeviceRequest, RegisterDeviceResponse(トークン含む), RegisteredDeviceDto(トークン含まず)） - backend/src/GamifiedMathDrill.Core/DTOs/RegisteredDeviceDtos.cs
-- [ ] T005 IDeviceService 定義（RegisterAsync, ListAsync, RevokeAsync, ResolveParentIdAsync(token)） - backend/src/GamifiedMathDrill.Core/Interfaces/IDeviceService.cs
-- [ ] T006 DeviceService 実装（トークン生成・ハッシュ化、10台上限、所有者チェック、最終利用日時の間引き更新） - backend/src/GamifiedMathDrill.Infrastructure/Services/DeviceService.cs
-- [ ] T007 DI 登録 - backend/src/GamifiedMathDrill.Api/Program.cs
-- [ ] T008 結合テスト用ヘルパーに端末登録・トークン付きリクエストを追加 - backend/tests/GamifiedMathDrill.Tests.Integration/Helpers/AuthenticationHelper.cs
+- [x] T001 RegisteredDevice エンティティ作成（Id, ParentId, Name, TokenHash, CreatedAt, LastUsedAt） - backend/src/GamifiedMathDrill.Core/Models/RegisteredDevice.cs
+- [x] T002 ApplicationDbContext に DbSet と設定追加（TokenHash 一意インデックス、ParentId インデックス、保護者削除で連鎖削除、Name 最大30文字） - backend/src/GamifiedMathDrill.Infrastructure/Data/ApplicationDbContext.cs
+- [x] T003 EF マイグレーション AddRegisteredDevices 追加 - backend/src/GamifiedMathDrill.Infrastructure/Migrations/
+- [x] T004 [P] DTO 作成（RegisterDeviceRequest, RegisterDeviceResponse(トークン含む), RegisteredDeviceDto(トークン含まず)） - backend/src/GamifiedMathDrill.Core/DTOs/RegisteredDeviceDtos.cs
+- [x] T005 IDeviceService 定義（RegisterAsync, ListAsync, RevokeAsync, ResolveParentIdAsync(token)） - backend/src/GamifiedMathDrill.Core/Interfaces/IDeviceService.cs
+- [x] T006 DeviceService 実装（トークン生成・ハッシュ化、10台上限、所有者チェック、最終利用日時の間引き更新） - backend/src/GamifiedMathDrill.Infrastructure/Services/DeviceService.cs
+- [x] T007 DI 登録 - backend/src/GamifiedMathDrill.Api/Program.cs
+- [x] T008 結合テスト用ヘルパーに端末登録・トークン付きリクエストを追加 - backend/tests/GamifiedMathDrill.Tests.Integration/Helpers/AuthenticationHelper.cs
 
 ## Phase 2: User Story 1 - 保護者が端末を子供用に登録する (P1) 🎯 MVP
 

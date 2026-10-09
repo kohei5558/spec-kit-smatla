@@ -15,6 +15,11 @@ namespace GamifiedMathDrill.Tests.Integration;
 /// </summary>
 public class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
+    /// <summary>
+    /// テスト用保護者（parent@example.com）が登録した端末のトークン。端末の上限に達しないよう、クラス内で使い回す
+    /// </summary>
+    public string? ParentDeviceToken { get; set; }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>

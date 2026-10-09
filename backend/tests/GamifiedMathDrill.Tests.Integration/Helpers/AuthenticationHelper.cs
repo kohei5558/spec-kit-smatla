@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using GamifiedMathDrill.Api.DTOs;
+using GamifiedMathDrill.Core.DTOs;
 using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Infrastructure.Data;
 using GamifiedMathDrill.Infrastructure.Identity;
@@ -152,6 +153,41 @@ public static class AuthenticationHelper
 
         var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
         return loginResponse?.Token ?? throw new InvalidOperationException("Failed to get JWT token");
+    }
+
+    /// <summary>
+    /// 端末トークンを送るHTTPヘッダー名
+    /// </summary>
+    public const string DeviceTokenHeader = "X-Device-Token";
+
+    /// <summary>
+    /// 保護者のJWTで端末を子供用に登録し、端末トークンを返す
+    /// </summary>
+    public static async Task<string> RegisterDeviceAsync(HttpClient client, string parentJwt, string name = "テスト端末")
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/devices")
+        {
+            Content = JsonContent.Create(new RegisterDeviceRequest { Name = name })
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", parentJwt);
+
+        var response = await client.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<RegisterDeviceResponse>();
+        return result?.Token ?? throw new InvalidOperationException("Failed to get device token");
+    }
+
+    /// <summary>
+    /// HTTPクライアントに端末トークンを設定（null で削除）
+    /// </summary>
+    public static void SetDeviceToken(HttpClient client, string? token)
+    {
+        client.DefaultRequestHeaders.Remove(DeviceTokenHeader);
+        if (token != null)
+        {
+            client.DefaultRequestHeaders.Add(DeviceTokenHeader, token);
+        }
     }
 
     /// <summary>

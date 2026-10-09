@@ -72,6 +72,7 @@ builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
 builder.Services.AddScoped<IParentDashboardService, ParentDashboardService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IChildAccountService, ChildAccountService>();
+builder.Services.AddScoped<IDeviceService, DeviceService>();
 
 // Memory cache for PIN lockout
 builder.Services.AddMemoryCache();

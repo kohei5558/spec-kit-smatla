@@ -26,6 +26,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Level> Levels => Set<Level>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<PresetAvatar> PresetAvatars => Set<PresetAvatar>();
+    public DbSet<RegisteredDevice> RegisteredDevices => Set<RegisteredDevice>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -218,6 +219,25 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.CreatedAt).IsRequired();
 
             entity.HasIndex(e => e.DisplayOrder);
+        });
+
+        // RegisteredDevice（子供用端末）
+        modelBuilder.Entity<RegisteredDevice>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(30);
+            entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(64);
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.LastUsedAt).IsRequired();
+
+            // 保護者が削除されたら端末登録も削除
+            entity.HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(e => e.ParentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.ParentId);
+            entity.HasIndex(e => e.TokenHash).IsUnique();
         });
     }
 }

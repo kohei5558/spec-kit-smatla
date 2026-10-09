@@ -30,10 +30,25 @@ public abstract class AuthenticatedTestBase : IClassFixture<TestWebApplicationFa
     }
 
     /// <summary>
+    /// テスト用保護者の登録端末トークンをクライアントに設定（子供一覧・子供ログインに必要）
+    /// </summary>
+    protected async Task UseRegisteredDeviceAsync()
+    {
+        if (Factory.ParentDeviceToken == null)
+        {
+            var parentJwt = await AuthenticationHelper.LoginAsParentAsync(Client, Factory.Services);
+            Factory.ParentDeviceToken = await AuthenticationHelper.RegisterDeviceAsync(Client, parentJwt);
+        }
+
+        AuthenticationHelper.SetDeviceToken(Client, Factory.ParentDeviceToken);
+    }
+
+    /// <summary>
     /// 子供として認証
     /// </summary>
     protected async Task<string> AuthenticateAsChildAsync(string childId, string pin)
     {
+        await UseRegisteredDeviceAsync();
         var token = await AuthenticationHelper.LoginAsChildAsync(Client, childId, pin, Factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(Client, token);
         return token;
