@@ -12,13 +12,14 @@ public static class DatabaseInitializer
     /// <summary>
     /// データベースをマイグレーションしてシードデータを投入
     /// </summary>
-    public static async Task InitializeDatabaseAsync(this ApplicationDbContext context, IServiceProvider? serviceProvider = null)
+    /// <param name="seedDemoUsers">既知のパスワードを持つデモ用ユーザーを作成するか（開発環境のみtrueにすること）</param>
+    public static async Task InitializeDatabaseAsync(this ApplicationDbContext context, IServiceProvider? serviceProvider = null, bool seedDemoUsers = false)
     {
         // マイグレーションを適用
         await context.Database.MigrateAsync();
 
         // ユーザーデータを追加（Identity使用のため、serviceProvider経由で呼び出す）
-        if (serviceProvider != null)
+        if (seedDemoUsers && serviceProvider != null)
         {
             await UserSeeder.SeedUsersAsync(serviceProvider);
         }

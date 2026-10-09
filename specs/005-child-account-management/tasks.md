@@ -1,5 +1,12 @@
 # Implementation Tasks: 子供アカウント管理画面
 
+> **棚卸し（2026-10-08）**: コードと突き合わせてチェックを更新。US1〜US5 は実装・テストとも完了していた（チェック漏れ）。
+> - サービスは計画の Core ではなく `Infrastructure/Services/ChildAccountService.cs`、画面は `Pages/Parent/` ではなく `Pages/` 直下に実装
+> - PIN ロックアウトは 2026-10-08 に修正（初回失敗が2回分に数えられ、2回でロックされていた）
+> - 残り: T064（同一PIN警告はAPIが `X-Pin-Warning` ヘッダーを返すが画面に未表示）、T065（デフォルトアバター）、
+>   T066（ParentId インデックスなし）、T067（`ErrorHandlingMiddleware` は存在するが Program.cs で未登録）、
+>   T068（CSS ファイルなし）、T069（aria-label なし）、T071（quickstart 確認）
+
 **Feature**: 005-child-account-management  
 **Branch**: `005-child-account-management`  
 **Created**: 2026年2月7日  
@@ -108,13 +115,13 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 
 ### Backend Tasks
 
-- [ ] T017 [US1] ChildAccountController.ListAsync実装（GET /api/child-accounts） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
-- [ ] T018 [US1] ChildAccountService.ListAsync実装（保護者IDで子供一覧取得） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
-- [ ] T019 [US1] ChildAccountController.CreateAsync実装（POST /api/child-accounts） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
-- [ ] T020 [US1] ChildAccountService.CreateAsync実装（ApplicationUser+Student作成、PINハッシュ化、重複名チェック、10件上限チェック） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
-- [ ] T021 [US1] PresetAvatarController.ListAsync実装（GET /api/preset-avatars） - backend/src/GamifiedMathDrill.Api/Controllers/PresetAvatarController.cs
-- [ ] T022 [US1] ChildAuthController.LoginAsync実装（POST /api/auth/child/login、PINハッシュ検証、3回ロックアウト） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAuthController.cs
-- [ ] T023 [US1] PINロックアウト機能実装（IMemoryCache使用、5分自動解除） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
+- [x] T017 [US1] ChildAccountController.ListAsync実装（GET /api/child-accounts） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
+- [x] T018 [US1] ChildAccountService.ListAsync実装（保護者IDで子供一覧取得） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
+- [x] T019 [US1] ChildAccountController.CreateAsync実装（POST /api/child-accounts） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
+- [x] T020 [US1] ChildAccountService.CreateAsync実装（ApplicationUser+Student作成、PINハッシュ化、重複名チェック、10件上限チェック） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
+- [x] T021 [US1] PresetAvatarController.ListAsync実装（GET /api/preset-avatars） - backend/src/GamifiedMathDrill.Api/Controllers/PresetAvatarController.cs
+- [x] T022 [US1] ChildAuthController.LoginAsync実装（POST /api/auth/child/login、PINハッシュ検証、3回ロックアウト） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAuthController.cs
+- [x] T023 [US1] PINロックアウト機能実装（IMemoryCache使用、5分自動解除） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
 
 ### Frontend Tasks
 
@@ -149,20 +156,20 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 
 ### Backend Tasks
 
-- [ ] T036 [US2] ChildAccountController.GetAsync実装（GET /api/child-accounts/{id}） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
-- [ ] T037 [US2] ChildAccountService.GetAsync実装（ID検索、保護者権限チェック） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
-- [ ] T038 [US2] ChildAccountController.UpdateAsync実装（PUT /api/child-accounts/{id}） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
-- [ ] T039 [US2] ChildAccountService.UpdateAsync実装（ApplicationUser+Student同期更新、PINハッシュ化、重複名チェック） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
+- [x] T036 [US2] ChildAccountController.GetAsync実装（GET /api/child-accounts/{id}） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
+- [x] T037 [US2] ChildAccountService.GetAsync実装（ID検索、保護者権限チェック） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
+- [x] T038 [US2] ChildAccountController.UpdateAsync実装（PUT /api/child-accounts/{id}） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
+- [x] T039 [US2] ChildAccountService.UpdateAsync実装（ApplicationUser+Student同期更新、PINハッシュ化、重複名チェック） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
 
 ### Frontend Tasks
 
-- [ ] T040 [US2] EditChildAccount.razor実装（編集フォーム、既存値プリセット、保存処理） - frontend/GamifiedMathDrill.Client/Pages/Parent/EditChildAccount.razor
-- [ ] T041 [US2] ChildAccountManagementに「編集」ボタン追加、編集画面への遷移 - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
+- [x] T040 [US2] EditChildAccount.razor実装（編集フォーム、既存値プリセット、保存処理） - frontend/GamifiedMathDrill.Client/Pages/Parent/EditChildAccount.razor
+- [x] T041 [US2] ChildAccountManagementに「編集」ボタン追加、編集画面への遷移 - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
 
 ### Tests
 
-- [ ] T042 [US2] アカウント更新の統合テスト（名前、学年、アバター変更） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
-- [ ] T043 [US2] PIN変更の統合テスト（新PINでログイン成功） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
+- [x] T042 [US2] アカウント更新の統合テスト（名前、学年、アバター変更） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
+- [x] T043 [US2] PIN変更の統合テスト（新PINでログイン成功） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
 
 ---
 
@@ -178,18 +185,18 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 
 ### Backend Tasks
 
-- [ ] T044 [P] [US3] ChildAccountController.GetDetailAsync実装（GET /api/child-accounts/{id}/detail、学習統計含む） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
-- [ ] T045 [US3] ChildAccountService.GetLearningStatsAsync実装（Studentモデルから統計集計、過去7日間アクティビティ） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
+- [x] T044 [P] [US3] ChildAccountController.GetDetailAsync実装（GET /api/child-accounts/{id}/detail、学習統計含む） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
+- [x] T045 [US3] ChildAccountService.GetLearningStatsAsync実装（Studentモデルから統計集計、過去7日間アクティビティ） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
 
 ### Frontend Tasks
 
-- [ ] T046 [US3] ChildDetail.razor実装（基本情報 + 学習統計サマリー表示） - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildDetail.razor
-- [ ] T047 [US3] ChildAccountManagementに「詳細」ボタン追加、詳細画面への遷移 - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
-- [ ] T048 [P] [US3] LearningStatsChart.razorコンポーネント実装（過去7日間の棒グラフ） - frontend/GamifiedMathDrill.Client/Components/LearningStatsChart.razor
+- [x] T046 [US3] ChildDetail.razor実装（基本情報 + 学習統計サマリー表示） - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildDetail.razor
+- [x] T047 [US3] ChildAccountManagementに「詳細」ボタン追加、詳細画面への遷移 - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
+- [x] T048 [P] [US3] LearningStatsChart.razorコンポーネント実装（過去7日間の棒グラフ） - frontend/GamifiedMathDrill.Client/Components/LearningStatsChart.razor
 
 ### Tests
 
-- [ ] T049 [US3] 学習統計取得の統合テスト（データあり/なし両方） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
+- [x] T049 [US3] 学習統計取得の統合テスト（データあり/なし両方） - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
 
 ---
 
@@ -205,20 +212,20 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 
 ### Backend Tasks
 
-- [ ] T050 [P] [US4] ChildAccountController.SuspendAsync実装（POST /api/child-accounts/{id}/suspend） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
-- [ ] T051 [P] [US4] ChildAccountController.ActivateAsync実装（POST /api/child-accounts/{id}/activate） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
-- [ ] T052 [US4] ChildAccountService.Suspend/ActivateAsync実装（IsActiveフラグ切り替え） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
-- [ ] T053 [US4] ChildAuthController.LoginAsyncにIsActiveチェック追加 - backend/src/GamifiedMathDrill.Api/Controllers/ChildAuthController.cs
+- [x] T050 [P] [US4] ChildAccountController.SuspendAsync実装（POST /api/child-accounts/{id}/suspend） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
+- [x] T051 [P] [US4] ChildAccountController.ActivateAsync実装（POST /api/child-accounts/{id}/activate） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
+- [x] T052 [US4] ChildAccountService.Suspend/ActivateAsync実装（IsActiveフラグ切り替え） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
+- [x] T053 [US4] ChildAuthController.LoginAsyncにIsActiveチェック追加 - backend/src/GamifiedMathDrill.Api/Controllers/ChildAuthController.cs
 
 ### Frontend Tasks
 
-- [ ] T054 [US4] ChildAccountManagementに「停止」「再開」ボタン追加（ステータスに応じて表示切替） - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
-- [ ] T055 [US4] 停止確認ダイアログ実装 - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
+- [x] T054 [US4] ChildAccountManagementに「停止」「再開」ボタン追加（ステータスに応じて表示切替） - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
+- [x] T055 [US4] 停止確認ダイアログ実装 - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
 
 ### Tests
 
-- [ ] T056 [US4] アカウント停止/再開の統合テスト - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
-- [ ] T057 [US4] 停止中ログイン拒否の統合テスト - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountSecurityTests.cs
+- [x] T056 [US4] アカウント停止/再開の統合テスト - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountTests.cs
+- [x] T057 [US4] 停止中ログイン拒否の統合テスト - backend/tests/GamifiedMathDrill.Tests.Integration/ChildAccountSecurityTests.cs
 
 ---
 
@@ -234,13 +241,13 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 
 ### Backend Tasks
 
-- [ ] T058 [US5] ChildAccountController.DeleteAsync実装（DELETE /api/child-accounts/{id}） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
-- [ ] T059 [US5] ChildAccountService.DeleteAsync実装（ApplicationUser削除、Student連鎖削除、LearningRecords連鎖削除） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
+- [x] T058 [US5] ChildAccountController.DeleteAsync実装（DELETE /api/child-accounts/{id}） - backend/src/GamifiedMathDrill.Api/Controllers/ChildAccountController.cs
+- [x] T059 [US5] ChildAccountService.DeleteAsync実装（ApplicationUser削除、Student連鎖削除、LearningRecords連鎖削除） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
 
 ### Frontend Tasks
 
-- [ ] T060 [US5] ChildAccountManagementに「削除」ボタン追加 - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
-- [ ] T061 [US5] 削除確認ダイアログ実装（警告メッセージ「学習データも全て削除されます」） - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
+- [x] T060 [US5] ChildAccountManagementに「削除」ボタン追加 - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
+- [x] T061 [US5] 削除確認ダイアログ実装（警告メッセージ「学習データも全て削除されます」） - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
 
 ### Tests
 
@@ -263,7 +270,7 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 - [ ] T067 [P] エラーハンドリング統一（BusinessRuleViolationException、ValidationException） - backend/src/GamifiedMathDrill.Api/Middleware/ErrorHandlingMiddleware.cs
 - [ ] T068 [P] ChildAccountCard.razorのCSS調整（レスポンシブ、子供に優しいデザイン） - frontend/GamifiedMathDrill.Client/Components/ChildAccountCard.razor.css
 - [ ] T069 [P] アクセシビリティ改善（aria-label、キーボードナビゲーション） - frontend/GamifiedMathDrill.Client/Components/\*.razor
-- [ ] T070 統合テスト全実行と回帰テスト - backend/tests/GamifiedMathDrill.Tests.Integration/
+- [x] T070 統合テスト全実行と回帰テスト - backend/tests/GamifiedMathDrill.Tests.Integration/
 - [ ] T071 quickstart.mdの動作確認（30分セットアップガイド） - specs/005-child-account-management/quickstart.md
 
 ---

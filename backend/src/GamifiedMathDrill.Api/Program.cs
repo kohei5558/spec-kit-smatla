@@ -160,7 +160,7 @@ if (app.Environment.EnvironmentName != "Testing")
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await context.InitializeDatabaseAsync(scope.ServiceProvider);
+        await context.InitializeDatabaseAsync(scope.ServiceProvider, seedDemoUsers: app.Environment.IsDevelopment());
     }
 }
 

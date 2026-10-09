@@ -132,21 +132,3 @@ public class ChildAuthController : ControllerBase
         });
     }
 }
-
-/// <summary>
-/// 子供ログインリクエスト
-/// </summary>
-public class ChildLoginRequest
-{
-    /// <summary>
-    /// 子供アカウントID
-    /// テストのペイロードでは `ChildId` を使っているため、JSONプロパティ名を合わせる
-    /// </summary>
-    [System.Text.Json.Serialization.JsonPropertyName("ChildId")]
-    public string ChildAccountId { get; set; } = string.Empty;
-
-    /// <summary>
-    /// PINコード（4桁）
-    /// </summary>
-    public string PIN { get; set; } = string.Empty;
-}

@@ -29,7 +29,7 @@ Blazor WebAssemblyで実装されたゲーミフィケーション要素を持�
 
 ## 技術スタック
 
-- **Blazor WebAssembly (.NET 8.0)**: SPA フレームワーク
+- **Blazor WebAssembly (.NET 10)**: SPA フレームワーク
 - **MudBlazor 7.15.0**: マテリアルデザイン コンポーネントライブラリ
 - **Blazored.LocalStorage**: ブラウザローカルストレージ管理
 - **Blazored.SessionStorage**: セッションストレージ管理
@@ -70,7 +70,7 @@ frontend/GamifiedMathDrill.Client/
 
 ### 前提条件
 
-- .NET 8.0 SDK以上
+- .NET 10 SDK以上
 - バックエンドAPIが起動していること（デフォルト: `http://localhost:5242`）
 
 ### インストール
@@ -298,7 +298,7 @@ Navigation.NavigateTo("/login");
 
 ### ホットリロード
 
-.NET 8では、コード変更時に自動的にブラウザがリロードされます：
+.NET 10では、コード変更時に自動的にブラウザがリロードされます：
 
 ```bash
 # ホットリロード有効で起動

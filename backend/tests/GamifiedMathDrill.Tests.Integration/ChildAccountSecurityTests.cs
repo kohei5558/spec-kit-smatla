@@ -38,7 +38,7 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
 
         var loginRequest = new
         {
-            ChildAccountId = childAccount.Id,
+            ChildId = childAccount.Id,
             PIN = "9999" // 間違ったPIN
         };
 
@@ -57,7 +57,7 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         Assert.Equal(HttpStatusCode.TooManyRequests, fourthAttempt.StatusCode);
 
         var errorContent = await fourthAttempt.Content.ReadAsStringAsync();
-        Assert.Contains("ロック", errorContent);
+        Assert.Contains("5分後", errorContent);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         // 2回失敗
         var wrongPinRequest = new
         {
-            ChildAccountId = childAccount.Id,
+            ChildId = childAccount.Id,
             PIN = "0000"
         };
 
@@ -95,7 +95,7 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         // 正しいPINでログイン成功
         var correctPinRequest = new
         {
-            ChildAccountId = childAccount.Id,
+            ChildId = childAccount.Id,
             PIN = "5678"
         };
 
@@ -140,7 +140,7 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         Client.DefaultRequestHeaders.Authorization = null;
 
         // 3回失敗してロック
-        var wrongRequest = new { ChildAccountId = childAccount.Id, PIN = "0000" };
+        var wrongRequest = new { ChildId = childAccount.Id, PIN = "0000" };
         await Client.PostAsJsonAsync("/api/auth/child/login", wrongRequest);
         await Client.PostAsJsonAsync("/api/auth/child/login", wrongRequest);
         await Client.PostAsJsonAsync("/api/auth/child/login", wrongRequest);
@@ -153,7 +153,7 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         // await Task.Delay(TimeSpan.FromMinutes(5));
 
         // 正しいPINで再試行（5分後は成功するはず）
-        // var correctRequest = new { ChildAccountId = childAccount.Id, PIN = "4321" };
+        // var correctRequest = new { ChildId = childAccount.Id, PIN = "4321" };
         // var unlockedResponse = await Client.PostAsJsonAsync("/api/auth/child/login", correctRequest);
         // Assert.Equal(HttpStatusCode.OK, unlockedResponse.StatusCode);
     }
@@ -193,7 +193,7 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         Client.DefaultRequestHeaders.Authorization = null;
 
         // child1で3回失敗
-        var child1WrongRequest = new { ChildAccountId = child1.Id, PIN = "0000" };
+        var child1WrongRequest = new { ChildId = child1.Id, PIN = "0000" };
         await Client.PostAsJsonAsync("/api/auth/child/login", child1WrongRequest);
         await Client.PostAsJsonAsync("/api/auth/child/login", child1WrongRequest);
         await Client.PostAsJsonAsync("/api/auth/child/login", child1WrongRequest);
@@ -203,7 +203,7 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         Assert.Equal(HttpStatusCode.TooManyRequests, child1LockedResponse.StatusCode);
 
         // child2は正常にログインできる
-        var child2CorrectRequest = new { ChildAccountId = child2.Id, PIN = "2222" };
+        var child2CorrectRequest = new { ChildId = child2.Id, PIN = "2222" };
         var child2LoginResponse = await Client.PostAsJsonAsync("/api/auth/child/login", child2CorrectRequest);
 
         // Assert - child2はロックされていない
@@ -239,7 +239,7 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         // Act: 停止中のアカウントでログイン試行
         var loginRequest = new
         {
-            ChildAccountId = childAccount.Id,
+            ChildId = childAccount.Id,
             PIN = "5555" // 正しいPIN
         };
         var loginResponse = await Client.PostAsJsonAsync("/api/auth/child/login", loginRequest);
@@ -278,7 +278,7 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         // Act: 削除済みアカウントでログイン試行
         var loginRequest = new
         {
-            ChildAccountId = childId,
+            ChildId = childId,
             PIN = "6666" // 正しいPIN（だが削除済み）
         };
         var loginResponse = await Client.PostAsJsonAsync("/api/auth/child/login", loginRequest);

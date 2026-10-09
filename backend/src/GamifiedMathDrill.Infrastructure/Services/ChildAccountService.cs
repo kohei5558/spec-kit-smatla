@@ -359,19 +359,9 @@ public class ChildAccountService : IChildAccountService
         var attemptsKey = $"pin_attempts_{childId}";
         var lockoutKey = $"pin_lockout_{childId}";
 
-        // キャッシュ競合を回避するため、GetOrCreateの戻り値をそのまま使用
-        var attempts = _cache.GetOrCreate(attemptsKey, entry =>
-        {
-            entry.SlidingExpiration = TimeSpan.FromMinutes(5);
-            return 1; // 初回は1回目の失敗
-        });
-
-        // 既存の値がある場合はインクリメント
-        if (attempts > 0)
-        {
-            attempts++;
-            _cache.Set(attemptsKey, attempts, TimeSpan.FromMinutes(5));
-        }
+        // 初回は1、以降は既存値+1（以前はGetOrCreate直後にも加算しており、初回が2回分と数えられていた）
+        var attempts = _cache.TryGetValue(attemptsKey, out int current) ? current + 1 : 1;
+        _cache.Set(attemptsKey, attempts, TimeSpan.FromMinutes(5));
 
         if (attempts >= MaxPinAttempts)
         {
