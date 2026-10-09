@@ -11,7 +11,7 @@ namespace GamifiedMathDrill.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/child-accounts")]
-[Authorize]
+[Authorize(Roles = "Parent")] // 子供アカウントの管理は保護者のみ
 public class ChildAccountController : ControllerBase
 {
     private readonly IChildAccountService _childAccountService;
