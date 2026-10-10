@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using GamifiedMathDrill.Client.Models;
 
@@ -12,41 +13,33 @@ public class DailyChallengeApiClient
         _httpClient = httpClient;
     }
 
-    public async Task<DailyChallengeDto?> GetTodaysChallengeAsync()
+    /// <summary>
+    /// 学習者の今日のチャレンジ。用意できないときは null
+    /// </summary>
+    public async Task<DailyChallengeDto?> GetTodaysChallengeAsync(int studentId)
     {
-        try
+        var response = await _httpClient.GetAsync($"api/DailyChallenges/today?studentId={studentId}");
+        if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            var response = await _httpClient.GetAsync("api/DailyChallenges/today");
-
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                return null;
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadFromJsonAsync<DailyChallengeDto>();
+            return null;
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error fetching today's challenge: {ex.Message}");
-            throw;
-        }
+
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<DailyChallengeDto>();
     }
 
+    /// <summary>
+    /// チャレンジに答える。今日すでに答えていたときは null（1日1回）
+    /// </summary>
     public async Task<DailyChallengeAnswerResponse?> SubmitAnswerAsync(int challengeId, DailyChallengeAnswerRequest request)
     {
-        try
+        var response = await _httpClient.PostAsJsonAsync($"api/DailyChallenges/{challengeId}/answer", request);
+        if (response.StatusCode == HttpStatusCode.Conflict)
         {
-            var response = await _httpClient.PostAsJsonAsync($"api/DailyChallenges/{challengeId}/answer", request);
-            response.EnsureSuccessStatusCode();
+            return null;
+        }
 
-            return await response.Content.ReadFromJsonAsync<DailyChallengeAnswerResponse>();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error submitting challenge answer: {ex.Message}");
-            throw;
-        }
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<DailyChallengeAnswerResponse>();
     }
 }

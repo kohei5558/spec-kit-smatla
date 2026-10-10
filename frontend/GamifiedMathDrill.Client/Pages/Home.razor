@@ -60,8 +60,7 @@
             @if (dailyChallenge != null)
             {
                 <MudItem Class="mb-6">
-                    <DailyChallengeCard Challenge="@dailyChallenge" 
-                                       IsActive="true"
+                    <DailyChallengeCard Challenge="@dailyChallenge"
                                        OnStartChallenge="StartDailyChallenge" />
                 </MudItem>
             }
@@ -373,7 +372,7 @@
     {
         try
         {
-            dailyChallenge = await DailyChallengeApi.GetTodaysChallengeAsync();
+            dailyChallenge = student == null ? null : await DailyChallengeApi.GetTodaysChallengeAsync(student.Id);
         }
         catch (Exception ex)
         {
@@ -398,9 +397,6 @@
 
     private void StartDailyChallenge()
     {
-        if (dailyChallenge != null)
-        {
-            Navigation.NavigateTo($"/problem?challengeId={dailyChallenge.Id}");
-        }
+        Navigation.NavigateTo("/daily-challenge");
     }
 }

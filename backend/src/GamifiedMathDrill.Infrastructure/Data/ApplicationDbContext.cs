@@ -131,11 +131,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.TargetDate).IsRequired();
-            entity.Property(e => e.BonusPoints).HasDefaultValue(20);
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
 
-            entity.HasIndex(e => e.TargetDate).IsUnique();
-            entity.HasIndex(e => e.IsActive);
+            // 学習者ごと・日ごとに1つ（010）
+            entity.HasIndex(e => new { e.StudentId, e.TargetDate }).IsUnique();
+
+            entity.HasOne(e => e.Student)
+                .WithMany()
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(e => e.Problem)
                 .WithMany(p => p.DailyChallenges)

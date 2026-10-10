@@ -4,7 +4,6 @@ using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Services;
 using GamifiedMathDrill.Infrastructure.Data;
 using GamifiedMathDrill.Infrastructure.Identity;
-using GamifiedMathDrill.Infrastructure.Jobs;
 using GamifiedMathDrill.Infrastructure.Repositories;
 using GamifiedMathDrill.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -85,8 +84,8 @@ builder.Services.AddScoped<IStudentAccessService, StudentAccessService>();
 // Memory cache for PIN lockout
 builder.Services.AddMemoryCache();
 
-// Background services
-builder.Services.AddHostedService<DailyChallengeJob>();
+// 現在時刻（デイリーチャレンジの日付。テストで差し替えられるように）
+builder.Services.AddSingleton(TimeProvider.System);
 
 // ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

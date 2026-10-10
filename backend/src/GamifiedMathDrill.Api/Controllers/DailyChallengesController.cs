@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GamifiedMathDrill.Api.Controllers;
 
+/// <summary>
+/// デイリーチャレンジ（010）。学習者ごと・日ごとに1問、1回だけ答えられる
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Parent,Child")]
@@ -28,93 +31,84 @@ public class DailyChallengesController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// 学習者の今日のチャレンジ（まだなければ作る）
+    /// </summary>
     [HttpGet("today")]
-    public async Task<ActionResult<DailyChallengeResponseDto>> GetTodaysChallenge()
+    [ProducesResponseType(typeof(DailyChallengeResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<DailyChallengeResponseDto>> GetTodaysChallenge([FromQuery] int studentId)
     {
-        try
+        if (studentId <= 0)
         {
-            var challenge = await _dailyChallengeService.GetTodaysChallengeAsync();
-
-            if (challenge == null)
-            {
-                _logger.LogInformation("No daily challenge available for today");
-                return NotFound(new { message = "今日のデイリーチャレンジはまだ用意されていません。" });
-            }
-
-            var problem = await _problemRepository.GetByIdAsync(challenge.ProblemId);
-            if (problem == null)
-            {
-                _logger.LogError("Problem not found for challenge ID {ChallengeId}", challenge.Id);
-                return NotFound(new { message = "問題が見つかりませんでした。" });
-            }
-
-            var response = new DailyChallengeResponseDto
-            {
-                Id = challenge.Id,
-                ProblemId = challenge.ProblemId,
-                Question = problem.Question,
-                Difficulty = problem.DifficultyLevel,
-                TargetDate = challenge.TargetDate.ToDateTime(TimeOnly.MinValue),
-                BonusPoints = challenge.BonusPoints,
-                IsActive = challenge.IsActive
-            };
-
-            return Ok(response);
+            return BadRequest(new { message = "無効な生徒IDです。" });
         }
-        catch (Exception ex)
+
+        // 自分（子供）または自分の子供（保護者）の学習者のみ。他家庭の学習者は存在しない扱い
+        if (!await this.CanAccessStudentAsync(_studentAccess, studentId))
         {
-            _logger.LogError(ex, "Error retrieving today's daily challenge");
-            return StatusCode(500, new { message = "デイリーチャレンジの取得に失敗しました。" });
+            return NotFound(new { message = "生徒が見つかりません。" });
         }
+
+        var challenge = await _dailyChallengeService.GetOrCreateTodaysChallengeAsync(studentId);
+        var problem = challenge == null ? null : await _problemRepository.GetByIdAsync(challenge.ProblemId);
+        if (challenge == null || problem == null)
+        {
+            _logger.LogInformation("No daily challenge available for student {StudentId}", studentId);
+            return NotFound(new { message = "今日のデイリーチャレンジはまだ用意されていません。" });
+        }
+
+        var answered = challenge.AnsweredAt != null;
+        return Ok(new DailyChallengeResponseDto
+        {
+            Id = challenge.Id,
+            Question = problem.Question,
+            Difficulty = problem.DifficultyLevel,
+            TargetDate = challenge.TargetDate,
+            BonusPoints = challenge.BonusPoints,
+            IsAnswered = answered,
+            IsCorrect = challenge.IsCorrect,
+            StudentAnswer = challenge.StudentAnswer,
+            // 答える前に正解を返さない
+            CorrectAnswer = answered ? problem.CorrectAnswer : null
+        });
     }
 
+    /// <summary>
+    /// チャレンジに答える。子供本人だけ・1日1回（2回目以降は 409）
+    /// </summary>
     [HttpPost("{id}/answer")]
+    [Authorize(Roles = "Child")]
+    [ProducesResponseType(typeof(DailyChallengeAnswerResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<DailyChallengeAnswerResponseDto>> SubmitAnswer(
         int id,
-        [FromBody] DailyChallengeAnswerRequestDto request)
+        [FromBody] DailyChallengeAnswerRequestDto? request)
     {
-        try
+        if (request == null || request.StudentId <= 0)
         {
-            if (request.StudentId <= 0)
-            {
-                return BadRequest(new { message = "無効な生徒IDです。" });
-            }
+            return BadRequest(new { message = "無効な生徒IDです。" });
+        }
 
-            // 自分（子供）または自分の子供（保護者）の学習者のみ。他家庭の学習者は存在しない扱い
-            if (!await this.CanAccessStudentAsync(_studentAccess, request.StudentId))
-            {
-                return NotFound(new { message = "生徒が見つかりません。" });
-            }
+        if (!await this.CanAccessStudentAsync(_studentAccess, request.StudentId))
+        {
+            return NotFound(new { message = "生徒が見つかりません。" });
+        }
 
-            var result = await _dailyChallengeService.SubmitChallengeAnswerAsync(
-                request.StudentId,
-                id,
-                request.Answer);
-
-            var response = new DailyChallengeAnswerResponseDto
+        var result = await _dailyChallengeService.SubmitChallengeAnswerAsync(request.StudentId, id, request.Answer);
+        return result.Status switch
+        {
+            DailyChallengeAnswerStatus.NotFound => NotFound(new { message = "チャレンジが見つかりません。" }),
+            DailyChallengeAnswerStatus.AlreadyAnswered => Conflict(new { message = "今日のチャレンジはもう答えたよ。また明日ちょうせんしてね。" }),
+            _ => Ok(new DailyChallengeAnswerResponseDto
             {
                 IsCorrect = result.IsCorrect,
                 BonusPoints = result.BonusPoints,
-                LeveledUp = result.LeveledUp,
-                NewLevel = result.NewLevel?.LevelNumber
-            };
-
-            return Ok(response);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            _logger.LogWarning(ex, "Resource not found when submitting challenge answer");
-            return NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning(ex, "Invalid operation when submitting challenge answer");
-            return BadRequest(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error submitting daily challenge answer");
-            return StatusCode(500, new { message = "回答の送信に失敗しました。" });
-        }
+                CorrectAnswer = result.CorrectAnswer
+            })
+        };
     }
 }

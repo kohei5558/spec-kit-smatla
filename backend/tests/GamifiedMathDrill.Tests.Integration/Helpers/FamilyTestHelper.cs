@@ -39,10 +39,10 @@ public static class FamilyTestHelper
     /// <summary>
     /// 家庭に子供を追加し、登録端末からログインさせる
     /// </summary>
-    public static async Task<Child> AddChildAsync(HttpClient client, string parentJwt, string deviceToken, string name, string pin)
+    public static async Task<Child> AddChildAsync(HttpClient client, string parentJwt, string deviceToken, string name, string pin, int gradeLevel = 3)
     {
         var create = await SendAsync(client, HttpMethod.Post, "/api/child-accounts", parentJwt,
-            new ChildAccountCreateDto { Name = name, GradeLevel = 3, PresetAvatarId = 1, PIN = pin });
+            new ChildAccountCreateDto { Name = name, GradeLevel = gradeLevel, PresetAvatarId = 1, PIN = pin });
         create.EnsureSuccessStatusCode();
         var childId = (await create.Content.ReadFromJsonAsync<ChildAccountDto>())!.Id;
 

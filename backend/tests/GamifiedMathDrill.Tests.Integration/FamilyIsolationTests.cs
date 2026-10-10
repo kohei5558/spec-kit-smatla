@@ -42,7 +42,7 @@ public class FamilyIsolationTests : IClassFixture<TestWebApplicationFactory>
     public async Task DailyChallengeAnswer_WithoutLogin_ReturnsUnauthorized()
     {
         var client = _factory.CreateClient();
-        var challengeId = await EnsureTodaysChallengeAsync();
+        var challengeId = await AddChallengeAsync(null);
 
         var response = await client.PostAsJsonAsync($"/api/dailychallenges/{challengeId}/answer",
             new DailyChallengeAnswerRequestDto { StudentId = 1, Answer = 0 });
@@ -56,7 +56,7 @@ public class FamilyIsolationTests : IClassFixture<TestWebApplicationFactory>
         var client = _factory.CreateClient();
         var a = await FamilyTestHelper.CreateFamilyAsync(client, "分離A");
         var b = await FamilyTestHelper.CreateFamilyAsync(client, "分離B");
-        var challengeId = await EnsureTodaysChallengeAsync();
+        var challengeId = await AddChallengeAsync(b.StudentId);
         var problemId = GetAnyProblemId();
 
         var asChildA = (HttpMethod method, string url, object? body) => FamilyTestHelper.SendAsync(client, method, url, a.ChildJwt, body);
@@ -168,18 +168,21 @@ public class FamilyIsolationTests : IClassFixture<TestWebApplicationFactory>
 
     private Task GivePointsAsync(int studentId, int points) => FamilyTestHelper.SetPointsAsync(_factory.Services, studentId, points);
 
-    private async Task<int> EnsureTodaysChallengeAsync()
+    /// <summary>
+    /// 学習者のチャレンジを直接作る（学習者を指定しない場合は既存のいずれかの学習者）
+    /// </summary>
+    private async Task<int> AddChallengeAsync(int? studentId)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var challenge = db.DailyChallenges.FirstOrDefault(c => c.TargetDate == today);
-        if (challenge == null)
+        var challenge = new DailyChallenge
         {
-            challenge = new DailyChallenge { ProblemId = db.Problems.First().Id, TargetDate = today, BonusPoints = 20, IsActive = true };
-            db.DailyChallenges.Add(challenge);
-            await db.SaveChangesAsync();
-        }
+            StudentId = studentId ?? db.Students.First().Id,
+            ProblemId = db.Problems.First().Id,
+            TargetDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-100)
+        };
+        db.DailyChallenges.Add(challenge);
+        await db.SaveChangesAsync();
         return challenge.Id;
     }
 

@@ -52,17 +52,23 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("BonusPoints")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(20);
+                    b.Property<DateTime?>("AnsweredAt")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
+                    b.Property<int>("BonusPoints")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool?>("IsCorrect")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("ProblemId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("StudentAnswer")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StudentId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateOnly>("TargetDate")
@@ -70,11 +76,9 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsActive");
-
                     b.HasIndex("ProblemId");
 
-                    b.HasIndex("TargetDate")
+                    b.HasIndex("StudentId", "TargetDate")
                         .IsUnique();
 
                     b.ToTable("DailyChallenges");
@@ -720,7 +724,15 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("GamifiedMathDrill.Core.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Problem");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("GamifiedMathDrill.Core.Models.ExchangeRequest", b =>
