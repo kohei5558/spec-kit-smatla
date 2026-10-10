@@ -93,7 +93,8 @@ public class ProblemsController : ControllerBase
                 Id = problem.Id,
                 Question = problem.Question,
                 DifficultyLevel = problem.DifficultyLevel,
-                CalculationTypeText = problem.CalculationType.ToString()
+                CalculationTypeText = problem.CalculationType.ToString(),
+                HasRemainder = problem.CalculationType == Core.Models.CalculationType.DivisionWithRemainder
             };
 
             return Ok(ApiResponse<ProblemDto>.SuccessResponse(problemDto));
@@ -177,7 +178,7 @@ public class ProblemsController : ControllerBase
         try
         {
             var (isCorrect, pointsEarned, leveledUp, newLevel) =
-                await _problemService.SubmitAnswerAsync(studentId, id, answerDto.Answer);
+                await _problemService.SubmitAnswerAsync(studentId, id, answerDto.Answer, answerDto.Remainder);
 
             _logger.LogInformation("Answer result: IsCorrect={IsCorrect}, PointsEarned={PointsEarned}",
                 isCorrect, pointsEarned);
@@ -204,6 +205,7 @@ public class ProblemsController : ControllerBase
             if (problem != null)
             {
                 result.CorrectAnswer = problem.CorrectAnswer;
+                result.CorrectRemainder = problem.CorrectRemainder;
             }
 
             return Ok(ApiResponse<AnswerResultDto>.SuccessResponse(result));

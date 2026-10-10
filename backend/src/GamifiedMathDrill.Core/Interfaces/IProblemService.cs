@@ -8,5 +8,6 @@ public interface IProblemService
     Task<(bool IsCorrect, int PointsEarned, bool LeveledUp, Level? NewLevel)> SubmitAnswerAsync(
         int studentId,
         int problemId,
-        int answer);
+        int answer,
+        int? remainder = null);
 }

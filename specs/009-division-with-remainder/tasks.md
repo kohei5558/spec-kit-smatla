@@ -19,9 +19,9 @@
 
 ## Phase 2: 回答 API（US1）
 
-- [ ] T005 [US1] 結合テスト: 問題取得で HasRemainder が返る、商・あまりの両方が合うときだけ正解、学習記録にあまりが残る、他の種類はあまりを無視 - backend/tests/GamifiedMathDrill.Tests.Integration/DivisionWithRemainderTests.cs
-- [ ] T006 [US1] DTO（HasRemainder / Remainder / CorrectRemainder）と ProblemService.SubmitAnswerAsync・ProblemsController を対応 - backend/src/GamifiedMathDrill.Core/Models/DTOs/StudentDtos.cs, backend/src/GamifiedMathDrill.Core/Services/ProblemService.cs, backend/src/GamifiedMathDrill.Api/Controllers/ProblemsController.cs
-- [ ] T007 [US1] デイリーチャレンジの問題選択からあまりのあるわり算を除外（単体テスト付き） - backend/src/GamifiedMathDrill.Core/Services/DailyChallengeService.cs
+- [x] T005 [US1] 結合テスト: 問題取得で HasRemainder が返る、商・あまりの両方が合うときだけ正解、学習記録にあまりが残る、他の種類はあまりを無視 - backend/tests/GamifiedMathDrill.Tests.Integration/DivisionWithRemainderTests.cs
+- [x] T006 [US1] DTO（HasRemainder / Remainder / CorrectRemainder）と ProblemService.SubmitAnswerAsync・ProblemsController を対応 - backend/src/GamifiedMathDrill.Core/Models/DTOs/StudentDtos.cs, backend/src/GamifiedMathDrill.Core/Services/ProblemService.cs, backend/src/GamifiedMathDrill.Api/Controllers/ProblemsController.cs
+- [x] T007 [US1] デイリーチャレンジの問題選択からあまりのあるわり算を除外（単体テスト付き） - backend/src/GamifiedMathDrill.Core/Services/DailyChallengeService.cs
 
 ## Phase 3: 画面（US1・US2）
 

@@ -67,7 +67,8 @@ public class ProblemService : IProblemService
     public async Task<(bool IsCorrect, int PointsEarned, bool LeveledUp, Level? NewLevel)> SubmitAnswerAsync(
         int studentId,
         int problemId,
-        int answer)
+        int answer,
+        int? remainder = null)
     {
         var student = await _studentRepository.GetByIdWithDetailsAsync(studentId);
         if (student == null)
@@ -81,8 +82,11 @@ public class ProblemService : IProblemService
             throw new KeyNotFoundException($"Problem with ID {problemId} not found.");
         }
 
-        // 回答の正誤を判定
-        var isCorrect = answer == problem.CorrectAnswer;
+        // 回答の正誤を判定（あまりのあるわり算は商とあまりの両方が合うときだけ正解。それ以外はあまりを無視）
+        var hasRemainder = problem.CalculationType == CalculationType.DivisionWithRemainder;
+        var studentRemainder = hasRemainder ? remainder : null;
+        var isCorrect = answer == problem.CorrectAnswer
+            && (!hasRemainder || studentRemainder == problem.CorrectRemainder);
 
         // デバッグログ: 実際の比較内容を出力
         Console.WriteLine($"DEBUG: ProblemId={problemId}, UserAnswer={answer}, CorrectAnswer={problem.CorrectAnswer}, IsCorrect={isCorrect}");
@@ -95,6 +99,7 @@ public class ProblemService : IProblemService
             StudentId = studentId,
             ProblemId = problemId,
             StudentAnswer = answer,
+            StudentRemainder = studentRemainder,
             IsCorrect = isCorrect,
             PointsEarned = pointsEarned,
             TimeTakenSeconds = 0, // TODO: 実際の所要時間を計測

@@ -113,8 +113,11 @@ public class DailyChallengeService : IDailyChallengeService
         }
 
         // Get a random difficult problem (difficulty 7-10)
+        // デイリーチャレンジの答えは1つなので、あまりのあるわり算は選ばない（009）
         var problems = await _problemRepository.GetAllAsync();
-        var difficultProblems = problems.Where(p => p.DifficultyLevel >= 7).ToList();
+        var difficultProblems = problems
+            .Where(p => p.DifficultyLevel >= 7 && p.CalculationType != CalculationType.DivisionWithRemainder)
+            .ToList();
 
         if (!difficultProblems.Any())
         {
