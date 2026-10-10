@@ -245,32 +245,21 @@ backend/
 
 ### インストール
 
-1. リポジトリをクローン
+初回の準備（開発用の秘密鍵の登録）とフロントエンドと合わせた起動手順は、[リポジトリ直下の README](../README.md) を参照してください。
 
-```bash
-git clone <repository-url>
-cd backend
-```
-
-2. 依存パッケージの復元
-
-```bash
-dotnet restore
-```
-
-3. データベース
+1. データベース
 
 マイグレーションはアプリの起動時に自動で適用されます（開発は SQLite、本番は PostgreSQL）。
 DB の種類は設定 `DatabaseProvider`（`Sqlite` / `PostgreSQL`）で切り替えられます。
 本番では環境変数 `ConnectionStrings__DefaultConnection` と `Jwt__SecretKey` を設定してください。
 
-4. アプリケーションの起動
+2. アプリケーションの起動（リポジトリ直下で実行）
 
 ```bash
-dotnet run
+dotnet run --project backend/src/GamifiedMathDrill.Api --launch-profile http
 ```
 
-APIは `https://localhost:7000` で起動します。
+APIは `http://localhost:5242` で起動します（Swagger: `http://localhost:5242/swagger`）。
 
 ### 開発環境での設定
 
@@ -421,12 +410,12 @@ code --install-extension humao.rest-client
 
 ```bash
 # 保護者ログイン
-curl -X POST https://localhost:7000/api/auth/login \
+curl -X POST http://localhost:5242/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"parent@example.com","password":"Parent123!"}'
 
 # トークンを使用してAPI呼び出し
-curl -X GET https://localhost:7000/api/rewards \
+curl -X GET http://localhost:5242/api/rewards \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -450,8 +439,9 @@ rm backend/src/GamifiedMathDrill.Api/gamifiedmathdrill.db*
 **問題: ポートが既に使用されている**
 
 ```bash
-# 使用中のプロセスを確認（macOS/Linux）
-lsof -i :7000
+# 使用中のプロセスを確認（macOS）
+lsof -i :5242
+# Windows（PowerShell）の場合: Get-NetTCPConnection -LocalPort 5242
 
 # プロセスを終了
 kill -9 <PID>

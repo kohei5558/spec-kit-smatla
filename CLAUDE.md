@@ -21,7 +21,7 @@ dotnet build frontend/GamifiedMathDrill.Client
 dotnet test backend/GamifiedMathDrill.sln
 dotnet test backend/tests/GamifiedMathDrill.Tests.Integration --filter "FullyQualifiedName~ChildLoginTests"
 
-./scripts/setup-dev-secrets.sh   # 開発用 JWT キーを User Secrets に登録（初回のみ）
+./scripts/setup-dev-secrets.sh   # 開発用 JWT キーを User Secrets に登録（初回のみ。Windows は scripts/setup-dev-secrets.ps1）
 ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/src/GamifiedMathDrill.Api --urls http://localhost:5242
 ```
 

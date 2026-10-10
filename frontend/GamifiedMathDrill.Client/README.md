@@ -73,32 +73,20 @@ frontend/GamifiedMathDrill.Client/
 - .NET 10 SDK以上
 - バックエンドAPIが起動していること（デフォルト: `http://localhost:5242`）
 
-### インストール
+### 起動
 
-1. リポジトリをクローン
-
-```bash
-git clone <repository-url>
-cd frontend/GamifiedMathDrill.Client
-```
-
-2. 依存パッケージの復元
+バックエンドと合わせた起動手順は [リポジトリ直下の README](../../README.md) を参照してください。フロントエンドだけを起動する場合（リポジトリ直下で実行）:
 
 ```bash
-dotnet restore
+dotnet run --project frontend/GamifiedMathDrill.Client --launch-profile http
 ```
 
-3. アプリケーションの起動
-
-```bash
-dotnet run
-```
-
-アプリケーションは `https://localhost:7083` で起動します。
+アプリケーションは `http://localhost:5071` で起動します。
 
 ### 設定のカスタマイズ
 
-バックエンドAPIのベースURLを変更する場合は、[Program.cs](Program.cs#L20)を編集：
+バックエンドAPIのベースURL（既定は `http://localhost:5242`）を変更する場合は、[Program.cs](Program.cs) の HttpClient の `BaseAddress` を編集します。
+あわせてバックエンドの CORS 設定（`backend/src/GamifiedMathDrill.Api/Program.cs` の `AllowBlazorClient`）に画面側の URL を追加してください：
 
 ```csharp
 builder.Services.AddScoped(sp => new HttpClient
@@ -248,7 +236,7 @@ localStorage.clear()
 ブラウザコンソールで以下のようなエラーが表示される場合：
 
 ```
-Access to fetch at 'http://localhost:5242/api/...' from origin 'https://localhost:7083' has been blocked by CORS policy
+Access to fetch at 'http://localhost:5242/api/...' from origin 'http://localhost:5071' has been blocked by CORS policy
 ```
 
 バックエンドの[Program.cs](../backend/src/GamifiedMathDrill.Api/Program.cs)でCORS設定を確認：
@@ -258,7 +246,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient",
         builder => builder
-            .WithOrigins("https://localhost:7083")
+            .WithOrigins("http://localhost:5071")
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
@@ -378,29 +366,9 @@ dotnet publish -c Release -o ./publish
 
 ## テスト
 
-### 単体テスト
-
-bUnitフレームワークを使用してBlazorコンポーネントをテスト：
-
-```bash
-# テストプロジェクトの作成（初回のみ）
-dotnet new bunit -o ../tests/GamifiedMathDrill.Client.Tests
-
-# テストの実行
-dotnet test
-```
-
-### E2Eテスト
-
-Playwrightを使用したエンドツーエンドテスト：
-
-```bash
-# Playwrightのインストール（初回のみ）
-dotnet add package Microsoft.Playwright
-
-# テストの実行
-dotnet test
-```
+フロントエンドの自動テスト（bUnit による画面部品のテスト、Playwright による E2E テスト）は**まだ作られていません**。
+計画は `specs/002-category-selection/tasks.md` と `specs/004-auth-ui-pages/tasks.md` の未完了タスクにあります。
+現在は、バックエンドの結合テスト（`dotnet test backend/GamifiedMathDrill.sln`）で API の動作を確認しています。
 
 ## トラブルシューティング
 
@@ -408,7 +376,7 @@ dotnet test
 
 ```bash
 # ポートが使用中か確認
-lsof -i :7083
+lsof -i :5071
 
 # プロセスを終了
 kill -9 <PID>
