@@ -8,9 +8,6 @@ namespace GamifiedMathDrill.Core.Services;
 /// </summary>
 public class DailyChallengeService : IDailyChallengeService
 {
-    // 日本は夏時間がないため固定の +9 時間で日付を決める（タイムゾーンのデータがない環境でも動くように）
-    private static readonly TimeSpan JapanOffset = TimeSpan.FromHours(9);
-
     private readonly IDailyChallengeRepository _challengeRepository;
     private readonly IProblemRepository _problemRepository;
     private readonly IStudentRepository _studentRepository;
@@ -34,7 +31,7 @@ public class DailyChallengeService : IDailyChallengeService
         _timeProvider = timeProvider;
     }
 
-    private DateOnly Today => DateOnly.FromDateTime(_timeProvider.GetUtcNow().ToOffset(JapanOffset).DateTime);
+    private DateOnly Today => JapanTime.Today(_timeProvider);
 
     public async Task<DailyChallenge?> GetOrCreateTodaysChallengeAsync(int studentId)
     {

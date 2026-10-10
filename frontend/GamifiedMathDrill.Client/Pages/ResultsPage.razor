@@ -41,13 +41,14 @@
             </MudGrid>
 
             <!-- Calculation Type Tabs -->
-            <MudTabs ActivePanelIndex="_activeTab" Elevation="0" Rounded="true" Class="mt-4" ActivePanelIndexChanged="OnTabChanged">
+            @* 種類が6つあるため、タブの最小幅（既定 160px）を狭めてPCの幅で全部並ぶようにする *@
+            <MudTabs ActivePanelIndex="_activeTab" Elevation="0" Rounded="true" Class="mt-4" ActivePanelIndexChanged="OnTabChanged" MinimumTabWidth="80px">
                 <MudTabPanel Text="すべて" />
                 <MudTabPanel Text="たし算" />
                 <MudTabPanel Text="ひき算" />
                 <MudTabPanel Text="かけ算" />
                 <MudTabPanel Text="わり算" />
-                <MudTabPanel Text="あまりのあるわり算" />
+                <MudTabPanel Text="あまりあり" />
             </MudTabs>
         </MudPaper>
 

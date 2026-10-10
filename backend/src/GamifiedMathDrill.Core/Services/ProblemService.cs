@@ -9,17 +9,28 @@ public class ProblemService : IProblemService
     private readonly IStudentRepository _studentRepository;
     private readonly ILearningRecordRepository _learningRecordRepository;
     private readonly ILevelRepository _levelRepository;
+    private readonly TimeProvider _timeProvider;
 
     public ProblemService(
         IProblemRepository problemRepository,
         IStudentRepository studentRepository,
         ILearningRecordRepository learningRecordRepository,
-        ILevelRepository levelRepository)
+        ILevelRepository levelRepository,
+        TimeProvider timeProvider)
     {
         _problemRepository = problemRepository;
         _studentRepository = studentRepository;
         _learningRecordRepository = learningRecordRepository;
         _levelRepository = levelRepository;
+        _timeProvider = timeProvider;
+    }
+
+    public async Task<int> CountTodaysAnswersAsync(int studentId)
+    {
+        // 今日（日本時間）答えた数。問題画面の「今日の◯問め」に使う
+        var start = JapanTime.StartOfTodayUtc(_timeProvider);
+        var records = await _learningRecordRepository.GetByStudentIdAndDateRangeAsync(studentId, start, start.AddDays(1).AddTicks(-1));
+        return records.Count();
     }
 
     public async Task<Problem?> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null, CalculationType? category = null)

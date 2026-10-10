@@ -45,10 +45,10 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/src/GamifiedMath
 - 景品は家庭ごと（`Reward.ParentId`）。一覧・詳細・更新・削除・交換・交換申請は `this.GetFamilyParentIdAsync` で家庭を確認し、他家庭は 404。初期景品（`Core/Models/StarterRewards.cs`）は保護者の登録時に家庭ごとにコピーされる（007）。
 - 問題は `Core/Services/ProblemGenerator.cs` が難易度表（specs/008）に従って作る（乱数の種固定）。起動のたびに `ProblemSynchronizer` が DB の問題を最新のセットに合わせる（足りない問題を追加、セットにない問題は削除せず `Problem.IsActive = false` にして出題しない、011）。出題・チャレンジの問題選びは `IsActive` の問題だけ。問題の作り方を変えると、公開済みの DB でも次の起動で入れ替わる。子供の始めるレベルは学年で決まる（`Core/Models/GradeStartLevel.cs`）。`Student.CorrectAnswers` はレベルアップ用の**連続正解数**で、正答率には学習記録を使う。
 - あまりのあるわり算（`CalculationType.DivisionWithRemainder`、009）は `Problem.CorrectRemainder` / `LearningRecord.StudentRemainder` を持ち、商とあまりの両方が合うときだけ正解。新しい計算の種類は `ProblemGenerator` の種類リストの**末尾**に足す（既存の問題セットを変えないため）。デイリーチャレンジ（答えは1つ）には出さない。
-- デイリーチャレンジ（010）は学習者ごと・日本時間の日ごとに1つ（`DailyChallenge.StudentId`）。その日に初めて開いたときに今のレベルの最大難易度から作る。回答は子供本人だけ・1日1回（2回目は 409、`AnsweredAt` を同時実行の確認に使う）。連続正解数・レベルは変えない。時刻は `TimeProvider` で取得する。
+- デイリーチャレンジ（010）は学習者ごと・日本時間の日ごとに1つ（`DailyChallenge.StudentId`）。その日に初めて開いたときに今のレベルの最大難易度から作る。回答は子供本人だけ・1日1回（2回目は 409、`AnsweredAt` を同時実行の確認に使う）。連続正解数・レベルは変えない。時刻は `TimeProvider` で取得し、「今日」は `Core/Services/JapanTime`（日本時間、DB の日時は UTC）で決める。
 - PIN ロックアウトは `IMemoryCache` で 3 回失敗 → 5 分（`ChildAccountService`）。
 - MudBlazor は 7 系のまま。FluentAssertions は 6 系のまま（v8 以降は商用有償ライセンス）。
-- 子供向け UI の文言はやさしい日本語にする。
+- 子供向け UI の文言はやさしい日本語にする。問題の難易度は子供の「レベル」と混ざらないよう画面では「むずかしさ」と表示する。
 
 ## 開発ルール（詳細は WORKFLOW.md）
 

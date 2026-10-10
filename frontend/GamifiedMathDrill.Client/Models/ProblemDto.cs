@@ -8,6 +8,8 @@ public class ProblemDto
     public string CalculationTypeText { get; set; } = string.Empty;
     /// <summary>あまりも答える問題か（あまりのあるわり算）</summary>
     public bool HasRemainder { get; set; }
+    /// <summary>今日すでに答えた数（「今日の◯問め」用）</summary>
+    public int TodayAnsweredCount { get; set; }
 }
 
 public class SubmitAnswerDto

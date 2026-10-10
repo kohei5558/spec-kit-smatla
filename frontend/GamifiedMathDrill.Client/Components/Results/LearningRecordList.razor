@@ -14,7 +14,7 @@
                 <MudTh>日時</MudTh>
                 <MudTh>問題</MudTh>
                 <MudTh>タイプ</MudTh>
-                <MudTh>難易度</MudTh>
+                <MudTh>むずかしさ</MudTh>
                 <MudTh>あなたの答え</MudTh>
                 <MudTh>正解</MudTh>
                 <MudTh>結果</MudTh>
@@ -35,8 +35,8 @@
                         @GetCalculationTypeName(context.CalculationTypeText)
                     </MudChip>
                 </MudTd>
-                <MudTd DataLabel="難易度">
-                    <MudRating ReadOnly="true" SelectedValue="@context.DifficultyLevel" MaxValue="5" Size="Size.Small" />
+                <MudTd DataLabel="むずかしさ">
+                    @context.DifficultyLevel
                 </MudTd>
                 <MudTd DataLabel="あなたの答え">
                     <MudText Typo="Typo.body2" Style="@($"{GetAnswerStyle(context.IsCorrect)} white-space: nowrap;")">

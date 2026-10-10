@@ -94,7 +94,8 @@ public class ProblemsController : ControllerBase
                 Question = problem.Question,
                 DifficultyLevel = problem.DifficultyLevel,
                 CalculationTypeText = problem.CalculationType.ToString(),
-                HasRemainder = problem.CalculationType == Core.Models.CalculationType.DivisionWithRemainder
+                HasRemainder = problem.CalculationType == Core.Models.CalculationType.DivisionWithRemainder,
+                TodayAnsweredCount = await _problemService.CountTodaysAnswersAsync(studentId)
             };
 
             return Ok(ApiResponse<ProblemDto>.SuccessResponse(problemDto));
