@@ -21,7 +21,12 @@ public enum CalculationType
     Multiplication = 2,
 
     /// <summary>
-    /// 割り算
+    /// 割り算（割り切れる）
     /// </summary>
-    Division = 3
+    Division = 3,
+
+    /// <summary>
+    /// あまりのあるわり算（答えは商とあまり）
+    /// </summary>
+    DivisionWithRemainder = 4
 }

@@ -172,6 +172,9 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("StudentRemainder")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TimeTakenSeconds")
                         .HasColumnType("integer");
 
@@ -306,6 +309,9 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("CorrectAnswer")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("CorrectRemainder")
                         .HasColumnType("integer");
 
                     b.Property<int>("DifficultyLevel")

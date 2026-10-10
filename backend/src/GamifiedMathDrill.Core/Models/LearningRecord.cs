@@ -37,6 +37,11 @@ public class LearningRecord
     public int StudentAnswer { get; set; }
 
     /// <summary>
+    /// 児童が答えたあまり（あまりのあるわり算のみ）
+    /// </summary>
+    public int? StudentRemainder { get; set; }
+
+    /// <summary>
     /// 獲得ポイント
     /// </summary>
     [Range(0, int.MaxValue)]

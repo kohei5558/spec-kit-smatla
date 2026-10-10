@@ -12,10 +12,10 @@
 
 ## Phase 1: 問題の生成とデータ（US1）
 
-- [ ] T001 [US1] あまりのあるわり算の難易度表を検証する単体テストを追加 - backend/tests/GamifiedMathDrill.Tests.Unit/ProblemGeneratorTests.cs
-- [ ] T002 [US1] CalculationType に DivisionWithRemainder、Problem に CorrectRemainder、LearningRecord に StudentRemainder を追加 - backend/src/GamifiedMathDrill.Core/Models/
-- [ ] T003 [US1] ProblemGenerator にあまりのあるわり算を追加 - backend/src/GamifiedMathDrill.Core/Services/ProblemGenerator.cs
-- [ ] T004 [US1] マイグレーション AddDivisionWithRemainder を SQLite・PostgreSQL に追加 - backend/src/GamifiedMathDrill.Migrations.*/Migrations/
+- [x] T001 [US1] あまりのあるわり算の難易度表を検証する単体テストを追加 - backend/tests/GamifiedMathDrill.Tests.Unit/ProblemGeneratorTests.cs
+- [x] T002 [US1] CalculationType に DivisionWithRemainder、Problem に CorrectRemainder、LearningRecord に StudentRemainder を追加 - backend/src/GamifiedMathDrill.Core/Models/
+- [x] T003 [US1] ProblemGenerator にあまりのあるわり算を追加 - backend/src/GamifiedMathDrill.Core/Services/ProblemGenerator.cs
+- [x] T004 [US1] マイグレーション AddDivisionWithRemainder を SQLite・PostgreSQL に追加 - backend/src/GamifiedMathDrill.Migrations.*/Migrations/
 
 ## Phase 2: 回答 API（US1）
 

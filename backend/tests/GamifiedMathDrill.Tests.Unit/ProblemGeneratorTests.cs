@@ -43,7 +43,7 @@ public class ProblemGeneratorTests
                 CalculationType.Addition => "+",
                 CalculationType.Subtraction => "-",
                 CalculationType.Multiplication => "×",
-                _ => "÷"
+                _ => "÷" // 割り算・あまりのあるわり算
             }, op);
             Assert.True(p.CorrectAnswer >= 0, p.Question);
             Assert.Equal(type switch
@@ -53,6 +53,7 @@ public class ProblemGeneratorTests
                 CalculationType.Multiplication => a * b,
                 _ => a / b
             }, p.CorrectAnswer);
+            Assert.Equal(type == CalculationType.DivisionWithRemainder ? a % b : null, p.CorrectRemainder);
             Assert.True(MatchesRule(type, difficulty, a, b), $"難易度{difficulty}の条件を満たさない: {p.Question}");
         }
     }
@@ -64,6 +65,18 @@ public class ProblemGeneratorTests
         {
             var (a, _, b) = Parse(p.Question);
             Assert.Equal(0, a % b);
+        }
+    }
+
+    [Fact]
+    public void DivisionWithRemainder_AlwaysHasRemainderSmallerThanDivisor()
+    {
+        var problems = AllProblems.Where(p => p.CalculationType == CalculationType.DivisionWithRemainder).ToList();
+        Assert.NotEmpty(problems);
+        foreach (var p in problems)
+        {
+            var (_, _, b) = Parse(p.Question);
+            Assert.InRange(p.CorrectRemainder!.Value, 1, b - 1);
         }
     }
 
@@ -132,6 +145,20 @@ public class ProblemGeneratorTests
             10 => Digits(a) == 2 && Digits(b) == 2,
             _ => false
         },
+        CalculationType.DivisionWithRemainder => a % b >= 1 && d switch
+        {
+            1 => new[] { 2, 3 }.Contains(b) && a / b is >= 1 and <= 9,
+            2 => new[] { 4, 5 }.Contains(b) && a / b is >= 1 and <= 9,
+            3 => new[] { 6, 7 }.Contains(b) && a / b is >= 1 and <= 9,
+            4 => new[] { 8, 9 }.Contains(b) && a / b is >= 1 and <= 9,
+            5 => b is >= 2 and <= 9 && a / b is >= 1 and <= 9,
+            6 => Digits(a) == 2 && b is >= 2 and <= 9 && Digits(a / b) == 2 && a / 10 % b == 0,
+            7 => Digits(a) == 2 && b is >= 2 and <= 9 && Digits(a / b) == 2 && a / 10 % b != 0,
+            8 => Digits(a) == 3 && b is >= 2 and <= 9 && Digits(a / b) == 2,
+            9 => Digits(a) == 3 && b is >= 2 and <= 5 && Digits(a / b) == 3,
+            10 => Digits(a) == 3 && b is >= 6 and <= 9 && Digits(a / b) == 3,
+            _ => false
+        },
         _ => a % b == 0 && d switch
         {
             1 => new[] { 2, 5 }.Contains(b) && a / b is >= 1 and <= 9,
@@ -155,6 +182,7 @@ public class ProblemGeneratorTests
     {
         (CalculationType.Multiplication or CalculationType.Division, 1 or 2 or 3) => 18,
         (CalculationType.Multiplication or CalculationType.Division, 4) => 27,
+        (CalculationType.DivisionWithRemainder, 1) => 27,
         _ => ProblemGenerator.ProblemsPerSet
     };
 

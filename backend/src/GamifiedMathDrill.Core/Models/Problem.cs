@@ -26,6 +26,11 @@ public class Problem
     public int CorrectAnswer { get; set; }
 
     /// <summary>
+    /// 正解のあまり（あまりのあるわり算のみ。それ以外は null）
+    /// </summary>
+    public int? CorrectRemainder { get; set; }
+
+    /// <summary>
     /// 計算種類
     /// </summary>
     [Required]

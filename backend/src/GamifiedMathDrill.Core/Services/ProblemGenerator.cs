@@ -25,7 +25,8 @@ public static class ProblemGenerator
     {
         var random = new Random(seed);
         var problems = new List<Problem>();
-        foreach (var type in new[] { CalculationType.Addition, CalculationType.Subtraction, CalculationType.Multiplication, CalculationType.Division })
+        // 種類の順番を変えると既存の問題セットも変わる（乱数の種が共通）ため、新しい種類は末尾に足す
+        foreach (var type in new[] { CalculationType.Addition, CalculationType.Subtraction, CalculationType.Multiplication, CalculationType.Division, CalculationType.DivisionWithRemainder })
         {
             for (var difficulty = 1; difficulty <= 10; difficulty++)
             {
@@ -57,6 +58,7 @@ public static class ProblemGenerator
                     CalculationType.Multiplication => a * b,
                     _ => a / b
                 },
+                CorrectRemainder = type == CalculationType.DivisionWithRemainder ? a % b : null,
                 CalculationType = type,
                 DifficultyLevel = difficulty
             });
@@ -110,6 +112,23 @@ public static class ProblemGenerator
                     9 => (N(3), r.Next(2, 10)),
                     _ => (N(2), N(2))
                 };
+            case CalculationType.DivisionWithRemainder:
+            {
+                // 「割る数 × 商 + あまり（1〜割る数-1）」で割られる数を作る
+                var (divisor, quotient) = d switch
+                {
+                    1 => (Pick(2, 3), N(1)),
+                    2 => (Pick(4, 5), N(1)),
+                    3 => (Pick(6, 7), N(1)),
+                    4 => (Pick(8, 9), N(1)),
+                    5 => (r.Next(2, 10), N(1)),
+                    6 or 7 => (r.Next(2, 10), r.Next(10, 50)),
+                    8 => (r.Next(2, 10), N(2)),
+                    9 => (r.Next(2, 6), r.Next(100, 500)),
+                    _ => (r.Next(6, 10), r.Next(100, 167))
+                };
+                return (divisor * quotient + r.Next(1, divisor), divisor);
+            }
             default:
             {
                 // 割り算は「割る数 × 商」で割られる数を作り、割り切れる問題にする
@@ -158,6 +177,15 @@ public static class ProblemGenerator
         {
             7 => a % 10 != 0 && MulCarries(a, b) == 0,
             8 => MulCarries(a, b) >= 1,
+            _ => true
+        },
+        CalculationType.DivisionWithRemainder => a % b >= 1 && d switch
+        {
+            // 2桁÷1桁（商が2桁）。6 は十の位がそのまま割れる、7 はそれ以外
+            6 => Digits(a) == 2 && Digits(a / b) == 2 && a / 10 % b == 0,
+            7 => Digits(a) == 2 && Digits(a / b) == 2 && a / 10 % b != 0,
+            8 => Digits(a) == 3 && Digits(a / b) == 2,
+            9 or 10 => Digits(a) == 3 && Digits(a / b) == 3,
             _ => true
         },
         _ => d switch
