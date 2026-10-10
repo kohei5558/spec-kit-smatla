@@ -1,7 +1,6 @@
 @using GamifiedMathDrill.Client.Models
 
 <div class="text-center mb-4">
-    <MudChip T="string" Color="Color.Secondary" Size="Size.Medium">@Problem.CalculationTypeText</MudChip>
     <MudChip T="string" Color="Color.Info" Size="Size.Medium">難易度: @Problem.DifficultyLevel</MudChip>
 </div>
 
@@ -11,11 +10,11 @@
     </MudText>
 </div>
 
-<div class="answer-input mt-6">
+<div class="answer-input mt-6 d-flex align-center gap-3">
     <MudTextField @ref="answerField"
                   Value="@inputText"
                   ValueChanged="@((string value) => HandleInput(value))"
-                  Label="答えを入力してね"
+                  Label="@(Problem.HasRemainder ? "こたえ" : "答えを入力してね")"
                   Variant="Variant.Outlined"
                   Margin="Margin.Dense"
                   FullWidth="true"
@@ -26,6 +25,23 @@
                   InputMode="InputMode.numeric"
                   Pattern="[0-9]*"
                   OnKeyDown="@HandleKeyDown" />
+    @if (Problem.HasRemainder)
+    {
+        <MudText Typo="Typo.h5" Style="white-space: nowrap;">あまり</MudText>
+        <MudTextField Value="@remainderText"
+                      ValueChanged="@((string value) => HandleRemainderInput(value))"
+                      Label="あまり"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      FullWidth="true"
+                      Class="mud-text-field-large"
+                      Disabled="@IsSubmitting"
+                      Style="font-size: 2rem;"
+                      Immediate="true"
+                      InputMode="InputMode.numeric"
+                      Pattern="[0-9]*"
+                      OnKeyDown="@HandleKeyDown" />
+    }
 </div>
 
 <div class="text-center mt-6">
@@ -33,7 +49,7 @@
                Color="Color.Success"
                Size="Size.Large"
                OnClick="OnSubmit"
-               Disabled="@(IsSubmitting || !Answer.HasValue)"
+               Disabled="@(IsSubmitting || !CanSubmit)"
                StartIcon="@Icons.Material.Filled.Check"
                Style="font-size: 1.5rem; padding: 16px 48px;">
         @if (IsSubmitting)
@@ -58,6 +74,13 @@
     [Parameter]
     public EventCallback<int?> OnAnswerChange { get; set; }
 
+    /// <summary>あまり（あまりのあるわり算のときだけ使う）</summary>
+    [Parameter]
+    public int? Remainder { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> OnRemainderChange { get; set; }
+
     [Parameter]
     public EventCallback OnSubmit { get; set; }
 
@@ -65,12 +88,17 @@
     public bool IsSubmitting { get; set; }
 
     private string inputText = string.Empty;
+    private string remainderText = string.Empty;
+
+    // あまりのあるわり算は、こたえとあまりの両方を入れたときだけ答えられる
+    private bool CanSubmit => Answer.HasValue && (!Problem.HasRemainder || Remainder.HasValue);
     private MudTextField<string>? answerField;
 
     protected override void OnParametersSet()
     {
         // Answer値が変更された場合（例：新しい問題を読み込んだ時）
         inputText = Answer?.ToString() ?? string.Empty;
+        remainderText = Remainder?.ToString() ?? string.Empty;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -83,11 +111,32 @@
 
     private async Task HandleInput(string value)
     {
+        var (text, number, changed) = ParseInput(value);
+        inputText = text;
+        if (changed)
+        {
+            await OnAnswerChange.InvokeAsync(number);
+        }
+    }
+
+    private async Task HandleRemainderInput(string value)
+    {
+        var (text, number, changed) = ParseInput(value);
+        remainderText = text;
+        if (changed)
+        {
+            await OnRemainderChange.InvokeAsync(number);
+        }
+    }
+
+    /// <summary>
+    /// 入力を数値にする。changed が false のときは値を変えない（"-" だけなど数値にならない途中の入力）
+    /// </summary>
+    private (string Text, int? Number, bool Changed) ParseInput(string value)
+    {
         if (string.IsNullOrWhiteSpace(value))
         {
-            inputText = string.Empty;
-            await OnAnswerChange.InvokeAsync(null);
-            return;
+            return (string.Empty, null, true);
         }
 
         // 全角数字を半角に変換
@@ -96,24 +145,18 @@
         // 数値のみを抽出（マイナス記号を含む）
         var numbersOnly = new string(normalized.Where(c => char.IsDigit(c) || c == '-').ToArray());
 
-        // 入力値を更新
-        inputText = numbersOnly;
-
         // 数値に変換
         if (int.TryParse(numbersOnly, out var parsedValue))
         {
-            await OnAnswerChange.InvokeAsync(parsedValue);
+            return (numbersOnly, parsedValue, true);
         }
-        else if (string.IsNullOrEmpty(numbersOnly))
-        {
-            await OnAnswerChange.InvokeAsync(null);
-        }
+        return (numbersOnly, null, string.IsNullOrEmpty(numbersOnly));
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         // Enterキーが押されたら、回答を送信
-        if (e.Key == "Enter" && !IsSubmitting && Answer.HasValue)
+        if (e.Key == "Enter" && !IsSubmitting && CanSubmit)
         {
             await OnSubmit.InvokeAsync();
         }

@@ -2,7 +2,7 @@
 
 **Feature Branch**: `009-division-with-remainder`（作業は `claude/project-status-m9txmv` 上で実施）
 **Created**: 2026年10月10日
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "小3の重要単元『あまりのあるわり算』を練習できるようにする"
 
 ## 背景

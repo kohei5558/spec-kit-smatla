@@ -90,6 +90,8 @@ public class LearningRecordsController : ControllerBase
                 Question = r.Problem.Question,
                 CorrectAnswer = r.Problem.CorrectAnswer,
                 StudentAnswer = r.StudentAnswer,
+                CorrectRemainder = r.Problem.CorrectRemainder,
+                StudentRemainder = r.StudentRemainder,
                 IsCorrect = r.IsCorrect,
                 PointsEarned = r.PointsEarned,
                 TimeTakenSeconds = r.TimeTakenSeconds,
@@ -220,6 +222,9 @@ public class LearningRecordDto
     public string Question { get; set; } = string.Empty;
     public int CorrectAnswer { get; set; }
     public int StudentAnswer { get; set; }
+    /// <summary>あまりのあるわり算のときだけ値が入る</summary>
+    public int? CorrectRemainder { get; set; }
+    public int? StudentRemainder { get; set; }
     public bool IsCorrect { get; set; }
     public int PointsEarned { get; set; }
     public int TimeTakenSeconds { get; set; }

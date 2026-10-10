@@ -25,11 +25,11 @@
 
 ## Phase 3: 画面（US1・US2）
 
-- [ ] T008 [US1] 種類選択に「あまりのあるわり算」を追加 - frontend/GamifiedMathDrill.Client/Components/CategorySelector.razor
-- [ ] T009 [US1] 問題画面に「あまり」の入力欄と正解表示を追加 - frontend/GamifiedMathDrill.Client/Pages/ProblemPage.razor, Models, Services
-- [ ] T010 [US2] 学習結果・学習記録一覧・統計の表示名を追加し、あまりを含めて表示 - frontend/GamifiedMathDrill.Client/Pages/ResultsPage.razor, Components/Results/*
+- [x] T008 [US1] 種類選択に「あまりのあるわり算」を追加 - frontend/GamifiedMathDrill.Client/Components/CategorySelector.razor
+- [x] T009 [US1] 問題画面に「あまり」の入力欄と正解表示を追加 - frontend/GamifiedMathDrill.Client/Pages/ProblemPage.razor, Models, Services
+- [x] T010 [US2] 学習結果・学習記録一覧・統計の表示名を追加し、あまりを含めて表示 - frontend/GamifiedMathDrill.Client/Pages/ResultsPage.razor, Components/Results/*
 
 ## Phase 4: 仕上げ
 
-- [ ] T011 全テスト、開発環境で「あまりのあるわり算」を画面から解いて確認
-- [ ] T012 README・CLAUDE.md を更新
+- [x] T011 全テスト、開発環境で「あまりのあるわり算」を画面から解いて確認
+- [x] T012 README・CLAUDE.md を更新

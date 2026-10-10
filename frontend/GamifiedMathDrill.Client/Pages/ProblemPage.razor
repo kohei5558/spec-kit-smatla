@@ -42,6 +42,8 @@
                 Problem="@currentProblem" 
                 Answer="@userAnswer"
                 OnAnswerChange="@HandleAnswerChange"
+                Remainder="@userRemainder"
+                OnRemainderChange="@HandleRemainderChange"
                 OnSubmit="@HandleSubmitAnswer"
                 IsSubmitting="@isSubmitting" />
         </MudPaper>
@@ -108,6 +110,7 @@
     private ProblemDto? currentProblem;
     private AnswerResultDto? answerResult;
     private int? userAnswer;
+    private int? userRemainder;
     private bool isLoading = true;
     private bool isSubmitting = false;
     private bool showFeedback = false;
@@ -181,6 +184,7 @@
         isLoading = true;
         showFeedback = false;
         userAnswer = null;
+        userRemainder = null;
 
         try
         {
@@ -219,6 +223,11 @@
         userAnswer = answer;
     }
 
+    private void HandleRemainderChange(int? remainder)
+    {
+        userRemainder = remainder;
+    }
+
     private async Task HandleSubmitAnswer()
     {
         if (currentProblem == null || student == null) return;
@@ -227,7 +236,8 @@
 
         try
         {
-            answerResult = await ProblemApi.SubmitAnswerAsync(currentProblem.Id, student.Id, userAnswer ?? 0);
+            answerResult = await ProblemApi.SubmitAnswerAsync(currentProblem.Id, student.Id, userAnswer ?? 0,
+                currentProblem.HasRemainder ? userRemainder : null);
             
             if (answerResult != null)
             {
@@ -264,7 +274,7 @@
             "Addition" => Icons.Material.Filled.Add,
             "Subtraction" => Icons.Material.Filled.Remove,
             "Multiplication" => Icons.Material.Filled.Close,
-            "Division" => Icons.Material.Filled.MoreHoriz,
+            "Division" or "DivisionWithRemainder" => Icons.Material.Filled.MoreHoriz,
             _ => Icons.Material.Filled.Calculate
         };
     }
@@ -277,6 +287,7 @@
             "Subtraction" => Color.Warning,
             "Multiplication" => Color.Info,
             "Division" => Color.Error,
+            "DivisionWithRemainder" => Color.Secondary,
             _ => Color.Default
         };
     }
@@ -289,6 +300,7 @@
             "Subtraction" => "引き算",
             "Multiplication" => "掛け算",
             "Division" => "割り算",
+            "DivisionWithRemainder" => "あまりのあるわり算",
             _ => "計算"
         };
     }

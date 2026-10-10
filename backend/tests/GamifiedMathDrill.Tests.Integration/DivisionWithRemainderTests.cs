@@ -54,6 +54,15 @@ public class DivisionWithRemainderTests : IClassFixture<TestWebApplicationFactor
         var records = await db.LearningRecords.Where(r => r.StudentId == family.StudentId && r.ProblemId == problemId)
             .OrderBy(r => r.Id).ToListAsync();
         Assert.Equal(new int?[] { remainder + 1, null, remainder }, records.Select(r => r.StudentRemainder));
+
+        // 学習記録の一覧でも、正しいあまりと答えたあまりが見られる
+        var listResponse = await FamilyTestHelper.SendAsync(client, HttpMethod.Get,
+            $"/api/learning-records?studentId={family.StudentId}&calculationType=DivisionWithRemainder", family.ChildJwt);
+        listResponse.EnsureSuccessStatusCode();
+        var listed = (await listResponse.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("data").GetProperty("records")
+            .EnumerateArray().First(r => r.GetProperty("isCorrect").GetBoolean());
+        Assert.Equal(remainder, listed.GetProperty("correctRemainder").GetInt32());
+        Assert.Equal(remainder, listed.GetProperty("studentRemainder").GetInt32());
     }
 
     [Fact]

@@ -26,7 +26,7 @@
                     @context.SolvedAt.ToString("MM/dd HH:mm")
                 </MudTd>
                 <MudTd DataLabel="問題">
-                    <MudText Typo="Typo.body2" Style="font-family: monospace;">
+                    <MudText Typo="Typo.body2" Style="font-family: monospace; white-space: nowrap;">
                         @context.Question
                     </MudText>
                 </MudTd>
@@ -39,12 +39,12 @@
                     <MudRating ReadOnly="true" SelectedValue="@context.DifficultyLevel" MaxValue="5" Size="Size.Small" />
                 </MudTd>
                 <MudTd DataLabel="あなたの答え">
-                    <MudText Typo="Typo.body2" Style="@GetAnswerStyle(context.IsCorrect)">
-                        @context.StudentAnswer
+                    <MudText Typo="Typo.body2" Style="@($"{GetAnswerStyle(context.IsCorrect)} white-space: nowrap;")">
+                        @FormatAnswer(context.StudentAnswer, context.StudentRemainder, context.CorrectRemainder.HasValue)
                     </MudText>
                 </MudTd>
                 <MudTd DataLabel="正解">
-                    <strong>@context.CorrectAnswer</strong>
+                    <strong style="white-space: nowrap;">@FormatAnswer(context.CorrectAnswer, context.CorrectRemainder, context.CorrectRemainder.HasValue)</strong>
                 </MudTd>
                 <MudTd DataLabel="結果">
                     @if (context.IsCorrect)
@@ -86,7 +86,7 @@
 
         <!-- Summary -->
         <MudText Typo="Typo.body2" Class="mt-2" Color="Color.Secondary">
-            全@TotalCount件中 @GetRecordRange() を表示
+            全@(TotalCount)件中 @GetRecordRange() を表示
         </MudText>
     }
 </MudPaper>
@@ -129,6 +129,7 @@
             "Subtraction" => Color.Secondary,
             "Multiplication" => Color.Tertiary,
             "Division" => Color.Info,
+            "DivisionWithRemainder" => Color.Warning,
             _ => Color.Default
         };
     }
@@ -141,9 +142,14 @@
             "Subtraction" => "ひき算",
             "Multiplication" => "かけ算",
             "Division" => "わり算",
+            "DivisionWithRemainder" => "あまりのあるわり算",
             _ => type
         };
     }
+
+    /// <summary>あまりのあるわり算は「3 あまり 2」の形で表示する（あまりを答えていないときは「?」）</summary>
+    private static string FormatAnswer(int answer, int? remainder, bool hasRemainder) =>
+        hasRemainder ? $"{answer} あまり {remainder?.ToString() ?? "?"}" : answer.ToString();
 
     private string GetAnswerStyle(bool isCorrect)
     {

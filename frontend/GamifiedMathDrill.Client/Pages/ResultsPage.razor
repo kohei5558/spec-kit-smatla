@@ -47,6 +47,7 @@
                 <MudTabPanel Text="ひき算" />
                 <MudTabPanel Text="かけ算" />
                 <MudTabPanel Text="わり算" />
+                <MudTabPanel Text="あまりのあるわり算" />
             </MudTabs>
         </MudPaper>
 
@@ -228,7 +229,8 @@
             ("Addition", "足し算", 1),
             ("Subtraction", "引き算", 2),
             ("Multiplication", "掛け算", 3),
-            ("Division", "割り算", 4)
+            ("Division", "割り算", 4),
+            ("DivisionWithRemainder", "あまりのあるわり算", 5)
         };
 
         foreach (var (category, name, order) in categories)
@@ -263,6 +265,7 @@
             "Subtraction" => Color.Warning,
             "Multiplication" => Color.Info,
             "Division" => Color.Error,
+            "DivisionWithRemainder" => Color.Secondary,
             _ => Color.Default
         };
     }
@@ -274,7 +277,7 @@
             "Addition" => Icons.Material.Filled.Add,
             "Subtraction" => Icons.Material.Filled.Remove,
             "Multiplication" => Icons.Material.Filled.Close,
-            "Division" => Icons.Material.Filled.MoreHoriz,
+            "Division" or "DivisionWithRemainder" => Icons.Material.Filled.MoreHoriz,
             _ => Icons.Material.Filled.Calculate
         };
     }
@@ -342,6 +345,7 @@
             2 => "Subtraction",
             3 => "Multiplication",
             4 => "Division",
+            5 => "DivisionWithRemainder",
             _ => null
         };
         _currentPage = 1;

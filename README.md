@@ -104,6 +104,7 @@ dotnet run --project frontend/GamifiedMathDrill.Client --launch-profile http
 3. ログアウトして **子供ログイン画面**（http://localhost:5071/child-login）を開き、花子を選んで PIN `1234` でログインする
 4. ホーム画面で計算の種類を選んで問題を解く。たまったポイントで「景品一覧」から交換を申請できる
    - 問題の難しさは学年で始まるレベルが変わる（1年→レベル1、2年→3、3年→5、4年以上→7）。連続で正解するとレベルが上がる
+   - 「あまりのあるわり算」は、こたえとあまりの2つを入れて答える
 5. 保護者でログインし直すと、ダッシュボードで学習状況、「交換申請一覧」で申請の承認・却下ができる
 
 ### 5. 開発用 DB を作り直す
@@ -144,6 +145,6 @@ GitHub に push すると、CI（`.github/workflows/ci.yml`）でビルド・テ
 
 - [backend/README.md](backend/README.md) … API・デバッグ方法など、バックエンドの詳細
 - [frontend/GamifiedMathDrill.Client/README.md](frontend/GamifiedMathDrill.Client/README.md) … 画面側の詳細
-- [specs/](specs/) … 機能ごとの仕様書とタスク（001〜007）
+- [specs/](specs/) … 機能ごとの仕様書とタスク（001〜009）
 - [CLAUDE.md](CLAUDE.md) … 開発時の前提・注意点（マイグレーションの追加手順など）
 - [WORKFLOW.md](WORKFLOW.md) … ブランチ・PR のルール

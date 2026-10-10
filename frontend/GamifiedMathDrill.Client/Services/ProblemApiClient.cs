@@ -47,9 +47,9 @@ public class ProblemApiClient
         return null;
     }
 
-    public async Task<AnswerResultDto?> SubmitAnswerAsync(int problemId, int studentId, int answer)
+    public async Task<AnswerResultDto?> SubmitAnswerAsync(int problemId, int studentId, int answer, int? remainder = null)
     {
-        var submitDto = new SubmitAnswerDto { Answer = answer };
+        var submitDto = new SubmitAnswerDto { Answer = answer, Remainder = remainder };
         var response = await _httpClient.PostAsJsonAsync(
             $"api/problems/{problemId}/answer?studentId={studentId}", 
             submitDto,
