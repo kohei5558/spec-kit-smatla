@@ -50,6 +50,7 @@ public static class UserSeeder
                     Email = $"{parent.Id}_child1@example.com",
                     DisplayName = "花子",
                     Role = UserRole.Child,
+                    GradeLevel = 3,
                     ParentId = parent.Id,
                     AvatarUrl = "/images/avatars/girl1.png",
                     IsActive = true,
@@ -69,6 +70,7 @@ public static class UserSeeder
                     Email = $"{parent.Id}_child2@example.com",
                     DisplayName = "次郎",
                     Role = UserRole.Child,
+                    GradeLevel = 1,
                     ParentId = parent.Id,
                     AvatarUrl = "/images/avatars/boy1.png",
                     IsActive = true,
@@ -101,7 +103,8 @@ public static class UserSeeder
         {
             Name = child.DisplayName,
             ParentUserId = child.Id,
-            AvatarUrl = child.AvatarUrl
+            AvatarUrl = child.AvatarUrl,
+            CurrentLevelId = GradeStartLevel.ForGrade(child.GradeLevel ?? 1)
         };
         context.Students.Add(student);
         await context.SaveChangesAsync();

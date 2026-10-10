@@ -2,7 +2,7 @@
 
 **Feature Branch**: `008-grade3-difficulty`（作業は `claude/project-status-m9txmv` 上で実施）
 **Created**: 2026年10月10日
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "子供が小学3年生になった。問題の難易度を小3の内容まで広げ、学年に応じたレベルから始められるようにする"
 
 ## 背景

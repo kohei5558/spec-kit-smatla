@@ -18,12 +18,12 @@
 
 ## Phase 2: User Story 2 - 学年に応じたレベル (P1)
 
-- [ ] T004 [US2] 学年→始めるレベルの単体テスト - backend/tests/GamifiedMathDrill.Tests.Unit/GradeStartLevelTests.cs
-- [ ] T005 [US2] 子供アカウントの作成・学年変更でレベルが設定されることの結合テスト - backend/tests/GamifiedMathDrill.Tests.Integration/GradeStartLevelIntegrationTests.cs
-- [ ] T006 [US2] GradeStartLevel を実装 - backend/src/GamifiedMathDrill.Core/Models/GradeStartLevel.cs
-- [ ] T007 [US2] ChildAccountService の作成・更新でレベルを設定（デモの子供も含む） - backend/src/GamifiedMathDrill.Infrastructure/Services/ChildAccountService.cs, backend/src/GamifiedMathDrill.Infrastructure/Data/Seed/UserSeeder.cs
+- [x] T004 [US2] 学年→始めるレベルの単体テスト - backend/tests/GamifiedMathDrill.Tests.Unit/GradeStartLevelTests.cs
+- [x] T005 [US2] 子供アカウントの作成・学年変更でレベルが設定されることの結合テスト - backend/tests/GamifiedMathDrill.Tests.Integration/GradeStartLevelIntegrationTests.cs
+- [x] T006 [US2] GradeStartLevel を実装 - backend/src/GamifiedMathDrill.Core/Models/GradeStartLevel.cs
+- [x] T007 [US2] ChildAccountService の作成・更新でレベルを設定（デモの子供も含む） - backend/src/GamifiedMathDrill.Infrastructure/Services/ChildAccountService.cs, backend/src/GamifiedMathDrill.Infrastructure/Data/Seed/UserSeeder.cs
 
 ## Phase 3: 仕上げ
 
-- [ ] T008 全テスト実行、開発環境で学年3年の子供の出題を手動確認
-- [ ] T009 README（使ってみる）と CLAUDE.md を更新
+- [x] T008 全テスト実行、開発環境で学年3年の子供の出題を手動確認
+- [x] T009 README（使ってみる）と CLAUDE.md を更新

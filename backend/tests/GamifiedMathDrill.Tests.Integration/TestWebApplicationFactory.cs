@@ -64,11 +64,8 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         // 初期データのシード（Levelsテーブルなど）
         if (!db.Levels.Any())
         {
-            db.Levels.AddRange(
-                new GamifiedMathDrill.Core.Models.Level { LevelNumber = 1, MinDifficulty = 1, MaxDifficulty = 3 },
-                new GamifiedMathDrill.Core.Models.Level { LevelNumber = 2, MinDifficulty = 4, MaxDifficulty = 6 },
-                new GamifiedMathDrill.Core.Models.Level { LevelNumber = 3, MinDifficulty = 7, MaxDifficulty = 10 }
-            );
+            // 本番と同じレベル（1〜10）を使う（学年に応じた始めるレベルを確認するため）
+            db.Levels.AddRange(GamifiedMathDrill.Infrastructure.Data.Seed.LevelSeeder.GetLevels());
             db.SaveChanges();
         }
 

@@ -140,7 +140,9 @@ public class ChildAccountService : IChildAccountService
         {
             Name = user.DisplayName,
             ParentUserId = user.Id,
-            AvatarUrl = user.AvatarUrl
+            AvatarUrl = user.AvatarUrl,
+            // 学年に応じたレベルから始める（例: 3年生はレベル5）
+            CurrentLevelId = GradeStartLevel.ForGrade(dto.GradeLevel)
         };
 
         _context.Students.Add(student);
@@ -201,6 +203,14 @@ public class ChildAccountService : IChildAccountService
         {
             student.Name = user.DisplayName;
             student.AvatarUrl = user.AvatarUrl;
+
+            // 学年を上げて始めるレベルが今より高くなったら上げる（下げることはしない）
+            var startLevel = GradeStartLevel.ForGrade(dto.GradeLevel);
+            if (student.CurrentLevelId < startLevel)
+            {
+                student.CurrentLevelId = startLevel;
+                student.CorrectAnswers = 0; // 新しいレベルの連続正解数を数え直す
+            }
             await _context.SaveChangesAsync();
         }
 
