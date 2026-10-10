@@ -15,11 +15,13 @@ namespace GamifiedMathDrill.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IRewardService _rewardService;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService, ILogger<AuthController> logger)
+    public AuthController(IAuthService authService, IRewardService rewardService, ILogger<AuthController> logger)
     {
         _authService = authService;
+        _rewardService = rewardService;
         _logger = logger;
     }
 
@@ -204,6 +206,16 @@ public class AuthController : ControllerBase
         }
 
         _logger.LogInformation("User registered successfully: {UserId}", userId);
+
+        // 新しい家庭に初期景品を用意する（失敗しても登録は成功とし、保護者が自分で景品を追加できる）
+        try
+        {
+            await _rewardService.CopyStarterRewardsAsync(userId!);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to copy starter rewards for {UserId}", userId);
+        }
         return Ok(new RegisterResponse
         {
             Success = true,

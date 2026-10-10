@@ -2,7 +2,7 @@
 
 **Feature Branch**: `007-family-rewards`（作業は `claude/project-status-m9txmv` 上で実施）
 **Created**: 2026年10月10日
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "景品が全家庭で共有されており、他の家庭の保護者が編集・削除できる。家庭ごとに分け、初期景品は保護者の登録時にコピーする"
 
 ## 背景

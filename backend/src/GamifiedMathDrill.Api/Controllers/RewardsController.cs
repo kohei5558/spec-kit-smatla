@@ -33,7 +33,13 @@ public class RewardsController : ControllerBase
     {
         try
         {
-            var rewards = await _rewardService.GetRewardsAsync(category, maxPoints);
+            // 自分の家庭の景品のみ
+            var parentId = await this.GetFamilyParentIdAsync(_studentAccess);
+            if (parentId == null)
+            {
+                return Ok(Array.Empty<RewardDto>());
+            }
+            var rewards = await _rewardService.GetRewardsAsync(parentId, category, maxPoints);
 
             // 子供ロールの場合は有効な景品のみ表示
             var userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -75,7 +81,7 @@ public class RewardsController : ControllerBase
     {
         try
         {
-            var reward = await _rewardService.GetRewardByIdAsync(id);
+            var reward = await GetFamilyRewardAsync(id);
             if (reward == null)
             {
                 return NotFound(new { message = "景品が見つかりません。" });
@@ -195,6 +201,12 @@ public class RewardsController : ControllerBase
                 return Unauthorized(new { message = "ユーザー情報が取得できません。" });
             }
 
+            // 他の家庭の景品は存在しない扱い
+            if (await GetFamilyRewardAsync(id) == null)
+            {
+                return NotFound(new { message = "景品が見つかりません。" });
+            }
+
             byte[]? rowVersionBytes = null;
             if (!string.IsNullOrEmpty(request.RowVersion))
             {
@@ -277,6 +289,12 @@ public class RewardsController : ControllerBase
     {
         try
         {
+            // 他の家庭の景品は存在しない扱い
+            if (await GetFamilyRewardAsync(id) == null)
+            {
+                return NotFound(new { message = "景品が見つかりません。" });
+            }
+
             await _rewardService.DeleteRewardAsync(id);
             return NoContent();
         }
@@ -311,7 +329,7 @@ public class RewardsController : ControllerBase
             }
 
             // If the reward requires parent approval (physical items), create an exchange request
-            var reward = await _rewardService.GetRewardByIdAsync(id);
+            var reward = await GetFamilyRewardAsync(id);
             if (reward == null)
             {
                 return NotFound(new { message = "景品が見つかりません。" });
@@ -410,5 +428,15 @@ public class RewardsController : ControllerBase
             _logger.LogError(ex, "Error retrieving acquired rewards for student {StudentId}", studentId);
             return StatusCode(500, new { message = "獲得景品の取得に失敗しました。" });
         }
+    }
+
+    /// <summary>
+    /// ログイン中のユーザーの家庭の景品を取得する（他の家庭の景品・家庭の情報がない景品は null）
+    /// </summary>
+    private async Task<Reward?> GetFamilyRewardAsync(int id)
+    {
+        var parentId = await this.GetFamilyParentIdAsync(_studentAccess);
+        var reward = await _rewardService.GetRewardByIdAsync(id);
+        return reward != null && parentId != null && reward.ParentId == parentId ? reward : null;
     }
 }

@@ -36,6 +36,11 @@ public static class UserSeeder
             var result = await userManager.CreateAsync(parent, "Parent123!");
             if (result.Succeeded)
             {
+                // デモ家庭の初期景品
+                var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Rewards.AddRange(StarterRewards.CreateFor(parent.Id));
+                await context.SaveChangesAsync();
+
                 Console.WriteLine($"Created parent user: {parentEmail}");
 
                 // 子供アカウント1

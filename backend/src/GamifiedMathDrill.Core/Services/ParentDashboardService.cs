@@ -54,9 +54,9 @@ public class ParentDashboardService : IParentDashboardService
             recentRequests.Add(filteredRequests[i]);
         }
 
-        // 景品統計を取得
+        // 景品統計を取得（自分の家庭の景品のみ）
         var allRewards = await _rewardRepository.GetAllAsync();
-        var rewardsList = new List<Reward>(allRewards);
+        var rewardsList = allRewards.Where(r => r.ParentId == parentUserId).ToList();
         var totalRewards = rewardsList.Count;
         var activeRewards = 0;
         foreach (var reward in rewardsList)

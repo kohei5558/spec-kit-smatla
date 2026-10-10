@@ -43,9 +43,6 @@ public static class DatabaseInitializer
         await context.Problems.AddRangeAsync(problems);
         await context.SaveChangesAsync();
 
-        // 景品データを追加
-        var rewards = RewardSeeder.GetRewards();
-        await context.Rewards.AddRangeAsync(rewards);
-        await context.SaveChangesAsync();
+        // 景品は家庭ごとに持つため、ここでは作らない（保護者の登録時に初期景品をコピーする）
     }
 }

@@ -21,15 +21,18 @@ public class ExchangeRequestsController : ControllerBase
     private readonly IExchangeRequestService _exchangeRequestService;
     private readonly IExchangeRequestRepository _exchangeRequestRepository;
     private readonly IStudentAccessService _studentAccess;
+    private readonly IRewardService _rewardService;
     private readonly ILogger<ExchangeRequestsController> _logger;
 
     public ExchangeRequestsController(
         IExchangeRequestService exchangeRequestService,
         IExchangeRequestRepository exchangeRequestRepository,
         IStudentAccessService studentAccess,
+        IRewardService rewardService,
         ILogger<ExchangeRequestsController> logger)
     {
         _studentAccess = studentAccess;
+        _rewardService = rewardService;
         _exchangeRequestService = exchangeRequestService;
         _exchangeRequestRepository = exchangeRequestRepository;
         _logger = logger;
@@ -59,6 +62,14 @@ public class ExchangeRequestsController : ControllerBase
             var studentId = ownStudentId.Value;
 
             _logger.LogInformation("Creating exchange request for student {StudentId}, reward {RewardId}", studentId, request.RewardId);
+
+            // 自分の家庭の景品にだけ申請できる（他の家庭の景品は存在しない扱い）
+            var familyParentId = await this.GetFamilyParentIdAsync(_studentAccess);
+            var reward = await _rewardService.GetRewardByIdAsync(request.RewardId);
+            if (reward == null || familyParentId == null || reward.ParentId != familyParentId)
+            {
+                return NotFound(new { message = "景品が見つかりません。" });
+            }
 
             var exchangeRequest = await _exchangeRequestService.CreateRequestAsync(studentId, request.RewardId);
 

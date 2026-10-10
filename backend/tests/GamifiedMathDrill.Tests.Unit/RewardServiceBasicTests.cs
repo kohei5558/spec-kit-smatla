@@ -33,22 +33,23 @@ public class RewardServiceBasicTests
     }
 
     [Fact]
-    public async Task GetRewardsAsync_ReturnsRewards()
+    public async Task GetRewardsAsync_ReturnsOnlyFamilyRewards()
     {
         // Arrange
         var rewards = new List<Reward>
         {
-            new Reward { Id = 1, Name = "Test Snack", RequiredPoints = 100, Category = RewardCategory.Snack },
-            new Reward { Id = 2, Name = "Test Card", RequiredPoints = 200, Category = RewardCategory.Card }
+            new Reward { Id = 1, Name = "Test Snack", RequiredPoints = 100, Category = RewardCategory.Snack, ParentId = "parent-a" },
+            new Reward { Id = 2, Name = "Test Card", RequiredPoints = 200, Category = RewardCategory.Card, ParentId = "parent-a" },
+            new Reward { Id = 3, Name = "Other Family", RequiredPoints = 50, Category = RewardCategory.Snack, ParentId = "parent-b" },
+            new Reward { Id = 4, Name = "No Family", RequiredPoints = 10, Category = RewardCategory.Snack, ParentId = null }
         };
         _mockRewardRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(rewards);
 
         // Act
-        var result = await _rewardService.GetRewardsAsync();
+        var result = await _rewardService.GetRewardsAsync("parent-a");
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(2, result.Count());
+        Assert.Equal(new[] { 1, 2 }, result.Select(r => r.Id));
     }
 
     [Fact]

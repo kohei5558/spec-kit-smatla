@@ -38,6 +38,7 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/src/GamifiedMath
 - 子供の一覧取得と子供ログインには、保護者が登録した端末のトークン（`X-Device-Token` ヘッダー、`DevicesController` / `DeviceService`）が必須。結合テストでは `AuthenticationHelper.UseParentDeviceAsync` で設定する（006）。
 - 全APIは既定でログイン必須（`Program.cs` の FallbackPolicy）。未ログインで使うAPIだけ `[AllowAnonymous]` を付ける。
 - 学習者ID（studentId）を受け取るAPIは `this.CanAccessStudentAsync(IStudentAccessService, studentId)` で確認し、不可なら 404 を返す（子供は自分、保護者は自分の子供のみ）。子供と学習者の対応は子供ユーザーの `StudentId` で判定し、名前では探さない。
+- 景品は家庭ごと（`Reward.ParentId`）。一覧・詳細・更新・削除・交換・交換申請は `this.GetFamilyParentIdAsync` で家庭を確認し、他家庭は 404。初期景品（`Core/Models/StarterRewards.cs`）は保護者の登録時に家庭ごとにコピーされる（007）。
 - PIN ロックアウトは `IMemoryCache` で 3 回失敗 → 5 分（`ChildAccountService`）。
 - MudBlazor は 7 系のまま。FluentAssertions は 6 系のまま（v8 以降は商用有償ライセンス）。
 - 子供向け UI の文言はやさしい日本語にする。

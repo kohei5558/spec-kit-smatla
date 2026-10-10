@@ -17,6 +17,11 @@ public interface IStudentAccessService
     Task<int?> GetOwnStudentIdAsync(string childUserId);
 
     /// <summary>
+    /// ユーザーが属する家庭の保護者ID（保護者なら自分、子供なら自分の保護者。不明なら null）
+    /// </summary>
+    Task<string?> GetFamilyParentIdAsync(string userId, string role);
+
+    /// <summary>
     /// 保護者の子供たちの学習者ID一覧
     /// </summary>
     Task<List<int>> GetChildrenStudentIdsAsync(string parentId);

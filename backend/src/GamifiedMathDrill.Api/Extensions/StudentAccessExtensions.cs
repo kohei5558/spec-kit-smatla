@@ -24,4 +24,19 @@ public static class StudentAccessExtensions
 
         return await access.CanAccessAsync(userId, role, studentId);
     }
+
+    /// <summary>
+    /// ログイン中のユーザーが属する家庭の保護者ID（保護者なら自分、子供なら自分の保護者。不明なら null）
+    /// </summary>
+    public static async Task<string?> GetFamilyParentIdAsync(this ControllerBase controller, IStudentAccessService access)
+    {
+        var userId = controller.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var role = controller.User.FindFirstValue(ClaimTypes.Role);
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(role))
+        {
+            return null;
+        }
+
+        return await access.GetFamilyParentIdAsync(userId, role);
+    }
 }

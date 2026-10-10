@@ -4,7 +4,15 @@ namespace GamifiedMathDrill.Core.Interfaces;
 
 public interface IRewardService
 {
-    Task<IEnumerable<Reward>> GetRewardsAsync(string? category = null, int? maxPoints = null);
+    /// <summary>
+    /// 家庭の景品一覧（他の家庭の景品は含まない）
+    /// </summary>
+    Task<IEnumerable<Reward>> GetRewardsAsync(string parentId, string? category = null, int? maxPoints = null);
+
+    /// <summary>
+    /// 新しい家庭に初期景品をコピーする
+    /// </summary>
+    Task CopyStarterRewardsAsync(string parentId);
     Task<Reward?> GetRewardByIdAsync(int id);
     Task<Reward> CreateRewardAsync(Reward reward, Stream? imageStream, string? fileName, string? contentType, string createdBy);
     Task<Reward> UpdateRewardAsync(int id, Reward reward, Stream? imageStream, string? fileName, string? contentType, string updatedBy);

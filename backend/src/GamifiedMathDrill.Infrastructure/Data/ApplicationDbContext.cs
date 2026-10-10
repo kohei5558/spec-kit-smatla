@@ -102,6 +102,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
             entity.HasIndex(e => e.RequiredPoints);
             entity.HasIndex(e => e.Category);
+            entity.HasIndex(e => e.ParentId);
         });
 
         // AcquiredReward

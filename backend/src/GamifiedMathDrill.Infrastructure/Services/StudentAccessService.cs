@@ -41,6 +41,19 @@ public class StudentAccessService : IStudentAccessService
             .FirstOrDefaultAsync();
     }
 
+    public async Task<string?> GetFamilyParentIdAsync(string userId, string role)
+    {
+        return role switch
+        {
+            nameof(UserRole.Parent) => userId,
+            nameof(UserRole.Child) => await _context.Users
+                .Where(u => u.Id == userId && u.Role == UserRole.Child)
+                .Select(u => u.ParentId)
+                .FirstOrDefaultAsync(),
+            _ => null
+        };
+    }
+
     public async Task<List<int>> GetChildrenStudentIdsAsync(string parentId)
     {
         return await _context.Users
