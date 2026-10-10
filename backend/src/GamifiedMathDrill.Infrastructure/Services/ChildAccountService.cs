@@ -195,8 +195,8 @@ public class ChildAccountService : IChildAccountService
 
         await _userManager.UpdateAsync(user);
 
-        // Student同期更新
-        var student = await _context.Students.FirstOrDefaultAsync(s => s.ParentUserId == user.Id);
+        // Student同期更新（子供アカウントに紐付いた学習者）
+        var student = user.StudentId == null ? null : await _context.Students.FindAsync(user.StudentId.Value);
         if (student != null)
         {
             student.Name = user.DisplayName;
@@ -254,12 +254,12 @@ public class ChildAccountService : IChildAccountService
             throw new InvalidOperationException("子供アカウントが見つかりません");
         }
 
-        // Student削除（連鎖削除でLearningRecordsも削除される）
-        var student = await _context.Students.FirstOrDefaultAsync(s => s.ParentUserId == user.Id);
-        if (student != null)
-        {
-            _context.Students.Remove(student);
-        }
+        // Student削除（連鎖削除でLearningRecordsも削除される）。
+        // 紐付いた学習者に加え、以前の不具合で作成時に作られた未使用の学習者（ParentUserId に子供のIDが入っている）も消す
+        var students = await _context.Students
+            .Where(s => s.Id == user.StudentId || s.ParentUserId == user.Id)
+            .ToListAsync();
+        _context.Students.RemoveRange(students);
 
         await _userManager.DeleteAsync(user);
         await _context.SaveChangesAsync();
@@ -270,8 +270,12 @@ public class ChildAccountService : IChildAccountService
     /// </summary>
     public async Task<ChildLearningStatsDto> GetLearningStatsAsync(string childId)
     {
-        var student = await _context.Students
-            .FirstOrDefaultAsync(s => s.ParentUserId == childId);
+        // 子供アカウントに紐付いた学習者（問題の回答やポイントが記録される方）
+        var studentId = await _context.Users
+            .Where(u => u.Id == childId)
+            .Select(u => u.StudentId)
+            .FirstOrDefaultAsync();
+        var student = studentId == null ? null : await _context.Students.FindAsync(studentId.Value);
 
         if (student == null)
         {

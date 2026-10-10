@@ -59,6 +59,7 @@ public static class UserSeeder
 
                 child1.PIN = passwordHasher.HashPassword(child1, "1234");
                 await userManager.CreateAsync(child1, "Child123!@#");
+                await LinkNewStudentAsync(context, child1);
                 Console.WriteLine($"Created child user: {child1.DisplayName} (PIN: 1234)");
 
                 // 子供アカウント2
@@ -77,6 +78,7 @@ public static class UserSeeder
 
                 child2.PIN = passwordHasher.HashPassword(child2, "5678");
                 await userManager.CreateAsync(child2, "Child456!@#");
+                await LinkNewStudentAsync(context, child2);
                 Console.WriteLine($"Created child user: {child2.DisplayName} (PIN: 5678)");
             }
             else
@@ -88,5 +90,24 @@ public static class UserSeeder
         {
             Console.WriteLine($"Parent user already exists: {parentEmail}");
         }
+    }
+
+    /// <summary>
+    /// 子供アカウントに学習者を作って紐付ける（ChildAccountService.CreateAsync と同じ紐付け方）
+    /// </summary>
+    private static async Task LinkNewStudentAsync(ApplicationDbContext context, ApplicationUser child)
+    {
+        var student = new Student
+        {
+            Name = child.DisplayName,
+            ParentUserId = child.Id,
+            AvatarUrl = child.AvatarUrl
+        };
+        context.Students.Add(student);
+        await context.SaveChangesAsync();
+
+        var user = await context.Users.FindAsync(child.Id);
+        user!.StudentId = student.Id;
+        await context.SaveChangesAsync();
     }
 }

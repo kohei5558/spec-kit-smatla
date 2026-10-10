@@ -13,9 +13,9 @@ namespace GamifiedMathDrill.Tests.Integration.Helpers;
 /// </summary>
 public static class FamilyTestHelper
 {
-    public record Family(string ParentJwt, string DeviceToken, string ChildJwt, int StudentId);
+    public record Family(string ParentJwt, string DeviceToken, string ChildJwt, int StudentId, string ChildId);
 
-    public record Child(string Jwt, int StudentId);
+    public record Child(string Jwt, int StudentId, string ChildId);
 
     /// <summary>
     /// 保護者を新規登録し、端末を登録して、子供1人を作成・ログインさせる
@@ -33,7 +33,7 @@ public static class FamilyTestHelper
         var parentJwt = (await register.Content.ReadFromJsonAsync<RegisterResponse>())!.Token!;
         var deviceToken = await AuthenticationHelper.RegisterDeviceAsync(client, parentJwt);
         var child = await AddChildAsync(client, parentJwt, deviceToken, childName ?? $"{label}の子", "7410");
-        return new Family(parentJwt, deviceToken, child.Jwt, child.StudentId);
+        return new Family(parentJwt, deviceToken, child.Jwt, child.StudentId, child.ChildId);
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public static class FamilyTestHelper
         var response = await client.SendAsync(login);
         response.EnsureSuccessStatusCode();
         var result = (await response.Content.ReadFromJsonAsync<LoginResponse>())!;
-        return new Child(result.Token!, result.StudentId!.Value);
+        return new Child(result.Token!, result.StudentId!.Value, childId);
     }
 
     /// <summary>

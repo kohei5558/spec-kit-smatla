@@ -48,8 +48,8 @@ public class ParentDashboardController : ControllerBase
                     AvatarUrl = c.AvatarUrl,
                     TotalPoints = c.TotalPoints,
                     PendingRequestsCount = 0, // TODO: 子供ごとの未承認数
-                    TotalProblemsCompleted = c.TotalProblemsCompleted ?? 0,
-                    AccuracyRate = c.AccuracyRate ?? 0,
+                    TotalProblemsCompleted = c.TotalProblems,
+                    AccuracyRate = CalculateAccuracyRate(c),
                     CreatedAt = c.CreatedAt,
                     IsActive = true
                 }).ToList(),
@@ -131,8 +131,8 @@ public class ParentDashboardController : ControllerBase
                 AvatarUrl = c.AvatarUrl,
                 TotalPoints = c.TotalPoints,
                 PendingRequestsCount = 0, // TODO: 子供ごとの未承認数
-                TotalProblemsCompleted = c.TotalProblemsCompleted ?? 0,
-                AccuracyRate = c.AccuracyRate ?? 0,
+                TotalProblemsCompleted = c.TotalProblems,
+                AccuracyRate = CalculateAccuracyRate(c),
                 CreatedAt = c.CreatedAt,
                 IsActive = true
             }).ToList();
@@ -197,5 +197,15 @@ public class ParentDashboardController : ControllerBase
             _logger.LogError(ex, "Error retrieving statistics");
             return StatusCode(500, new { message = "統計情報の取得に失敗しました。" });
         }
+    }
+
+    /// <summary>
+    /// 正答率（%、小数1桁）。回答のたびに更新される TotalProblems / CorrectAnswers から計算する
+    /// </summary>
+    private static decimal CalculateAccuracyRate(GamifiedMathDrill.Core.Models.Student student)
+    {
+        return student.TotalProblems > 0
+            ? Math.Round((decimal)student.CorrectAnswers / student.TotalProblems * 100, 1)
+            : 0;
     }
 }
