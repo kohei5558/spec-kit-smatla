@@ -57,10 +57,10 @@ public class DailyChallengeService : IDailyChallengeService
             return null;
         }
 
-        // 今のレベルで出る一番難しい難易度から選ぶ。答えが1つの問題だけ（あまりのあるわり算は除く、009）
+        // 今のレベルで出る一番難しい難易度から選ぶ。答えが1つの問題だけ（あまりのあるわり算は除く、009）。使わない問題も除く（011）
         var problems = await _problemRepository.GetAllAsync();
         var candidates = problems
-            .Where(p => p.DifficultyLevel == level.MaxDifficulty && p.CalculationType != CalculationType.DivisionWithRemainder)
+            .Where(p => p.IsActive && p.DifficultyLevel == level.MaxDifficulty && p.CalculationType != CalculationType.DivisionWithRemainder)
             .ToList();
         if (candidates.Count == 0)
         {

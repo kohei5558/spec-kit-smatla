@@ -43,6 +43,11 @@ public class Problem
     [Range(1, 10)]
     public int DifficultyLevel { get; set; }
 
+    /// <summary>
+    /// 出題に使うか。最新の問題セット（ProblemGenerator）にない問題は、学習記録のために残したまま false にする（011）
+    /// </summary>
+    public bool IsActive { get; set; } = true;
+
     // Navigation properties
     public ICollection<LearningRecord> LearningRecords { get; set; } = new List<LearningRecord>();
     public ICollection<DailyChallenge> DailyChallenges { get; set; } = new List<DailyChallenge>();

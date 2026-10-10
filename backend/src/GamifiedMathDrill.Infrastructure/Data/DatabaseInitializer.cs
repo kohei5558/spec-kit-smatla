@@ -1,6 +1,7 @@
 using GamifiedMathDrill.Infrastructure.Data.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace GamifiedMathDrill.Infrastructure.Data;
 
@@ -21,17 +22,19 @@ public static class DatabaseInitializer
         // プリセットアバターデータを追加
         await AvatarSeeder.SeedAsync(context);
 
-        // レベル・問題（未投入のときだけ）
+        // レベル（未投入のときだけ）
         if (!await context.Levels.AnyAsync())
         {
             var levels = LevelSeeder.GetLevels();
             await context.Levels.AddRangeAsync(levels);
             await context.SaveChangesAsync();
-
-            var problems = ProblemSeeder.GetProblems();
-            await context.Problems.AddRangeAsync(problems);
-            await context.SaveChangesAsync();
         }
+
+        // 問題は起動のたびに最新のセットに合わせる（追加・使わない状態にする・戻す。削除はしない、011）
+        var sync = await ProblemSynchronizer.SyncAsync(context, ProblemSeeder.GetProblems());
+        serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger(nameof(DatabaseInitializer)).LogInformation(
+            "Problems synchronized: added {Added}, deactivated {Deactivated}, reactivated {Reactivated}, corrected {Corrected}",
+            sync.Added, sync.Deactivated, sync.Reactivated, sync.Corrected);
 
         // 景品は家庭ごとに持つため、ここでは作らない（保護者の登録時に初期景品をコピーする）
 

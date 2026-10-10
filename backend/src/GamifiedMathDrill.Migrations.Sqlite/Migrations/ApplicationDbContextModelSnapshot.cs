@@ -300,6 +300,9 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
                     b.Property<int>("DifficultyLevel")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Question")
                         .IsRequired()
                         .HasMaxLength(100)

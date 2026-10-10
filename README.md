@@ -110,7 +110,9 @@ dotnet run --project frontend/GamifiedMathDrill.Client --launch-profile http
 
 ### 5. 開発用 DB を作り直す
 
-DB の構造が変わったときや、データを初期状態に戻したいときは、バックエンドを止めてから DB ファイルを削除し、もう一度起動します。
+データを初期状態に戻したいときは、バックエンドを止めてから DB ファイルを削除し、もう一度起動します。**学習記録・アカウント・ポイントなどもすべて消えます。**
+
+DB の構造の変更（マイグレーション）と問題の追加・入れ替えは、起動時に自動で反映されるため、作り直す必要はありません。
 
 **Mac**
 
@@ -146,6 +148,6 @@ GitHub に push すると、CI（`.github/workflows/ci.yml`）でビルド・テ
 
 - [backend/README.md](backend/README.md) … API・デバッグ方法など、バックエンドの詳細
 - [frontend/GamifiedMathDrill.Client/README.md](frontend/GamifiedMathDrill.Client/README.md) … 画面側の詳細
-- [specs/](specs/) … 機能ごとの仕様書とタスク（001〜010）
+- [specs/](specs/) … 機能ごとの仕様書とタスク（001〜011）
 - [CLAUDE.md](CLAUDE.md) … 開発時の前提・注意点（マイグレーションの追加手順など）
 - [WORKFLOW.md](WORKFLOW.md) … ブランチ・PR のルール

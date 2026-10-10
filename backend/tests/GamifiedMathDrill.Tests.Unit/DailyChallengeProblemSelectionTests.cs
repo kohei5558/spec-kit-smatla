@@ -14,11 +14,12 @@ public class DailyChallengeProblemSelectionTests
     private const int StudentId = 7;
 
     [Fact]
-    public async Task Challenge_UsesLevelMaxDifficulty_AndNeverRemainderProblem()
+    public async Task Challenge_UsesLevelMaxDifficulty_AndNeverRemainderOrInactiveProblem()
     {
         var problems = new List<Problem>
         {
             new() { Id = 1, CalculationType = CalculationType.DivisionWithRemainder, DifficultyLevel = 6, CorrectRemainder = 1 },
+            new() { Id = 5, CalculationType = CalculationType.Addition, DifficultyLevel = 6, IsActive = false }, // 使わない問題（011）
             new() { Id = 2, CalculationType = CalculationType.Addition, DifficultyLevel = 5 },
             new() { Id = 3, CalculationType = CalculationType.Division, DifficultyLevel = 6 },
             new() { Id = 4, CalculationType = CalculationType.Multiplication, DifficultyLevel = 7 }

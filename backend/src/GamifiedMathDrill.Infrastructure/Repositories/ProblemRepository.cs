@@ -16,7 +16,8 @@ public class ProblemRepository : Repository<Problem>, IProblemRepository
 
     public async Task<Problem?> GetRandomProblemAsync(int difficultyLevel, CalculationType? type = null, List<int>? excludeIds = null)
     {
-        var query = _dbSet.Where(p => p.DifficultyLevel == difficultyLevel);
+        // 使わない問題（最新の問題セットにない、011）は出題しない
+        var query = _dbSet.Where(p => p.IsActive && p.DifficultyLevel == difficultyLevel);
 
         if (type.HasValue)
         {
@@ -41,7 +42,7 @@ public class ProblemRepository : Repository<Problem>, IProblemRepository
     public async Task<IEnumerable<Problem>> GetProblemsByDifficultyAsync(int minDifficulty, int maxDifficulty)
     {
         return await _dbSet
-            .Where(p => p.DifficultyLevel >= minDifficulty && p.DifficultyLevel <= maxDifficulty)
+            .Where(p => p.IsActive && p.DifficultyLevel >= minDifficulty && p.DifficultyLevel <= maxDifficulty)
             .ToListAsync();
     }
 }

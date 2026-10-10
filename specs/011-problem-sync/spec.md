@@ -2,7 +2,7 @@
 
 **Feature Branch**: `011-problem-sync`（作業は `claude/project-status-m9txmv` 上で実施）
 **Created**: 2026年10月10日
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "公開後に問題を追加・更新できるようにする"
 
 ## 背景
