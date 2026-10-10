@@ -27,7 +27,8 @@ public class ParentDashboardTests : IClassFixture<TestWebApplicationFactory>
         var client = _factory.CreateClient();
         var a = await FamilyTestHelper.CreateFamilyAsync(client, "ダッシュA");
         var b = await FamilyTestHelper.CreateFamilyAsync(client, "ダッシュB");
-        await SetProgressAsync(a.StudentId, totalProblems: 10, correctAnswers: 7, points: 50);
+        // 10問中7問正解、最後の1問は不正解（連続正解数は0に戻っている）
+        await AddAnswersAsync(a.StudentId, total: 10, correct: 7, points: 50);
 
         var children = await GetAsync<List<ChildDto>>(client, a.ParentJwt, "/api/parent/children");
         var child = Assert.Single(children);
@@ -68,7 +69,7 @@ public class ParentDashboardTests : IClassFixture<TestWebApplicationFactory>
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var linked = new Student { Name = "重複学習者の子", TotalProblems = 20, CorrectAnswers = 15, TotalPoints = 80 };
+            var linked = new Student { Name = "重複学習者の子", TotalPoints = 80 };
             db.Students.Add(linked);
             await db.SaveChangesAsync();
             var user = await db.Users.FindAsync(family.ChildId);
@@ -76,6 +77,7 @@ public class ParentDashboardTests : IClassFixture<TestWebApplicationFactory>
             await db.SaveChangesAsync();
             linkedStudentId = linked.Id;
         }
+        await AddAnswersAsync(linkedStudentId, total: 20, correct: 15, points: 80);
 
         var children = await GetAsync<List<ChildDto>>(client, family.ParentJwt, "/api/parent/children");
         var child = Assert.Single(children);
@@ -84,17 +86,35 @@ public class ParentDashboardTests : IClassFixture<TestWebApplicationFactory>
 
         var detail = await GetAsync<ChildAccountDto>(client, family.ParentJwt, $"/api/child-accounts/{family.ChildId}/detail");
         Assert.Equal(20, detail.LearningStats!.TotalProblems);
+        Assert.Equal(15, detail.LearningStats.CorrectAnswers);
+        Assert.Equal(75m, detail.LearningStats.AccuracyRate);
         Assert.Equal(80, detail.LearningStats.TotalPoints);
         Assert.NotEqual(originalStudentId, linkedStudentId);
     }
 
-    private async Task SetProgressAsync(int studentId, int totalProblems, int correctAnswers, int points)
+    /// <summary>
+    /// 回答の記録を追加する（最初の correct 問が正解、残りが不正解）。
+    /// 学習者の集計値は実際の回答と同じく更新し、CorrectAnswers（連続正解数）は最後が不正解なので 0 にする
+    /// </summary>
+    private async Task AddAnswersAsync(int studentId, int total, int correct, int points)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var problemId = db.Problems.First().Id;
+        for (var i = 0; i < total; i++)
+        {
+            db.LearningRecords.Add(new LearningRecord
+            {
+                StudentId = studentId,
+                ProblemId = problemId,
+                IsCorrect = i < correct,
+                PointsEarned = i < correct ? 10 : 0,
+                SolvedAt = DateTime.UtcNow.AddMinutes(-total + i)
+            });
+        }
         var student = await db.Students.FindAsync(studentId);
-        student!.TotalProblems = totalProblems;
-        student.CorrectAnswers = correctAnswers;
+        student!.TotalProblems = total;
+        student.CorrectAnswers = correct == total ? correct : 0;
         student.TotalPoints = points;
         await db.SaveChangesAsync();
     }

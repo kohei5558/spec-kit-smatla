@@ -295,14 +295,17 @@ public class ChildAccountService : IChildAccountService
             .OrderBy(a => a.Date)
             .ToListAsync();
 
-        var accuracyRate = student.TotalProblems > 0
-            ? Math.Round((decimal)student.CorrectAnswers / student.TotalProblems * 100, 1)
+        // 回答数・正解数は学習記録から数える（Student.CorrectAnswers はレベルアップ用の連続正解数のため使わない）
+        var answered = await _context.LearningRecords.CountAsync(r => r.StudentId == student.Id);
+        var correct = await _context.LearningRecords.CountAsync(r => r.StudentId == student.Id && r.IsCorrect);
+        var accuracyRate = answered > 0
+            ? Math.Round((decimal)correct / answered * 100, 1)
             : 0;
 
         return new ChildLearningStatsDto
         {
-            TotalProblems = student.TotalProblems,
-            CorrectAnswers = student.CorrectAnswers,
+            TotalProblems = answered,
+            CorrectAnswers = correct,
             AccuracyRate = accuracyRate,
             TotalPoints = student.TotalPoints,
             ConsecutiveDays = student.ConsecutiveDays,

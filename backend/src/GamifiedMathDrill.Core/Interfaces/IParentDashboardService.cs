@@ -26,6 +26,11 @@ public interface IParentDashboardService
     /// 保護者の統計情報を取得
     /// </summary>
     Task<ParentStatistics> GetStatisticsAsync(string parentUserId);
+
+    /// <summary>
+    /// 学習者の回答数と正解数（学習記録から集計。Student.CorrectAnswers は連続正解数のため使わない）
+    /// </summary>
+    Task<(int Answered, int Correct)> GetAnswerSummaryAsync(int studentId);
 }
 
 /// <summary>

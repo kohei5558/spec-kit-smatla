@@ -41,18 +41,7 @@ public class ParentDashboardController : ControllerBase
             var dto = new DashboardSummaryDto
             {
                 PendingRequestsCount = summary.PendingRequestsCount,
-                Children = summary.Children.Select(c => new ChildDto
-                {
-                    Id = c.Id,
-                    DisplayName = c.Name,
-                    AvatarUrl = c.AvatarUrl,
-                    TotalPoints = c.TotalPoints,
-                    PendingRequestsCount = 0, // TODO: 子供ごとの未承認数
-                    TotalProblemsCompleted = c.TotalProblems,
-                    AccuracyRate = CalculateAccuracyRate(c),
-                    CreatedAt = c.CreatedAt,
-                    IsActive = true
-                }).ToList(),
+                Children = await ToChildDtosAsync(summary.Children),
                 RecentRequests = summary.RecentRequests.Select(r => new ExchangeRequestDto
                 {
                     Id = r.Id,
@@ -124,18 +113,7 @@ public class ParentDashboardController : ControllerBase
 
             var children = await _dashboardService.GetChildrenAsync(userId);
 
-            var dtos = children.Select(c => new ChildDto
-            {
-                Id = c.Id,
-                DisplayName = c.Name,
-                AvatarUrl = c.AvatarUrl,
-                TotalPoints = c.TotalPoints,
-                PendingRequestsCount = 0, // TODO: 子供ごとの未承認数
-                TotalProblemsCompleted = c.TotalProblems,
-                AccuracyRate = CalculateAccuracyRate(c),
-                CreatedAt = c.CreatedAt,
-                IsActive = true
-            }).ToList();
+            var dtos = await ToChildDtosAsync(children);
 
             return Ok(dtos);
         }
@@ -200,12 +178,27 @@ public class ParentDashboardController : ControllerBase
     }
 
     /// <summary>
-    /// 正答率（%、小数1桁）。回答のたびに更新される TotalProblems / CorrectAnswers から計算する
+    /// 子供の学習者を画面用の DTO に変換する。問題数・正答率は学習記録から集計する
     /// </summary>
-    private static decimal CalculateAccuracyRate(GamifiedMathDrill.Core.Models.Student student)
+    private async Task<List<ChildDto>> ToChildDtosAsync(IEnumerable<GamifiedMathDrill.Core.Models.Student> students)
     {
-        return student.TotalProblems > 0
-            ? Math.Round((decimal)student.CorrectAnswers / student.TotalProblems * 100, 1)
-            : 0;
+        var dtos = new List<ChildDto>();
+        foreach (var c in students)
+        {
+            var (answered, correct) = await _dashboardService.GetAnswerSummaryAsync(c.Id);
+            dtos.Add(new ChildDto
+            {
+                Id = c.Id,
+                DisplayName = c.Name,
+                AvatarUrl = c.AvatarUrl,
+                TotalPoints = c.TotalPoints,
+                PendingRequestsCount = 0, // TODO: 子供ごとの未承認数
+                TotalProblemsCompleted = answered,
+                AccuracyRate = answered > 0 ? Math.Round((decimal)correct / answered * 100, 1) : 0,
+                CreatedAt = c.CreatedAt,
+                IsActive = true
+            });
+        }
+        return dtos;
     }
 }

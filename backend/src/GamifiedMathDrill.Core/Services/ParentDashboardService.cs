@@ -13,14 +13,17 @@ public class ParentDashboardService : IParentDashboardService
     private readonly IExchangeRequestRepository _exchangeRequestRepository;
     private readonly IRewardRepository _rewardRepository;
     private readonly IStudentAccessService _studentAccess;
+    private readonly ILearningRecordRepository _learningRecordRepository;
 
     public ParentDashboardService(
         IStudentRepository studentRepository,
         IExchangeRequestRepository exchangeRequestRepository,
         IRewardRepository rewardRepository,
-        IStudentAccessService studentAccess)
+        IStudentAccessService studentAccess,
+        ILearningRecordRepository learningRecordRepository)
     {
         _studentAccess = studentAccess;
+        _learningRecordRepository = learningRecordRepository;
         _studentRepository = studentRepository;
         _exchangeRequestRepository = exchangeRequestRepository;
         _rewardRepository = rewardRepository;
@@ -142,7 +145,7 @@ public class ParentDashboardService : IParentDashboardService
         var totalPointsEarned = 0;
         foreach (var child in children)
         {
-            totalProblemsCompleted += child.TotalProblems;
+            totalProblemsCompleted += (await GetAnswerSummaryAsync(child.Id)).Answered;
             totalPointsEarned += child.TotalPoints;
         }
 
@@ -221,5 +224,11 @@ public class ParentDashboardService : IParentDashboardService
             CategoryBreakdown = new List<CategoryBreakdown>(), // TODO: 問題履歴が実装されたら集計
             RewardCategoryBreakdown = rewardCategoryBreakdown
         };
+    }
+
+    public async Task<(int Answered, int Correct)> GetAnswerSummaryAsync(int studentId)
+    {
+        var records = (await _learningRecordRepository.GetByStudentIdAsync(studentId)).ToList();
+        return (records.Count, records.Count(r => r.IsCorrect));
     }
 }
