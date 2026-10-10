@@ -31,7 +31,11 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/src/GamifiedMath
 
 - 秘密情報（`Jwt:SecretKey`、本番接続文字列など）は appsettings に書かない。開発は User Secrets、本番は環境変数（`Jwt__SecretKey` 等）。
 - DB: 開発は SQLite、本番は PostgreSQL。起動時に `DatabaseInitializer` がマイグレーションとシードを実行（テスト環境 `Testing` では実行しない）。デモユーザー（`parent@example.com`）は Development のみ作成。
-- モデル変更時は EF マイグレーションを追加する（`dotnet tool restore` の後、`ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add <Name> --project backend/src/GamifiedMathDrill.Infrastructure --startup-project backend/src/GamifiedMathDrill.Api`）。既存マイグレーションは SQLite 用に生成されている。
+- DB の種類は設定 `DatabaseProvider`（`Sqlite` / `PostgreSQL`、未指定なら開発は SQLite・それ以外は PostgreSQL）。マイグレーションは DB ごとに `backend/src/GamifiedMathDrill.Migrations.Sqlite` と `GamifiedMathDrill.Migrations.PostgreSQL` に分かれている。
+- モデル変更時は**両方**にマイグレーションを追加する（`dotnet tool restore` の後）:
+  - `ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add <Name> --project backend/src/GamifiedMathDrill.Migrations.Sqlite --startup-project backend/src/GamifiedMathDrill.Api --output-dir Migrations`
+  - `ASPNETCORE_ENVIRONMENT=Production DatabaseProvider=PostgreSQL Jwt__SecretKey=design-time-only-key-design-time-only-key ConnectionStrings__DefaultConnection="Host=localhost;Database=design" dotnet ef migrations add <Name> --project backend/src/GamifiedMathDrill.Migrations.PostgreSQL --startup-project backend/src/GamifiedMathDrill.Api --output-dir Migrations`
+  - 反映漏れは CI の `has-pending-model-changes` で検出される
 - `Program.cs` で `SuppressModelStateInvalidFilter = true` のため、DataAnnotations やバインド失敗は自動で 400 にならない。コントローラーで明示的に検証する。
 - 結合テストはテストクラス単位で DB を共有する（`IClassFixture`）。他テストのデータが残る前提で、名前は一意にし件数に依存しない書き方をする。
 - 子供ログインの JSON キーは `ChildId`（`Api/DTOs/ChildLoginRequest.cs` とフロントの同名クラスで一致させる）。

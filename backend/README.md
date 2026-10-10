@@ -208,11 +208,12 @@ backend/
 │   │   ├── Models/                    # ドメインエンティティ
 │   │   ├── Interfaces/                # リポジトリインターフェース
 │   │   └── Services/                  # ドメインサービス
-│   └── GamifiedMathDrill.Infrastructure/  # インフラストラクチャレイヤー
-│       ├── Data/                      # データベースコンテキスト
-│       ├── Repositories/              # リポジトリ実装
-│       ├── Jobs/                      # バックグラウンドジョブ
-│       └── Migrations/                # EF Core マイグレーション
+│   ├── GamifiedMathDrill.Infrastructure/  # インフラストラクチャレイヤー
+│   │   ├── Data/                      # データベースコンテキスト・シード
+│   │   ├── Repositories/              # リポジトリ実装
+│   │   └── Jobs/                      # バックグラウンドジョブ
+│   ├── GamifiedMathDrill.Migrations.Sqlite/      # EF Core マイグレーション（開発用 SQLite）
+│   └── GamifiedMathDrill.Migrations.PostgreSQL/  # EF Core マイグレーション（本番用 PostgreSQL）
 └── tests/
     ├── GamifiedMathDrill.Tests.Unit/         # ユニットテスト
     └── GamifiedMathDrill.Tests.Integration/  # 統合テスト
@@ -257,12 +258,11 @@ cd backend
 dotnet restore
 ```
 
-3. データベースのマイグレーション実行
+3. データベース
 
-```bash
-cd src/GamifiedMathDrill.Api
-dotnet ef database update
-```
+マイグレーションはアプリの起動時に自動で適用されます（開発は SQLite、本番は PostgreSQL）。
+DB の種類は設定 `DatabaseProvider`（`Sqlite` / `PostgreSQL`）で切り替えられます。
+本番では環境変数 `ConnectionStrings__DefaultConnection` と `Jwt__SecretKey` を設定してください。
 
 4. アプリケーションの起動
 
@@ -401,9 +401,7 @@ SELECT * FROM AspNetUsers;
 # データベースファイルを削除
 rm src/GamifiedMathDrill.Api/gamifiedmathdrill.db
 
-# マイグレーションを再実行
-cd src/GamifiedMathDrill.Infrastructure
-dotnet ef database update --startup-project ../GamifiedMathDrill.Api
+# アプリを起動すると、マイグレーションとデモデータが自動で作り直される
 ```
 
 ### APIエンドポイントのデバッグ
@@ -437,14 +435,17 @@ curl -X GET https://localhost:7000/api/rewards \
 **問題: データベースマイグレーションエラー**
 
 ```bash
-# マイグレーションの状態確認
-cd src/GamifiedMathDrill.Infrastructure
-dotnet ef migrations list --startup-project ../GamifiedMathDrill.Api
+# マイグレーションの状態確認（リポジトリ直下で実行）
+dotnet tool restore
+ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations list \
+  --project backend/src/GamifiedMathDrill.Migrations.Sqlite \
+  --startup-project backend/src/GamifiedMathDrill.Api
 
-# データベースを削除して再作成
-dotnet ef database drop --startup-project ../GamifiedMathDrill.Api
-dotnet ef database update --startup-project ../GamifiedMathDrill.Api
+# 開発用 DB を作り直す（ファイルを消してアプリを再起動）
+rm backend/src/GamifiedMathDrill.Api/gamifiedmathdrill.db*
 ```
+
+マイグレーションの追加手順は リポジトリ直下の CLAUDE.md を参照してください（SQLite と PostgreSQL の両方に追加が必要です）。
 
 **問題: ポートが既に使用されている**
 

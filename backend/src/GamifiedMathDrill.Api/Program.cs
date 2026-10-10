@@ -34,16 +34,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 
 // Add services to the container.
+// DB の種類は設定 DatabaseProvider（Sqlite / PostgreSQL）で指定。未指定なら開発は SQLite、それ以外は PostgreSQL。
+// マイグレーションは DB の種類ごとに別プロジェクトに置いている（型やシーケンスの書き方が異なるため）
+var databaseProvider = builder.Configuration["DatabaseProvider"]
+    ?? (builder.Environment.IsDevelopment() ? "Sqlite" : "PostgreSQL");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (builder.Environment.IsDevelopment())
+    switch (databaseProvider)
     {
-        options.UseSqlite(connectionString);
-    }
-    else
-    {
-        options.UseNpgsql(connectionString);
+        case "Sqlite":
+            options.UseSqlite(connectionString, b => b.MigrationsAssembly("GamifiedMathDrill.Migrations.Sqlite"));
+            break;
+        case "PostgreSQL":
+            options.UseNpgsql(connectionString, b => b.MigrationsAssembly("GamifiedMathDrill.Migrations.PostgreSQL"));
+            break;
+        default:
+            throw new InvalidOperationException($"Unknown DatabaseProvider: {databaseProvider}（Sqlite または PostgreSQL を指定してください）");
     }
 });
 

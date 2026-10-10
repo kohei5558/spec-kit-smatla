@@ -30,6 +30,21 @@ jobs:
       - name: Build backend
         run: dotnet build backend/GamifiedMathDrill.sln --no-restore
 
+      # モデルの変更がマイグレーションに反映されているか（未反映だと本番起動時に例外になる）
+      - name: Check migrations are up to date
+        run: |
+          dotnet tool restore
+          ASPNETCORE_ENVIRONMENT=Development \
+            dotnet ef migrations has-pending-model-changes --no-build \
+            --project backend/src/GamifiedMathDrill.Migrations.Sqlite \
+            --startup-project backend/src/GamifiedMathDrill.Api
+          ASPNETCORE_ENVIRONMENT=Production DatabaseProvider=PostgreSQL \
+          Jwt__SecretKey=ci-design-time-only-key-ci-design-time-only-key \
+          ConnectionStrings__DefaultConnection="Host=localhost;Database=design" \
+            dotnet ef migrations has-pending-model-changes --no-build \
+            --project backend/src/GamifiedMathDrill.Migrations.PostgreSQL \
+            --startup-project backend/src/GamifiedMathDrill.Api
+
       - name: Build frontend
         run: dotnet build frontend/GamifiedMathDrill.Client --no-restore
 
