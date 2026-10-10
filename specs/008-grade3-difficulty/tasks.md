@@ -12,9 +12,9 @@
 
 ## Phase 1: User Story 1 - 小3の内容の問題 (P1)
 
-- [ ] T001 [US1] 難易度表の各条件（桁数・くり上がり/くり下がり・割り切れる・答えが0以上・重複なし・各30問）を検証する単体テスト - backend/tests/GamifiedMathDrill.Tests.Unit/ProblemGeneratorTests.cs
-- [ ] T002 [US1] ProblemGenerator を実装 - backend/src/GamifiedMathDrill.Core/Services/ProblemGenerator.cs
-- [ ] T003 [US1] ProblemSeeder を ProblemGenerator に置き換え - backend/src/GamifiedMathDrill.Infrastructure/Data/Seed/ProblemSeeder.cs
+- [x] T001 [US1] 難易度表の各条件（桁数・くり上がり/くり下がり・割り切れる・答えが0以上・重複なし・各30問）を検証する単体テスト - backend/tests/GamifiedMathDrill.Tests.Unit/ProblemGeneratorTests.cs
+- [x] T002 [US1] ProblemGenerator を実装 - backend/src/GamifiedMathDrill.Core/Services/ProblemGenerator.cs
+- [x] T003 [US1] ProblemSeeder を ProblemGenerator に置き換え - backend/src/GamifiedMathDrill.Infrastructure/Data/Seed/ProblemSeeder.cs
 
 ## Phase 2: User Story 2 - 学年に応じたレベル (P1)
 
