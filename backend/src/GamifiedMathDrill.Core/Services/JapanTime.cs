@@ -11,6 +11,11 @@ public static class JapanTime
         DateOnly.FromDateTime(timeProvider.GetUtcNow().ToOffset(Offset).DateTime);
 
     /// <summary>
+    /// UTC の日時が日本時間で何日か
+    /// </summary>
+    public static DateOnly ToJapanDate(DateTime utc) => DateOnly.FromDateTime(utc + Offset);
+
+    /// <summary>
     /// 日本時間の今日の0時（UTC）。DB の日時は UTC で保存している
     /// </summary>
     public static DateTime StartOfTodayUtc(TimeProvider timeProvider) =>

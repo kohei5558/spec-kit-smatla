@@ -2,6 +2,7 @@ using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Core.Models.DTOs;
 using GamifiedMathDrill.Core.Models.Responses;
+using GamifiedMathDrill.Core.Services;
 using GamifiedMathDrill.Api.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,12 +17,14 @@ public class StudentsController : ControllerBase
     private readonly IStudentService _studentService;
     private readonly IStudentAccessService _studentAccess;
     private readonly ILogger<StudentsController> _logger;
+    private readonly TimeProvider _timeProvider;
 
-    public StudentsController(IStudentService studentService, IStudentAccessService studentAccess, ILogger<StudentsController> logger)
+    public StudentsController(IStudentService studentService, IStudentAccessService studentAccess, ILogger<StudentsController> logger, TimeProvider timeProvider)
     {
         _studentService = studentService;
         _studentAccess = studentAccess;
         _logger = logger;
+        _timeProvider = timeProvider;
     }
 
     [HttpGet("{id}")]
@@ -53,8 +56,10 @@ public class StudentsController : ControllerBase
 
         try
         {
-            var student = await _studentService.UpdateLoginAsync(id);
-            var studentDto = MapToDto(student);
+            await _studentService.UpdateLoginAsync(id);
+            // 連続日数の計算に学習記録が必要なため、読み直す
+            var student = await _studentService.GetByIdAsync(id);
+            var studentDto = MapToDto(student!);
             return Ok(ApiResponse<StudentDto>.SuccessResponse(studentDto, "Login updated successfully."));
         }
         catch (KeyNotFoundException ex)
@@ -70,7 +75,8 @@ public class StudentsController : ControllerBase
             Id = student.Id,
             Name = student.Name,
             TotalPoints = student.TotalPoints,
-            ConsecutiveDays = student.ConsecutiveDays,
+            // 1問以上解いた日（日本時間）で数える。student は学習記録を含めて読み込んだもの
+            ConsecutiveDays = StudyStreak.ConsecutiveDays(student.LearningRecords.Select(r => r.SolvedAt), JapanTime.Today(_timeProvider)),
             CorrectAnswers = student.CorrectAnswers,
             TotalProblems = student.TotalProblems,
             LastLoginAt = student.LastLoginAt,

@@ -1,6 +1,7 @@
 using GamifiedMathDrill.Core.DTOs;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
+using GamifiedMathDrill.Core.Services;
 using GamifiedMathDrill.Infrastructure.Data;
 using GamifiedMathDrill.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -19,6 +20,7 @@ public class ChildAccountService : IChildAccountService
     private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
     private readonly IMemoryCache _cache;
     private readonly IPresetAvatarRepository _avatarRepository;
+    private readonly TimeProvider _timeProvider;
 
     private const int MaxChildAccounts = 10;
     private const int MaxPinAttempts = 3;
@@ -29,13 +31,15 @@ public class ChildAccountService : IChildAccountService
         UserManager<ApplicationUser> userManager,
         IPasswordHasher<ApplicationUser> passwordHasher,
         IMemoryCache cache,
-        IPresetAvatarRepository avatarRepository)
+        IPresetAvatarRepository avatarRepository,
+        TimeProvider timeProvider)
     {
         _context = context;
         _userManager = userManager;
         _passwordHasher = passwordHasher;
         _cache = cache;
         _avatarRepository = avatarRepository;
+        _timeProvider = timeProvider;
     }
 
     /// <summary>
@@ -292,18 +296,24 @@ public class ChildAccountService : IChildAccountService
             return new ChildLearningStatsDto();
         }
 
+        // 日付は日本時間で数える（DB の日時は UTC）
+        var today = JapanTime.Today(_timeProvider);
+        var solvedAt = await _context.LearningRecords
+            .Where(r => r.StudentId == student.Id)
+            .Select(r => r.SolvedAt)
+            .ToListAsync();
+
         // 過去7日間のアクティビティ
-        var sevenDaysAgo = DateTime.UtcNow.Date.AddDays(-6);
-        var recentActivity = await _context.LearningRecords
-            .Where(r => r.StudentId == student.Id && r.SolvedAt >= sevenDaysAgo)
-            .GroupBy(r => r.SolvedAt.Date)
+        var recentActivity = solvedAt
+            .GroupBy(JapanTime.ToJapanDate)
+            .Where(g => g.Key >= today.AddDays(-6))
             .Select(g => new DailyActivity
             {
-                Date = g.Key,
+                Date = g.Key.ToDateTime(TimeOnly.MinValue),
                 ProblemsCount = g.Count()
             })
             .OrderBy(a => a.Date)
-            .ToListAsync();
+            .ToList();
 
         // 回答数・正解数は学習記録から数える（Student.CorrectAnswers はレベルアップ用の連続正解数のため使わない）
         var answered = await _context.LearningRecords.CountAsync(r => r.StudentId == student.Id);
@@ -318,8 +328,9 @@ public class ChildAccountService : IChildAccountService
             CorrectAnswers = correct,
             AccuracyRate = accuracyRate,
             TotalPoints = student.TotalPoints,
-            ConsecutiveDays = student.ConsecutiveDays,
-            LastStudyDate = student.LastLoginAt,
+            // 1問以上解いた日で数える。最後に学習した日はログインではなく最後に答えた日時
+            ConsecutiveDays = StudyStreak.ConsecutiveDays(solvedAt, today),
+            LastStudyDate = solvedAt.Count > 0 ? solvedAt.Max() : null,
             RecentActivity = recentActivity
         };
     }

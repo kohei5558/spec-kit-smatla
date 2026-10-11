@@ -31,7 +31,7 @@ public class Student
     public int TotalPoints { get; set; } = 0;
 
     /// <summary>
-    /// 連続学習日数
+    /// 連続学習日数（使わない。「◯日連続」は学習記録から StudyStreak で計算する）
     /// </summary>
     [Range(0, int.MaxValue)]
     public int ConsecutiveDays { get; set; } = 0;

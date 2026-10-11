@@ -48,31 +48,7 @@ public class StudentService : IStudentService
             throw new KeyNotFoundException($"Student with ID {id} not found.");
         }
 
-        var today = DateTime.UtcNow.Date;
-        var lastLoginDate = student.LastLoginAt?.Date;
-
-        // 連続日数の更新
-        if (lastLoginDate.HasValue)
-        {
-            var daysDifference = (today - lastLoginDate.Value).Days;
-            if (daysDifference == 1)
-            {
-                // 連続ログイン
-                student.ConsecutiveDays++;
-            }
-            else if (daysDifference > 1)
-            {
-                // 連続が途切れた
-                student.ConsecutiveDays = 1;
-            }
-            // daysDifference == 0 の場合は同日ログインなので変更なし
-        }
-        else
-        {
-            // 初回ログイン
-            student.ConsecutiveDays = 1;
-        }
-
+        // 「◯日連続」はログインではなく学習記録（1問以上解いた日）から計算するため、ここでは変えない
         student.LastLoginAt = DateTime.UtcNow;
 
         await _studentRepository.UpdateAsync(student);
