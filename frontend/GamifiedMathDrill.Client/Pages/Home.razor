@@ -161,7 +161,7 @@
                                     <MudCard Elevation="2" Style="height: 100%;">
                                         @if (!string.IsNullOrEmpty(reward.ImageUrl))
                                         {
-                                            <MudCardMedia Image="@reward.ImageUrl" Height="120" />
+                                            <MudCardMedia Image="@ImageUrls.Resolve(reward.ImageUrl)" Height="120" />
                                         }
                                         else
                                         {

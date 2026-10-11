@@ -52,7 +52,7 @@ public static class UserSeeder
                     Role = UserRole.Child,
                     GradeLevel = 3,
                     ParentId = parent.Id,
-                    AvatarUrl = "/images/avatars/girl1.png",
+                    AvatarUrl = "/avatars/rabbit.png",
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow,
                     EmailConfirmed = true
@@ -72,7 +72,7 @@ public static class UserSeeder
                     Role = UserRole.Child,
                     GradeLevel = 1,
                     ParentId = parent.Id,
-                    AvatarUrl = "/images/avatars/boy1.png",
+                    AvatarUrl = "/avatars/lion.png",
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow,
                     EmailConfirmed = true

@@ -151,3 +151,4 @@ GitHub に push すると、CI（`.github/workflows/ci.yml`）でビルド・テ
 - [specs/](specs/) … 機能ごとの仕様書とタスク（001〜011）
 - [CLAUDE.md](CLAUDE.md) … 開発時の前提・注意点（マイグレーションの追加手順など）
 - [WORKFLOW.md](WORKFLOW.md) … ブランチ・PR のルール
+- [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) … 使っている素材のライセンス（アバター・初期景品の画像は Fluent Emoji、MIT ライセンス）

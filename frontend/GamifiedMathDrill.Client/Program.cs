@@ -26,7 +26,7 @@ builder.Services.AddScoped(sp =>
 {
     var httpClient = new HttpClient(new AuthorizationMessageHandler(sp))
     {
-        BaseAddress = new Uri("http://localhost:5242")
+        BaseAddress = new Uri(ImageUrls.ApiBaseAddress)
     };
     return httpClient;
 });

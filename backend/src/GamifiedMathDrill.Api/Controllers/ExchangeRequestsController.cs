@@ -75,7 +75,6 @@ public class ExchangeRequestsController : ControllerBase
 
             _logger.LogInformation("ExchangeRequest created: {RequestId} for student {StudentId}", exchangeRequest.Id, exchangeRequest.StudentId);
 
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
             var dto = new ExchangeRequestDto
             {
                 Id = exchangeRequest.Id,
@@ -83,7 +82,8 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = exchangeRequest.Student?.Name ?? "",
                 RewardId = exchangeRequest.RewardId,
                 RewardName = exchangeRequest.Reward?.Name ?? "",
-                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : $"{baseUrl}{exchangeRequest.Reward!.ImageUrl}",
+                // 画像は相対パスのまま返す（初期景品は画面側、アップロード画像は API 側にあり、画面の ImageUrls.Resolve で解決する）
+                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : exchangeRequest.Reward!.ImageUrl,
                 RequiredPoints = exchangeRequest.RequiredPoints,
                 Status = exchangeRequest.Status,
                 RequestedAt = exchangeRequest.RequestedAt
@@ -131,7 +131,6 @@ public class ExchangeRequestsController : ControllerBase
 
             var requests = await _exchangeRequestService.GetRequestsByStudentAsync(studentId);
 
-            var baseUrlMy = $"{Request.Scheme}://{Request.Host}";
             var dtos = requests.Select(er => new ExchangeRequestDto
             {
                 Id = er.Id,
@@ -139,7 +138,8 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = er.Student?.Name ?? "",
                 RewardId = er.RewardId,
                 RewardName = er.Reward?.Name ?? "",
-                RewardImageUrl = string.IsNullOrEmpty(er.Reward?.ImageUrl) ? null : $"{baseUrlMy}{er.Reward!.ImageUrl}",
+                // 画像は相対パスのまま返す（初期景品は画面側、アップロード画像は API 側にあり、画面の ImageUrls.Resolve で解決する）
+                RewardImageUrl = string.IsNullOrEmpty(er.Reward?.ImageUrl) ? null : er.Reward!.ImageUrl,
                 RequiredPoints = er.RequiredPoints,
                 Status = er.Status,
                 RequestedAt = er.RequestedAt,
@@ -377,7 +377,6 @@ public class ExchangeRequestsController : ControllerBase
             var requests = (await _exchangeRequestRepository.GetAllAsync())
                 .Where(er => childrenStudentIds.Contains(er.StudentId));
 
-            var baseUrlAll = $"{Request.Scheme}://{Request.Host}";
             var dtos = requests.Select(er => new ExchangeRequestDto
             {
                 Id = er.Id,
@@ -385,7 +384,8 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = er.Student?.Name ?? "",
                 RewardId = er.RewardId,
                 RewardName = er.Reward?.Name ?? "",
-                RewardImageUrl = string.IsNullOrEmpty(er.Reward?.ImageUrl) ? null : $"{baseUrlAll}{er.Reward!.ImageUrl}",
+                // 画像は相対パスのまま返す（初期景品は画面側、アップロード画像は API 側にあり、画面の ImageUrls.Resolve で解決する）
+                RewardImageUrl = string.IsNullOrEmpty(er.Reward?.ImageUrl) ? null : er.Reward!.ImageUrl,
                 RequiredPoints = er.RequiredPoints,
                 Status = er.Status,
                 RequestedAt = er.RequestedAt,

@@ -63,4 +63,5 @@ artifacts/
 Thumbs.db
 
 # Uploads
-wwwroot/uploads/
+# 保護者がアップロードした景品の画像（利用者のデータなのでコミットしない）。どの階層の wwwroot でも対象にする
+**/wwwroot/uploads/

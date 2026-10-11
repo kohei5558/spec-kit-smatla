@@ -48,7 +48,6 @@ public class RewardsController : ControllerBase
                 rewards = rewards.Where(r => r.IsActive);
             }
 
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
             var responseDtos = rewards.Select(r => new RewardDto
             {
                 Id = r.Id,
@@ -56,7 +55,7 @@ public class RewardsController : ControllerBase
                 Description = r.Description ?? string.Empty,
                 RequiredPoints = r.RequiredPoints,
                 Category = r.Category,
-                ImageUrl = string.IsNullOrEmpty(r.ImageUrl) ? null : $"{baseUrl}{r.ImageUrl}",
+                ImageUrl = string.IsNullOrEmpty(r.ImageUrl) ? null : r.ImageUrl, // 相対パスのまま（画面の ImageUrls.Resolve で解決する）
                 Stock = r.Stock,
                 IsPhysical = r.IsPhysical,
                 CreatedBy = r.CreatedBy,
@@ -87,7 +86,6 @@ public class RewardsController : ControllerBase
                 return NotFound(new { message = "景品が見つかりません。" });
             }
 
-            var baseUrlSingle = $"{Request.Scheme}://{Request.Host}";
             var dto = new RewardDto
             {
                 Id = reward.Id,
@@ -95,7 +93,7 @@ public class RewardsController : ControllerBase
                 Description = reward.Description ?? string.Empty,
                 RequiredPoints = reward.RequiredPoints,
                 Category = reward.Category,
-                ImageUrl = string.IsNullOrEmpty(reward.ImageUrl) ? null : $"{baseUrlSingle}{reward.ImageUrl}",
+                ImageUrl = string.IsNullOrEmpty(reward.ImageUrl) ? null : reward.ImageUrl, // 相対パスのまま（画面の ImageUrls.Resolve で解決する）
                 Stock = reward.Stock,
                 IsPhysical = reward.IsPhysical,
                 CreatedBy = reward.CreatedBy,
@@ -152,7 +150,6 @@ public class RewardsController : ControllerBase
                 createdReward = await _rewardService.CreateRewardAsync(reward, null, null, null, userId);
             }
 
-            var baseUrlCreated = $"{Request.Scheme}://{Request.Host}";
             var dto = new RewardDto
             {
                 Id = createdReward.Id,
@@ -160,7 +157,7 @@ public class RewardsController : ControllerBase
                 Description = createdReward.Description ?? string.Empty,
                 RequiredPoints = createdReward.RequiredPoints,
                 Category = createdReward.Category,
-                ImageUrl = string.IsNullOrEmpty(createdReward.ImageUrl) ? null : $"{baseUrlCreated}{createdReward.ImageUrl}",
+                ImageUrl = string.IsNullOrEmpty(createdReward.ImageUrl) ? null : createdReward.ImageUrl, // 相対パスのまま（画面の ImageUrls.Resolve で解決する）
                 Stock = createdReward.Stock,
                 IsPhysical = createdReward.IsPhysical,
                 CreatedBy = createdReward.CreatedBy,
@@ -243,7 +240,6 @@ public class RewardsController : ControllerBase
                 updatedReward = await _rewardService.UpdateRewardAsync(id, reward, null, null, null, userId);
             }
 
-            var baseUrlUpdated = $"{Request.Scheme}://{Request.Host}";
             var dto = new RewardDto
             {
                 Id = updatedReward.Id,
@@ -251,7 +247,7 @@ public class RewardsController : ControllerBase
                 Description = updatedReward.Description ?? string.Empty,
                 RequiredPoints = updatedReward.RequiredPoints,
                 Category = updatedReward.Category,
-                ImageUrl = string.IsNullOrEmpty(updatedReward.ImageUrl) ? null : $"{baseUrlUpdated}{updatedReward.ImageUrl}",
+                ImageUrl = string.IsNullOrEmpty(updatedReward.ImageUrl) ? null : updatedReward.ImageUrl, // 相対パスのまま（画面の ImageUrls.Resolve で解決する）
                 Stock = updatedReward.Stock,
                 IsPhysical = updatedReward.IsPhysical,
                 CreatedBy = updatedReward.CreatedBy,
