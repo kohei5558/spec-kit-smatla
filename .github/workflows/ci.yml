@@ -34,7 +34,9 @@ jobs:
       - name: Check migrations are up to date
         run: |
           dotnet tool restore
+          # CI には開発用の User Secrets がないため、設計時だけ使うダミーの鍵を渡す
           ASPNETCORE_ENVIRONMENT=Development \
+          Jwt__SecretKey=ci-design-time-only-key-ci-design-time-only-key \
             dotnet ef migrations has-pending-model-changes --no-build \
             --project backend/src/GamifiedMathDrill.Migrations.Sqlite \
             --startup-project backend/src/GamifiedMathDrill.Api
