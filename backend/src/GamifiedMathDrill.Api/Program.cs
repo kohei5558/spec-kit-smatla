@@ -1,5 +1,4 @@
 using GamifiedMathDrill.Api.Middleware;
-using Microsoft.AspNetCore.HttpOverrides;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Services;
 using GamifiedMathDrill.Infrastructure.Data;
@@ -145,13 +144,9 @@ builder.Services.AddAuthorization(options =>
 // Data Protection API (セッショントークン用)
 builder.Services.AddDataProtection();
 
-// Render などのプロキシの後ろで動くとき、元の https・接続元 IP を使う（012）
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.KnownIPNetworks.Clear();
-    options.KnownProxies.Clear();
-});
+// プロキシ（Render）の転送ヘッダー（X-Forwarded-For/Proto）は、環境変数 ASPNETCORE_FORWARDEDHEADERS_ENABLED=true の
+// ときだけ ASP.NET Core 標準の仕組みで使う（render.yaml で設定、012）。既定では使わない。プロキシなしで受け付けると、
+// ヘッダーを偽って接続元 IP を変え、ログインの回数制限（RateLimitMiddleware）を逃れられるため
 
 // CORS policy
 builder.Services.AddCors(options =>
@@ -193,7 +188,6 @@ if (app.Environment.EnvironmentName != "Testing")
 }
 
 // Configure the HTTP request pipeline.
-app.UseForwardedHeaders();
 app.UseErrorHandling();
 
 // Request/response logging for debugging tests (Testing environment only)

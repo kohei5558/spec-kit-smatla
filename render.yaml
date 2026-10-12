@@ -12,6 +12,9 @@ services:
     autoDeploy: true
     branch: main
     envVars:
+      # Render のプロキシが付ける転送ヘッダー（接続元 IP・https）を使う。プロキシの後ろでだけ有効にする
+      - key: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        value: "true"
       - key: DatabaseProvider
         value: PostgreSQL
       - key: ConnectionStrings__DefaultConnection
