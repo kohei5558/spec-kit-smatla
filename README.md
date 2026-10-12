@@ -134,6 +134,10 @@ dotnet test backend/GamifiedMathDrill.sln
 
 GitHub に push すると、CI（`.github/workflows/ci.yml`）でビルド・テスト・マイグレーションの確認が自動で実行されます。
 
+## インターネットに公開する
+
+無料のサービス（Cloudflare Pages・Render・Neon）で家族向けに公開する手順は [docs/DEPLOY.md](docs/DEPLOY.md) にあります。
+
 ## 本番環境（PostgreSQL）で動かす場合
 
 本番では DB に PostgreSQL を使います。次の環境変数を設定してバックエンドを起動してください。デモ用アカウントは作られません。DB の表はアプリの起動時に自動で作られます。
@@ -143,12 +147,14 @@ GitHub に push すると、CI（`.github/workflows/ci.yml`）でビルド・テ
 | `ASPNETCORE_ENVIRONMENT` | `Production` |
 | `ConnectionStrings__DefaultConnection` | PostgreSQL の接続文字列（例: `Host=...;Database=...;Username=...;Password=...`） |
 | `Jwt__SecretKey` | ログイン用トークンの署名キー（32文字以上のランダムな文字列） |
+| `Cors__AllowedOrigins__0` | 画面のアドレス（例: `https://xxx.pages.dev`）。複数あれば `__1`, `__2` … |
+| `Registration__InviteCode` | 招待コード。設定すると、このコードを入れた人だけが保護者登録できる（任意） |
 
 ## 関連資料
 
 - [backend/README.md](backend/README.md) … API・デバッグ方法など、バックエンドの詳細
 - [frontend/GamifiedMathDrill.Client/README.md](frontend/GamifiedMathDrill.Client/README.md) … 画面側の詳細
-- [specs/](specs/) … 機能ごとの仕様書とタスク（001〜011）
+- [specs/](specs/) … 機能ごとの仕様書とタスク（001〜012）
 - [CLAUDE.md](CLAUDE.md) … 開発時の前提・注意点（マイグレーションの追加手順など）
 - [WORKFLOW.md](WORKFLOW.md) … ブランチ・PR のルール
 - [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) … 使っている素材のライセンス（アバター・初期景品の画像は Fluent Emoji、MIT ライセンス）

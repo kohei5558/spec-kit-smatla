@@ -311,7 +311,8 @@ public class AuthService
         string email, 
         string displayName, 
         string password, 
-        string confirmPassword)
+        string confirmPassword,
+        string? inviteCode = null)
     {
         try
         {
@@ -320,7 +321,8 @@ public class AuthService
                 Email = email,
                 DisplayName = displayName,
                 Password = password,
-                ConfirmPassword = confirmPassword
+                ConfirmPassword = confirmPassword,
+                InviteCode = string.IsNullOrWhiteSpace(inviteCode) ? null : inviteCode.Trim()
             };
 
             var response = await _httpClient.PostAsJsonAsync("/api/auth/register", request);
@@ -330,9 +332,12 @@ public class AuthService
                 var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
                 if (result?.Success == true && !string.IsNullOrEmpty(result.Token))
                 {
-                    // 自動ログイン: トークンをセッションストレージに保存（rememberMe=false）
-                    await _tokenService.SetTokenAsync(result.Token, rememberMe: false);
-                    return (true, result.Message, result.Token);
+                    // 自動ログイン。トークンだけでなく役割・名前なども保存するため、通常のログインと同じ処理を使う
+                    // （以前はトークンだけを保存していたため、登録直後に保護者の画面を開けずログイン画面に戻っていた）
+                    var (loggedIn, loginError) = await LoginAsync(email, password, rememberMe: false);
+                    return loggedIn
+                        ? (true, result.Message, result.Token)
+                        : (false, loginError ?? "登録しましたが、ログインに失敗しました。ログイン画面からログインしてください", null);
                 }
                 return (false, result?.Message ?? "登録に失敗しました", null);
             }

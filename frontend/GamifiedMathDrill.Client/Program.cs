@@ -21,6 +21,9 @@ builder.Services.AddBlazoredSessionStorage();
 // Register TokenService first
 builder.Services.AddScoped<TokenService>();
 
+// API のアドレスは設定から読む（本番はデプロイ時に wwwroot/appsettings.json を書き換える、012）
+ImageUrls.Configure(builder.Configuration["ApiBaseAddress"]);
+
 // Configure HttpClient with API base address and authorization handler
 builder.Services.AddScoped(sp =>
 {

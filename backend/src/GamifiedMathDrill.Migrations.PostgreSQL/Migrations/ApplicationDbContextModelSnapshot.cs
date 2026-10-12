@@ -442,6 +442,29 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
                     b.ToTable("Rewards");
                 });
 
+            modelBuilder.Entity("GamifiedMathDrill.Core.Models.RewardImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RewardImages");
+                });
+
             modelBuilder.Entity("GamifiedMathDrill.Core.Models.Student", b =>
                 {
                     b.Property<int>("Id")

@@ -30,7 +30,7 @@ public class CreateRewardRequest
     public int? Stock { get; set; }
 
     /// <summary>
-    /// 画像ファイル（5MB以下、image/jpeg, image/png, image/gif のみ）
+    /// 画像ファイル（1MB以下、image/jpeg, image/png, image/gif のみ）
     /// </summary>
     public IFormFile? Image { get; set; }
 }

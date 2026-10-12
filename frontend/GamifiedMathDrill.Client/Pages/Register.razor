@@ -99,6 +99,12 @@
                           For="@(() => registerModel.ConfirmPassword)"
                           Class="mb-4" />
 
+            <MudTextField @bind-Value="registerModel.InviteCode"
+                          Label="招待コード"
+                          HelperText="運営者から伝えられたコード（必要な場合のみ）"
+                          Variant="Variant.Outlined"
+                          Class="mb-4" />
+
             <MudButton ButtonType="ButtonType.Submit" 
                        Variant="Variant.Filled" 
                        Color="Color.Primary" 
@@ -206,12 +212,13 @@
                 registerModel.Email,
                 registerModel.DisplayName,
                 registerModel.Password,
-                registerModel.ConfirmPassword);
+                registerModel.ConfirmPassword,
+                registerModel.InviteCode);
 
             if (success && !string.IsNullOrEmpty(token))
             {
-                // 自動ログイン成功 - ダッシュボードにリダイレクト
-                Navigation.NavigateTo("/");
+                // 自動ログイン成功 - 保護者のダッシュボードへ（"/" は子供のホームのため保護者は入れない）
+                Navigation.NavigateTo("/parent-dashboard");
             }
             else
             {
@@ -244,6 +251,8 @@
         [Required(ErrorMessage = "パスワード確認を入力してください")]
         [Compare(nameof(Password), ErrorMessage = "パスワードが一致しません")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        public string? InviteCode { get; set; }
     }
 
     private class PasswordChecks

@@ -27,6 +27,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<PresetAvatar> PresetAvatars => Set<PresetAvatar>();
     public DbSet<RegisteredDevice> RegisteredDevices => Set<RegisteredDevice>();
+    public DbSet<RewardImage> RewardImages => Set<RewardImage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -124,6 +125,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany(r => r.AcquiredRewards)
                 .HasForeignKey(e => e.RewardId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // RewardImage（012）
+        modelBuilder.Entity<RewardImage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ContentType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Data).IsRequired();
         });
 
         // DailyChallenge

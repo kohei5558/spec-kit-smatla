@@ -1,4 +1,5 @@
-﻿<CascadingAuthenticationState>
+﻿<ApiWakeGate>
+<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             @if (routeData.PageType != null && IsPublicPage(routeData.PageType))
@@ -38,6 +39,7 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+</ApiWakeGate>
 
 @code {
     private static readonly Type[] PublicPages = new[]

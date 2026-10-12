@@ -1,0 +1,24 @@
+# Render の Blueprint（012）。Render の画面で「New → Blueprint」からこのリポジトリを選ぶと API が作られる。
+# 秘密情報（sync: false）は作成時に Render の画面で入力する。手順は docs/DEPLOY.md
+services:
+  - type: web
+    name: gamified-math-drill-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    autoDeploy: true
+    branch: main
+    envVars:
+      - key: DatabaseProvider
+        value: PostgreSQL
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: Jwt__SecretKey
+        generateValue: true
+      - key: Cors__AllowedOrigins__0
+        sync: false
+      - key: Registration__InviteCode
+        sync: false

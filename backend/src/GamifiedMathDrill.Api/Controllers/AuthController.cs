@@ -18,11 +18,31 @@ public class AuthController : ControllerBase
     private readonly IRewardService _rewardService;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService, IRewardService rewardService, ILogger<AuthController> logger)
+    private readonly IConfiguration _configuration;
+
+    public AuthController(IAuthService authService, IRewardService rewardService, ILogger<AuthController> logger, IConfiguration configuration)
     {
         _authService = authService;
         _rewardService = rewardService;
         _logger = logger;
+        _configuration = configuration;
+    }
+
+    /// <summary>
+    /// 招待コードの確認（012）。設定 Registration:InviteCode がなければ誰でも登録できる
+    /// </summary>
+    private bool IsValidInviteCode(string? inviteCode)
+    {
+        var expected = _configuration["Registration:InviteCode"];
+        if (string.IsNullOrEmpty(expected))
+        {
+            return true;
+        }
+
+        // 時間の差から推測されないよう、一定時間で比べる
+        return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+            System.Text.Encoding.UTF8.GetBytes(inviteCode ?? string.Empty),
+            System.Text.Encoding.UTF8.GetBytes(expected));
     }
 
     /// <summary>
@@ -187,6 +207,12 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         _logger.LogInformation("Registration attempt for email: {Email}", request.Email);
+
+        if (!IsValidInviteCode(request.InviteCode))
+        {
+            _logger.LogWarning("Registration rejected (invite code) for email {Email}", request.Email);
+            return BadRequest(new RegisterResponse { Success = false, Message = "招待コードが正しくありません" });
+        }
 
         var (success, userId, token, expiresAt, errorMessage) = await _authService.RegisterAsync(
             request.Email,

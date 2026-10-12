@@ -2,7 +2,7 @@
 
 **Feature Branch**: `012-family-deployment`（作業は `claude/project-status-m9txmv` 上で実施）
 **Created**: 2026年10月11日
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "いずれ誰でも使えるように公開する。まずは自分の家族から。無料のサービスで、独自ドメインは使わない"
 
 ## 背景

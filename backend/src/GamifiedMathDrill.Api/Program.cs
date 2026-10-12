@@ -1,5 +1,5 @@
 using GamifiedMathDrill.Api.Middleware;
-using GamifiedMathDrill.Api.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Services;
 using GamifiedMathDrill.Infrastructure.Data;
@@ -74,7 +74,7 @@ builder.Services.AddScoped<IRewardService, RewardService>();
 builder.Services.AddScoped<IExchangeRequestService, ExchangeRequestService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IAuthService, GamifiedMathDrill.Infrastructure.Services.AuthService>();
-builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
+builder.Services.AddScoped<IImageStorageService, DatabaseImageStorageService>();
 builder.Services.AddScoped<IParentDashboardService, ParentDashboardService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IChildAccountService, ChildAccountService>();
@@ -145,12 +145,24 @@ builder.Services.AddAuthorization(options =>
 // Data Protection API (セッショントークン用)
 builder.Services.AddDataProtection();
 
+// Render などのプロキシの後ろで動くとき、元の https・接続元 IP を使う（012）
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 // CORS policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>
     {
-        policy.WithOrigins("https://localhost:5001", "http://localhost:5000", "http://localhost:5071", "https://localhost:7071", "http://localhost:5002")
+        // 画面のアドレス。本番は Cors__AllowedOrigins__0 などで指定する（012）。未指定ならローカルの開発用アドレス
+        var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() is { Length: > 0 } configured
+            ? configured
+            : new[] { "https://localhost:5001", "http://localhost:5000", "http://localhost:5071", "https://localhost:7071", "http://localhost:5002" };
+        policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -181,6 +193,7 @@ if (app.Environment.EnvironmentName != "Testing")
 }
 
 // Configure the HTTP request pipeline.
+app.UseForwardedHeaders();
 app.UseErrorHandling();
 
 // Request/response logging for debugging tests (Testing environment only)
@@ -239,6 +252,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// 公開先（Render）の死活確認と、画面が API の起動を待つために使う（012）
+app.MapGet("/healthz", () => Results.Ok("ok")).AllowAnonymous();
 
 app.Run();
 

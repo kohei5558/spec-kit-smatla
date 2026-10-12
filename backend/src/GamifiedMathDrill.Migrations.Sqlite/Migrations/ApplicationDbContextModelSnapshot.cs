@@ -417,6 +417,29 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
                     b.ToTable("Rewards");
                 });
 
+            modelBuilder.Entity("GamifiedMathDrill.Core.Models.RewardImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RewardImages");
+                });
+
             modelBuilder.Entity("GamifiedMathDrill.Core.Models.Student", b =>
                 {
                     b.Property<int>("Id")
