@@ -128,7 +128,7 @@ public class RewardApiClient
             }
             
             var response = await _httpClient.PostAsync("api/Rewards", content);
-            response.EnsureSuccessStatusCode();
+            await EnsureSuccessWithMessageAsync(response);
             
             return await response.Content.ReadFromJsonAsync<RewardDto>();
         }
@@ -176,7 +176,7 @@ public class RewardApiClient
             }
             
             var response = await _httpClient.PutAsync($"api/Rewards/{id}", content);
-            response.EnsureSuccessStatusCode();
+            await EnsureSuccessWithMessageAsync(response);
             
             return await response.Content.ReadFromJsonAsync<RewardDto>();
         }
@@ -234,4 +234,35 @@ public class RewardApiClient
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
     }
+
+    /// <summary>
+    /// 入力の誤り（400）のときは、サーバーのメッセージ（例: ファイルサイズが大きすぎます）を画面に出せるよう例外にのせる
+    /// </summary>
+    private static async Task EnsureSuccessWithMessageAsync(HttpResponseMessage response)
+    {
+        if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+        {
+            string? message = null;
+            try
+            {
+                using var json = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                if (json.RootElement.TryGetProperty("message", out var m))
+                {
+                    message = m.GetString();
+                }
+            }
+            catch (System.Text.Json.JsonException)
+            {
+            }
+
+            throw new RewardValidationException(message ?? "入力内容を確認してください。");
+        }
+
+        response.EnsureSuccessStatusCode();
+    }
 }
+
+/// <summary>
+/// 景品の保存で入力に誤りがあったとき（メッセージはそのまま画面に出せる）
+/// </summary>
+public class RewardValidationException(string message) : Exception(message);
