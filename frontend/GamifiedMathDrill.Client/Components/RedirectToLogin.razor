@@ -1,15 +1,32 @@
 @inject NavigationManager Navigation
+@* 権限のない画面を開いたとき: ログインしていなければログイン画面、ログイン済みなら自分のホームへ
+   （以前は保護者が子供のホーム "/" を開くとログイン画面に戻っていた） *@
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
     private bool _hasRedirected = false;
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !_hasRedirected)
+        if (!firstRender || _hasRedirected)
         {
-            _hasRedirected = true;
-            // 未認証の場合は保護者ログイン画面にリダイレクト
+            return;
+        }
+
+        _hasRedirected = true;
+        var user = AuthenticationStateTask == null ? null : (await AuthenticationStateTask).User;
+        if (user?.Identity?.IsAuthenticated == true && user.IsInRole("Parent"))
+        {
+            Navigation.NavigateTo("/parent-dashboard");
+        }
+        else if (user?.Identity?.IsAuthenticated == true && user.IsInRole("Child"))
+        {
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
             Navigation.NavigateTo("/login", forceLoad: true);
         }
-        return Task.CompletedTask;
     }
 }

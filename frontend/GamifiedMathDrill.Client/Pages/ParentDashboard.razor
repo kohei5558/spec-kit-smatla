@@ -79,7 +79,7 @@
                             <MudButton Variant="Variant.Text" 
                                       Color="Color.Primary" 
                                       Size="Size.Small"
-                                      Href="/reward-management"
+                                      Href="/parent/rewards"
                                       EndIcon="@Icons.Material.Filled.ArrowForward">
                                 管理する
                             </MudButton>
@@ -136,7 +136,8 @@
                                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                             @if (!string.IsNullOrEmpty(child.AvatarUrl))
                                             {
-                                                <MudAvatar Image="@child.AvatarUrl" Size="Size.Large" />
+                                                @* MudBlazor 7 の MudAvatar には Image がないため、中に MudImage を置く *@
+                                                <MudAvatar Size="Size.Large"><MudImage Src="@child.AvatarUrl" Alt="@child.DisplayName" /></MudAvatar>
                                             }
                                             else
                                             {
