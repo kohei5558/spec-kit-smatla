@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using GamifiedMathDrill.Client.Models;
 using Microsoft.AspNetCore.Components.Forms;
@@ -236,10 +236,16 @@ public class RewardApiClient
     }
 
     /// <summary>
-    /// 入力の誤り（400）のときは、サーバーのメッセージ（例: ファイルサイズが大きすぎます）を画面に出せるよう例外にのせる
+    /// 入力の誤り（400）・同時編集（409）のときは、サーバーのメッセージ（例: ファイルサイズが大きすぎます）を画面に出せるよう例外にのせる
     /// </summary>
     private static async Task EnsureSuccessWithMessageAsync(HttpResponseMessage response)
     {
+        // 編集画面を開いたあとに、別の画面で先に保存されていた
+        if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            throw new RewardValidationException("ほかの画面で先に保存されています。ページを読み込み直してから、もう一度変更してください。");
+        }
+
         if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
         {
             string? message = null;
