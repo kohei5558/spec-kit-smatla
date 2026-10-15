@@ -1,10 +1,8 @@
 using GamifiedMathDrill.Api.Middleware;
-using GamifiedMathDrill.Api.Services;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Services;
 using GamifiedMathDrill.Infrastructure.Data;
 using GamifiedMathDrill.Infrastructure.Identity;
-using GamifiedMathDrill.Infrastructure.Jobs;
 using GamifiedMathDrill.Infrastructure.Repositories;
 using GamifiedMathDrill.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -34,16 +32,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 
 // Add services to the container.
+// DB の種類は設定 DatabaseProvider（Sqlite / PostgreSQL）で指定。未指定なら開発は SQLite、それ以外は PostgreSQL。
+// マイグレーションは DB の種類ごとに別プロジェクトに置いている（型やシーケンスの書き方が異なるため）
+var databaseProvider = builder.Configuration["DatabaseProvider"]
+    ?? (builder.Environment.IsDevelopment() ? "Sqlite" : "PostgreSQL");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (builder.Environment.IsDevelopment())
+    switch (databaseProvider)
     {
-        options.UseSqlite(connectionString);
-    }
-    else
-    {
-        options.UseNpgsql(connectionString);
+        case "Sqlite":
+            options.UseSqlite(connectionString, b => b.MigrationsAssembly("GamifiedMathDrill.Migrations.Sqlite"));
+            break;
+        case "PostgreSQL":
+            options.UseNpgsql(connectionString, b => b.MigrationsAssembly("GamifiedMathDrill.Migrations.PostgreSQL"));
+            break;
+        default:
+            throw new InvalidOperationException($"Unknown DatabaseProvider: {databaseProvider}（Sqlite または PostgreSQL を指定してください）");
     }
 });
 
@@ -68,16 +73,18 @@ builder.Services.AddScoped<IRewardService, RewardService>();
 builder.Services.AddScoped<IExchangeRequestService, ExchangeRequestService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IAuthService, GamifiedMathDrill.Infrastructure.Services.AuthService>();
-builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
+builder.Services.AddScoped<IImageStorageService, DatabaseImageStorageService>();
 builder.Services.AddScoped<IParentDashboardService, ParentDashboardService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IChildAccountService, ChildAccountService>();
+builder.Services.AddScoped<IDeviceService, DeviceService>();
+builder.Services.AddScoped<IStudentAccessService, StudentAccessService>();
 
 // Memory cache for PIN lockout
 builder.Services.AddMemoryCache();
 
-// Background services
-builder.Services.AddHostedService<DailyChallengeJob>();
+// 現在時刻（デイリーチャレンジの日付。テストで差し替えられるように）
+builder.Services.AddSingleton(TimeProvider.System);
 
 // ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -126,15 +133,31 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// 既定ですべてのAPIでログインを必須にする（未ログインで使うAPIは [AllowAnonymous] を明示する）
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
 // Data Protection API (セッショントークン用)
 builder.Services.AddDataProtection();
+
+// プロキシ（Render）の転送ヘッダー（X-Forwarded-For/Proto）は、環境変数 ASPNETCORE_FORWARDEDHEADERS_ENABLED=true の
+// ときだけ ASP.NET Core 標準の仕組みで使う（render.yaml で設定、012）。既定では使わない。プロキシなしで受け付けると、
+// ヘッダーを偽って接続元 IP を変え、ログインの回数制限（RateLimitMiddleware）を逃れられるため
 
 // CORS policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>
     {
-        policy.WithOrigins("https://localhost:5001", "http://localhost:5000", "http://localhost:5071", "https://localhost:7071", "http://localhost:5002")
+        // 画面のアドレス。本番は Cors__AllowedOrigins__0 などで指定する（012）。未指定ならローカルの開発用アドレス
+        var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() is { Length: > 0 } configured
+            ? configured
+            : new[] { "https://localhost:5001", "http://localhost:5000", "http://localhost:5071", "https://localhost:7071", "http://localhost:5002" };
+        policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -223,6 +246,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// 公開先（Render）の死活確認と、画面が API の起動を待つために使う（012）
+app.MapGet("/healthz", () => Results.Ok("ok")).AllowAnonymous();
 
 app.Run();
 

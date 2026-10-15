@@ -1,7 +1,6 @@
 @using GamifiedMathDrill.Client.Models
-@inject NavigationManager Navigation
 
-<MudCard Class="@($"mud-elevation-3 {(IsActive ? "border-solid border-2 mud-border-primary" : "")}")" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+<MudCard Class="mud-elevation-3" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
     <MudCardContent>
         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
             <MudStack Spacing="1">
@@ -9,25 +8,28 @@
                     <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Color="Color.Warning" />
                     今日のチャレンジ！
                 </MudText>
-                @if (Challenge != null)
+                @if (Challenge.IsAnswered)
                 {
-                    <MudText Typo="Typo.body2" Color="Color.Surface" Style="opacity: 0.9;">
-                        レベル @Challenge.Difficulty の問題
+                    <MudText Typo="Typo.body1" Color="Color.Surface">
+                        @(Challenge.IsCorrect == true ? $"せいかい！ +{Challenge.BonusPoints} ポイント" : "ざんねん…")
                     </MudText>
-                    <MudChip T="string" Color="Color.Warning" Size="Size.Small" Icon="@Icons.Material.Filled.Star">
-                        ボーナス +@Challenge.BonusPoints ポイント
-                    </MudChip>
+                    <MudText Typo="Typo.body2" Color="Color.Surface" Style="opacity: 0.9;">
+                        今日のチャレンジはおわり。また明日ちょうせんしてね
+                    </MudText>
                 }
                 else
                 {
                     <MudText Typo="Typo.body2" Color="Color.Surface" Style="opacity: 0.9;">
-                        今日のチャレンジはまだありません
+                        1日1回だけ挑戦できるよ
                     </MudText>
+                    <MudChip T="string" Color="Color.Warning" Size="Size.Small" Icon="@Icons.Material.Filled.Star">
+                        せいかいで +@Challenge.BonusPoints ポイント
+                    </MudChip>
                 }
             </MudStack>
-            @if (Challenge != null && IsActive)
+            @if (!Challenge.IsAnswered)
             {
-                <MudButton Variant="Variant.Filled" 
+                <MudButton Variant="Variant.Filled"
                           Color="Color.Warning"
                           Size="Size.Large"
                           StartIcon="@Icons.Material.Filled.Bolt"
@@ -36,16 +38,17 @@
                     挑戦する！
                 </MudButton>
             }
+            else if (Challenge.IsCorrect == true)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Style="font-size: 3rem;" />
+            }
         </MudStack>
     </MudCardContent>
 </MudCard>
 
 @code {
-    [Parameter]
-    public DailyChallengeDto? Challenge { get; set; }
-
-    [Parameter]
-    public bool IsActive { get; set; }
+    [Parameter, EditorRequired]
+    public DailyChallengeDto Challenge { get; set; } = null!;
 
     [Parameter]
     public EventCallback OnStartChallenge { get; set; }

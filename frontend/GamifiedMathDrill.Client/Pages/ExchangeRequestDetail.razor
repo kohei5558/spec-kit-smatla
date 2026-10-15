@@ -66,7 +66,7 @@
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
                         @if (!string.IsNullOrEmpty(request.RewardImageUrl))
                         {
-                            <MudImage Src="@request.RewardImageUrl" Width="100" Height="100" ObjectFit="ObjectFit.Cover" Class="rounded" />
+                            <MudImage Src="@ImageUrls.Resolve(request.RewardImageUrl)" Width="100" Height="100" ObjectFit="ObjectFit.Cover" Class="rounded" />
                         }
                         <MudStack Spacing="1">
                             <MudText Typo="Typo.h6">@request.RewardName</MudText>

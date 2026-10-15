@@ -55,7 +55,7 @@
         <MudPaper Class="pa-4" Elevation="2">
             <MudStack Spacing="2">
                 <MudText Typo="Typo.subtitle2" Color="Color.Secondary">現在の画像:</MudText>
-                <MudImage Src="@ExistingImageUrl" 
+                <MudImage Src="@ImageUrls.Resolve(ExistingImageUrl)" 
                          Alt="現在の画像" 
                          Height="200" 
                          ObjectFit="ObjectFit.Contain"

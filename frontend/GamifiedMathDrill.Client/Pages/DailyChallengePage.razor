@@ -1,0 +1,136 @@
+@page "/daily-challenge"
+@using GamifiedMathDrill.Client.Models
+@using GamifiedMathDrill.Client.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Child")]
+@inject DailyChallengeApiClient DailyChallengeApi
+@inject TokenService TokenService
+@inject ISnackbar Snackbar
+
+<PageTitle>今日のチャレンジ - 計算ドリル</PageTitle>
+
+@* デイリーチャレンジ（010）。1日1回だけ答えられる *@
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    @if (isLoading)
+    {
+        <MudPaper Class="pa-8 text-center" Elevation="3">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </MudPaper>
+    }
+    else if (challenge == null)
+    {
+        <MudAlert Severity="Severity.Info" Class="mb-4">今日のチャレンジはまだありません</MudAlert>
+    }
+    else if (!challenge.IsAnswered)
+    {
+        <MudPaper Class="pa-6" Elevation="3">
+            <MudText Typo="Typo.h4" Class="mb-2 text-center">
+                <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Color="Color.Warning" />
+                今日のチャレンジ！
+            </MudText>
+            <MudText Typo="Typo.body1" Class="text-center">
+                1回だけ答えられるよ。せいかいで +@challenge.BonusPoints ポイント
+            </MudText>
+
+            <ProblemDisplay Problem="@problem"
+                            Answer="@userAnswer"
+                            OnAnswerChange="@(value => userAnswer = value)"
+                            OnSubmit="@SubmitAsync"
+                            IsSubmitting="@isSubmitting" />
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Class="pa-8 text-center" Elevation="3">
+            @if (challenge.IsCorrect == true)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Style="font-size: 6rem;" />
+                <MudText Typo="Typo.h3" Color="Color.Success" Class="mt-4 mb-4">せいかい！ 🎉</MudText>
+                <MudChip T="string" Color="Color.Success" Size="Size.Large" Style="font-size: 1.5rem; padding: 16px;">
+                    +@challenge.BonusPoints ポイント
+                </MudChip>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="font-size: 6rem;" />
+                <MudText Typo="Typo.h3" Color="Color.Error" Class="mt-4 mb-4">ざんねん…</MudText>
+            }
+            <MudText Typo="Typo.h5" Class="mt-4">@challenge.Question.Replace("?", challenge.CorrectAnswer?.ToString() ?? "?")</MudText>
+            <MudText Typo="Typo.body1" Class="mt-4" Color="Color.Secondary">
+                今日のチャレンジはおわり。また明日ちょうせんしてね
+            </MudText>
+        </MudPaper>
+    }
+
+    <MudButton Variant="Variant.Outlined"
+               Color="Color.Default"
+               StartIcon="@Icons.Material.Filled.Home"
+               Href="/"
+               Class="mt-4">
+        ホーム画面に戻る
+    </MudButton>
+</MudContainer>
+
+@code {
+    private DailyChallengeDto? challenge;
+    private ProblemDto problem = new();
+    private int? studentId;
+    private int? userAnswer;
+    private bool isLoading = true;
+    private bool isSubmitting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        studentId = await TokenService.GetStudentIdAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        try
+        {
+            challenge = studentId.HasValue ? await DailyChallengeApi.GetTodaysChallengeAsync(studentId.Value) : null;
+            if (challenge != null)
+            {
+                problem = new ProblemDto { Id = challenge.Id, Question = challenge.Question, DifficultyLevel = challenge.Difficulty };
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading daily challenge: {ex.Message}");
+            Snackbar.Add("チャレンジを読み込めませんでした。もう一度ためしてね。", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (challenge == null || !studentId.HasValue || !userAnswer.HasValue || isSubmitting) return;
+
+        isSubmitting = true;
+        try
+        {
+            var result = await DailyChallengeApi.SubmitAnswerAsync(challenge.Id,
+                new DailyChallengeAnswerRequest { StudentId = studentId.Value, Answer = userAnswer.Value });
+            if (result == null)
+            {
+                Snackbar.Add("今日のチャレンジはもう答えたよ。", Severity.Info);
+            }
+            // 結果（答えたかどうか・正解）はサーバーの状態を表示する
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error submitting daily challenge: {ex.Message}");
+            Snackbar.Add("答えを送れませんでした。もう一度ためしてね。", Severity.Error);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

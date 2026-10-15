@@ -81,21 +81,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Test_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-
-        var statusMsg = $"Student creation failed with status: {createResponse.StatusCode}, content: {await createResponse.Content.ReadAsStringAsync()}";
-        createResponse.StatusCode.Should().BeOneOf(new[] { HttpStatusCode.OK, HttpStatusCode.Created }, statusMsg);
-
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        studentResponse.Should().NotBeNull("StudentResponse should not be null");
-        studentResponse!.Success.Should().BeTrue($"Student creation failed: {studentResponse.Message}");
-        studentResponse.Data.Should().NotBeNull("Student Data should not be null");
-
-        var student = studentResponse.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Test_{Guid.NewGuid().ToString()[..8]}");
 
         // Act
         var response = await _client.GetAsync($"/api/problems/next?studentId={student.Id}");
@@ -127,13 +113,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Test_{category[..3]}_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        var student = studentResponse!.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Test_{category[..3]}_{Guid.NewGuid().ToString()[..8]}");
 
         // Act - Get multiple problems to ensure consistency
         for (int i = 0; i < 5; i++)
@@ -159,13 +139,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Test_Stats_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        var student = studentResponse!.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Test_Stats_{Guid.NewGuid().ToString()[..8]}");
 
         // Create learning records for multiple categories
         await CreateLearningRecords(student.Id, "Addition", 5, true);
@@ -193,13 +167,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Test_All_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        var student = studentResponse!.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Test_All_{Guid.NewGuid().ToString()[..8]}");
 
         // Create learning records for multiple categories
         await CreateLearningRecords(student.Id, "Addition", 5, true);
@@ -230,13 +198,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Test_Rec_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        var student = studentResponse!.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Test_Rec_{Guid.NewGuid().ToString()[..8]}");
 
         // Create learning records
         await CreateLearningRecords(student.Id, "Addition", 3, true);
@@ -264,13 +226,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Test_Acc_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        var student = studentResponse!.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Test_Acc_{Guid.NewGuid().ToString()[..8]}");
 
         // Create records with different accuracy rates
         // Addition: 4/5 = 80%
@@ -302,13 +258,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Test_Inv_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        var student = studentResponse!.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Test_Inv_{Guid.NewGuid().ToString()[..8]}");
 
         // Act
         var response = await _client.GetAsync(
@@ -326,13 +276,7 @@ public class CategorySelectionTests : IClassFixture<TestWebApplicationFactory>
         var token = await AuthenticationHelper.LoginAsParentAsync(_client, _factory.Services);
         AuthenticationHelper.AddAuthorizationHeader(_client, token);
 
-        var createResponse = await _client.PostAsJsonAsync("/api/students", new
-        {
-            Name = $"Test_Flow_{Guid.NewGuid().ToString()[..8]}",
-            Grade = 3
-        });
-        var studentResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponse<TestStudentDto>>();
-        var student = studentResponse!.Data!;
+        var student = await AuthenticationHelper.CreateStudentInNewFamilyAsync(_client, $"Test_Flow_{Guid.NewGuid().ToString()[..8]}");
 
         const string selectedCategory = "Multiplication";
 

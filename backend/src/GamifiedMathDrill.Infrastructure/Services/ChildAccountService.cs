@@ -1,6 +1,7 @@
 using GamifiedMathDrill.Core.DTOs;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
+using GamifiedMathDrill.Core.Services;
 using GamifiedMathDrill.Infrastructure.Data;
 using GamifiedMathDrill.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -19,6 +20,7 @@ public class ChildAccountService : IChildAccountService
     private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
     private readonly IMemoryCache _cache;
     private readonly IPresetAvatarRepository _avatarRepository;
+    private readonly TimeProvider _timeProvider;
 
     private const int MaxChildAccounts = 10;
     private const int MaxPinAttempts = 3;
@@ -29,26 +31,15 @@ public class ChildAccountService : IChildAccountService
         UserManager<ApplicationUser> userManager,
         IPasswordHasher<ApplicationUser> passwordHasher,
         IMemoryCache cache,
-        IPresetAvatarRepository avatarRepository)
+        IPresetAvatarRepository avatarRepository,
+        TimeProvider timeProvider)
     {
         _context = context;
         _userManager = userManager;
         _passwordHasher = passwordHasher;
         _cache = cache;
         _avatarRepository = avatarRepository;
-    }
-
-    /// <summary>
-    /// すべての有効な子供アカウント一覧を取得（認証不要、子供ログイン画面用）
-    /// </summary>
-    public async Task<List<ChildAccountDto>> ListAllActiveAsync()
-    {
-        var children = await _context.Users
-            .Where(u => u.Role == UserRole.Child && u.IsActive)
-            .OrderBy(u => u.DisplayName)
-            .ToListAsync();
-
-        return children.Select(MapToDto).ToList();
+        _timeProvider = timeProvider;
     }
 
     /// <summary>
@@ -153,10 +144,16 @@ public class ChildAccountService : IChildAccountService
         {
             Name = user.DisplayName,
             ParentUserId = user.Id,
-            AvatarUrl = user.AvatarUrl
+            AvatarUrl = user.AvatarUrl,
+            // 学年に応じたレベルから始める（例: 3年生はレベル5）
+            CurrentLevelId = GradeStartLevel.ForGrade(dto.GradeLevel)
         };
 
         _context.Students.Add(student);
+        await _context.SaveChangesAsync();
+
+        // 子供アカウントに学習者を紐付ける（未設定だと初回ログイン時に別の学習者が作られてしまう）
+        user.StudentId = student.Id;
         await _context.SaveChangesAsync();
 
         return MapToDto(user);
@@ -204,12 +201,20 @@ public class ChildAccountService : IChildAccountService
 
         await _userManager.UpdateAsync(user);
 
-        // Student同期更新
-        var student = await _context.Students.FirstOrDefaultAsync(s => s.ParentUserId == user.Id);
+        // Student同期更新（子供アカウントに紐付いた学習者）
+        var student = user.StudentId == null ? null : await _context.Students.FindAsync(user.StudentId.Value);
         if (student != null)
         {
             student.Name = user.DisplayName;
             student.AvatarUrl = user.AvatarUrl;
+
+            // 学年を上げて始めるレベルが今より高くなったら上げる（下げることはしない）
+            var startLevel = GradeStartLevel.ForGrade(dto.GradeLevel);
+            if (student.CurrentLevelId < startLevel)
+            {
+                student.CurrentLevelId = startLevel;
+                student.CorrectAnswers = 0; // 新しいレベルの連続正解数を数え直す
+            }
             await _context.SaveChangesAsync();
         }
 
@@ -263,12 +268,12 @@ public class ChildAccountService : IChildAccountService
             throw new InvalidOperationException("子供アカウントが見つかりません");
         }
 
-        // Student削除（連鎖削除でLearningRecordsも削除される）
-        var student = await _context.Students.FirstOrDefaultAsync(s => s.ParentUserId == user.Id);
-        if (student != null)
-        {
-            _context.Students.Remove(student);
-        }
+        // Student削除（連鎖削除でLearningRecordsも削除される）。
+        // 紐付いた学習者に加え、以前の不具合で作成時に作られた未使用の学習者（ParentUserId に子供のIDが入っている）も消す
+        var students = await _context.Students
+            .Where(s => s.Id == user.StudentId || s.ParentUserId == user.Id)
+            .ToListAsync();
+        _context.Students.RemoveRange(students);
 
         await _userManager.DeleteAsync(user);
         await _context.SaveChangesAsync();
@@ -279,39 +284,53 @@ public class ChildAccountService : IChildAccountService
     /// </summary>
     public async Task<ChildLearningStatsDto> GetLearningStatsAsync(string childId)
     {
-        var student = await _context.Students
-            .FirstOrDefaultAsync(s => s.ParentUserId == childId);
+        // 子供アカウントに紐付いた学習者（問題の回答やポイントが記録される方）
+        var studentId = await _context.Users
+            .Where(u => u.Id == childId)
+            .Select(u => u.StudentId)
+            .FirstOrDefaultAsync();
+        var student = studentId == null ? null : await _context.Students.FindAsync(studentId.Value);
 
         if (student == null)
         {
             return new ChildLearningStatsDto();
         }
 
+        // 日付は日本時間で数える（DB の日時は UTC）
+        var today = JapanTime.Today(_timeProvider);
+        var solvedAt = await _context.LearningRecords
+            .Where(r => r.StudentId == student.Id)
+            .Select(r => r.SolvedAt)
+            .ToListAsync();
+
         // 過去7日間のアクティビティ
-        var sevenDaysAgo = DateTime.UtcNow.Date.AddDays(-6);
-        var recentActivity = await _context.LearningRecords
-            .Where(r => r.StudentId == student.Id && r.SolvedAt >= sevenDaysAgo)
-            .GroupBy(r => r.SolvedAt.Date)
+        var recentActivity = solvedAt
+            .GroupBy(JapanTime.ToJapanDate)
+            .Where(g => g.Key >= today.AddDays(-6))
             .Select(g => new DailyActivity
             {
-                Date = g.Key,
+                Date = g.Key.ToDateTime(TimeOnly.MinValue),
                 ProblemsCount = g.Count()
             })
             .OrderBy(a => a.Date)
-            .ToListAsync();
+            .ToList();
 
-        var accuracyRate = student.TotalProblems > 0
-            ? Math.Round((decimal)student.CorrectAnswers / student.TotalProblems * 100, 1)
+        // 回答数・正解数は学習記録から数える（Student.CorrectAnswers はレベルアップ用の連続正解数のため使わない）
+        var answered = await _context.LearningRecords.CountAsync(r => r.StudentId == student.Id);
+        var correct = await _context.LearningRecords.CountAsync(r => r.StudentId == student.Id && r.IsCorrect);
+        var accuracyRate = answered > 0
+            ? Math.Round((decimal)correct / answered * 100, 1)
             : 0;
 
         return new ChildLearningStatsDto
         {
-            TotalProblems = student.TotalProblems,
-            CorrectAnswers = student.CorrectAnswers,
+            TotalProblems = answered,
+            CorrectAnswers = correct,
             AccuracyRate = accuracyRate,
             TotalPoints = student.TotalPoints,
-            ConsecutiveDays = student.ConsecutiveDays,
-            LastStudyDate = student.LastLoginAt,
+            // 1問以上解いた日で数える。最後に学習した日はログインではなく最後に答えた日時
+            ConsecutiveDays = StudyStreak.ConsecutiveDays(solvedAt, today),
+            LastStudyDate = solvedAt.Count > 0 ? solvedAt.Max() : null,
             RecentActivity = recentActivity
         };
     }

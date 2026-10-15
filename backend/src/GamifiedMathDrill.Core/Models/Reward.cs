@@ -55,6 +55,12 @@ public class Reward
     public bool IsPhysical { get; set; } = true;
 
     /// <summary>
+    /// この景品を持つ家庭の保護者ユーザーID（null の景品はどの家庭にも表示しない）
+    /// </summary>
+    [MaxLength(450)]
+    public string? ParentId { get; set; }
+
+    /// <summary>
     /// 作成者（保護者のユーザーID）
     /// </summary>
     [MaxLength(450)]

@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/*.db
+**/*.db-*
+**/logs/
+**/*.log
+**/wwwroot/uploads/
+frontend/
+specs/
+.git/

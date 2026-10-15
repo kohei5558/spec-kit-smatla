@@ -1,0 +1,79 @@
+@using GamifiedMathDrill.Client.Services
+@implements IDisposable
+
+@* 無料の API サーバーは使われないと止まり、起きるまで1分ほどかかる（012）。起きるまで「じゅんびちゅう」を出してから画面を出す *@
+@if (ready)
+{
+    @ChildContent
+}
+else if (showWaiting)
+{
+    <div class="api-wake-gate">
+        @if (failed)
+        {
+            <div class="api-wake-icon">😢</div>
+            <p>つながりませんでした</p>
+            <p class="api-wake-sub">しばらくしてから、もう一度ためしてね</p>
+            <button class="api-wake-retry" @onclick="RetryAsync">もう一度ためす</button>
+        }
+        else
+        {
+            <div class="api-wake-icon api-wake-bounce">🐧</div>
+            <p>じゅんびちゅう…</p>
+            <p class="api-wake-sub">1分くらいかかることがあるよ</p>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    // 起きるまで待つ最長時間（Render の無料プランは約1分）
+    private static readonly TimeSpan MaxWait = TimeSpan.FromSeconds(120);
+
+    private readonly CancellationTokenSource cts = new();
+    private bool ready;
+    private bool showWaiting;
+    private bool failed;
+
+    protected override Task OnInitializedAsync() => WaitForApiAsync();
+
+    private async Task RetryAsync()
+    {
+        failed = false;
+        await WaitForApiAsync();
+    }
+
+    private async Task WaitForApiAsync()
+    {
+        using var http = new HttpClient { BaseAddress = new Uri(ImageUrls.ApiBaseAddress), Timeout = TimeSpan.FromSeconds(30) };
+        var started = DateTime.UtcNow;
+        while (DateTime.UtcNow - started < MaxWait && !cts.IsCancellationRequested)
+        {
+            try
+            {
+                var response = await http.GetAsync("/healthz", cts.Token);
+                if (response.IsSuccessStatusCode)
+                {
+                    ready = true;
+                    return;
+                }
+            }
+            catch (Exception) when (!cts.IsCancellationRequested)
+            {
+                // 起きていない間は失敗するので、少し待ってやり直す
+            }
+
+            // すぐ起きたときに画面がちらつかないよう、待ち画面は少し待ってから出す
+            showWaiting = DateTime.UtcNow - started > TimeSpan.FromSeconds(1);
+            StateHasChanged();
+            await Task.Delay(TimeSpan.FromSeconds(2), cts.Token).ContinueWith(_ => { });
+        }
+
+        failed = true;
+        showWaiting = true;
+    }
+
+    public void Dispose() => cts.Cancel();
+}

@@ -22,9 +22,9 @@ public class RewardService : IRewardService
         _imageStorageService = imageStorageService;
     }
 
-    public async Task<IEnumerable<Reward>> GetRewardsAsync(string? category = null, int? maxPoints = null)
+    public async Task<IEnumerable<Reward>> GetRewardsAsync(string parentId, string? category = null, int? maxPoints = null)
     {
-        var rewards = await _rewardRepository.GetAllAsync();
+        var rewards = (await _rewardRepository.GetAllAsync()).Where(r => r.ParentId == parentId);
 
         // Filter by category if specified
         if (!string.IsNullOrWhiteSpace(category) && category != "All")
@@ -41,6 +41,14 @@ public class RewardService : IRewardService
         return rewards.OrderBy(r => r.RequiredPoints).ThenBy(r => r.Name);
     }
 
+    public async Task CopyStarterRewardsAsync(string parentId)
+    {
+        foreach (var reward in StarterRewards.CreateFor(parentId))
+        {
+            await _rewardRepository.AddAsync(reward);
+        }
+    }
+
     public async Task<Reward?> GetRewardByIdAsync(int id)
     {
         return await _rewardRepository.GetByIdAsync(id);
@@ -54,7 +62,8 @@ public class RewardService : IRewardService
             reward.ImageUrl = await _imageStorageService.SaveImageAsync(imageStream, fileName, contentType);
         }
 
-        // 作成情報設定
+        // 作成情報設定（登録した保護者の家庭の景品にする）
+        reward.ParentId = createdBy;
         reward.CreatedBy = createdBy;
         reward.CreatedAt = DateTime.UtcNow;
         reward.UpdatedAt = DateTime.UtcNow;

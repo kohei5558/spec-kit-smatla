@@ -6,7 +6,7 @@ ASP.NET Core 10で実装されたゲーミフィケーション要素を持つ�
 
 ### 1. 問題生成と回答
 
-- **カテゴリ別問題取得**: 足し算、引き算、掛け算、割り算のカテゴリを指定して問題を取得
+- **カテゴリ別問題取得**: 足し算、引き算、掛け算、割り算、あまりのあるわり算のカテゴリを指定して問題を取得
 - **適応的難易度調整**: 学習者の履歴に基づいて難易度を自動調整
 - **リアルタイム採点**: 回答送信後、即座に正誤判定とポイント付与
 
@@ -43,6 +43,7 @@ ASP.NET Core 10で実装されたゲーミフィケーション要素を持つ�
   - `Subtraction`: 引き算
   - `Multiplication`: 掛け算
   - `Division`: 割り算
+  - `DivisionWithRemainder`: あまりのあるわり算（`hasRemainder: true`。回答は `{"answer": 商, "remainder": あまり}` で、両方合うときだけ正解）
 
 **レスポンス例:**
 
@@ -208,11 +209,12 @@ backend/
 │   │   ├── Models/                    # ドメインエンティティ
 │   │   ├── Interfaces/                # リポジトリインターフェース
 │   │   └── Services/                  # ドメインサービス
-│   └── GamifiedMathDrill.Infrastructure/  # インフラストラクチャレイヤー
-│       ├── Data/                      # データベースコンテキスト
-│       ├── Repositories/              # リポジトリ実装
-│       ├── Jobs/                      # バックグラウンドジョブ
-│       └── Migrations/                # EF Core マイグレーション
+│   ├── GamifiedMathDrill.Infrastructure/  # インフラストラクチャレイヤー
+│   │   ├── Data/                      # データベースコンテキスト・シード
+│   │   ├── Repositories/              # リポジトリ実装
+│   │   └── Jobs/                      # バックグラウンドジョブ
+│   ├── GamifiedMathDrill.Migrations.Sqlite/      # EF Core マイグレーション（開発用 SQLite）
+│   └── GamifiedMathDrill.Migrations.PostgreSQL/  # EF Core マイグレーション（本番用 PostgreSQL）
 └── tests/
     ├── GamifiedMathDrill.Tests.Unit/         # ユニットテスト
     └── GamifiedMathDrill.Tests.Integration/  # 統合テスト
@@ -244,33 +246,21 @@ backend/
 
 ### インストール
 
-1. リポジトリをクローン
+初回の準備（開発用の秘密鍵の登録）とフロントエンドと合わせた起動手順は、[リポジトリ直下の README](../README.md) を参照してください。
+
+1. データベース
+
+マイグレーションはアプリの起動時に自動で適用されます（開発は SQLite、本番は PostgreSQL）。
+DB の種類は設定 `DatabaseProvider`（`Sqlite` / `PostgreSQL`）で切り替えられます。
+本番では環境変数 `ConnectionStrings__DefaultConnection` と `Jwt__SecretKey` を設定してください。
+
+2. アプリケーションの起動（リポジトリ直下で実行）
 
 ```bash
-git clone <repository-url>
-cd backend
+dotnet run --project backend/src/GamifiedMathDrill.Api --launch-profile http
 ```
 
-2. 依存パッケージの復元
-
-```bash
-dotnet restore
-```
-
-3. データベースのマイグレーション実行
-
-```bash
-cd src/GamifiedMathDrill.Api
-dotnet ef database update
-```
-
-4. アプリケーションの起動
-
-```bash
-dotnet run
-```
-
-APIは `https://localhost:7000` で起動します。
+APIは `http://localhost:5242` で起動します（Swagger: `http://localhost:5242/swagger`）。
 
 ### 開発環境での設定
 
@@ -401,9 +391,7 @@ SELECT * FROM AspNetUsers;
 # データベースファイルを削除
 rm src/GamifiedMathDrill.Api/gamifiedmathdrill.db
 
-# マイグレーションを再実行
-cd src/GamifiedMathDrill.Infrastructure
-dotnet ef database update --startup-project ../GamifiedMathDrill.Api
+# アプリを起動すると、マイグレーションとデモデータが自動で作り直される
 ```
 
 ### APIエンドポイントのデバッグ
@@ -423,12 +411,12 @@ code --install-extension humao.rest-client
 
 ```bash
 # 保護者ログイン
-curl -X POST https://localhost:7000/api/auth/login \
+curl -X POST http://localhost:5242/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"parent@example.com","password":"Parent123!"}'
 
 # トークンを使用してAPI呼び出し
-curl -X GET https://localhost:7000/api/rewards \
+curl -X GET http://localhost:5242/api/rewards \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -437,20 +425,24 @@ curl -X GET https://localhost:7000/api/rewards \
 **問題: データベースマイグレーションエラー**
 
 ```bash
-# マイグレーションの状態確認
-cd src/GamifiedMathDrill.Infrastructure
-dotnet ef migrations list --startup-project ../GamifiedMathDrill.Api
+# マイグレーションの状態確認（リポジトリ直下で実行）
+dotnet tool restore
+ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations list \
+  --project backend/src/GamifiedMathDrill.Migrations.Sqlite \
+  --startup-project backend/src/GamifiedMathDrill.Api
 
-# データベースを削除して再作成
-dotnet ef database drop --startup-project ../GamifiedMathDrill.Api
-dotnet ef database update --startup-project ../GamifiedMathDrill.Api
+# 開発用 DB を作り直す（ファイルを消してアプリを再起動）
+rm backend/src/GamifiedMathDrill.Api/gamifiedmathdrill.db*
 ```
+
+マイグレーションの追加手順は リポジトリ直下の CLAUDE.md を参照してください（SQLite と PostgreSQL の両方に追加が必要です）。
 
 **問題: ポートが既に使用されている**
 
 ```bash
-# 使用中のプロセスを確認（macOS/Linux）
-lsof -i :7000
+# 使用中のプロセスを確認（macOS）
+lsof -i :5242
+# Windows（PowerShell）の場合: Get-NetTCPConnection -LocalPort 5242
 
 # プロセスを終了
 kill -9 <PID>
@@ -571,12 +563,12 @@ Issuer・Audience・有効期限は `appsettings.Development.json` の `Jwt` セ
 - Password: `Parent123!`
 - Role: `Parent`
 
-**子供アカウント:**
+**子供アカウント（上記保護者の子供）:**
 
-- DisplayName: `太郎`
-- PIN: `1234`
-- Role: `Child`
-- ParentId: 保護者アカウントに紐付け
+- `花子`（PIN: `1234`）
+- `次郎`（PIN: `5678`）
+
+子供ログイン画面は、保護者が「子供アカウント管理」画面で「この端末を子供用に登録する」を押した端末でのみ使えます。
 
 ### 認証フロー
 
@@ -589,16 +581,24 @@ Issuer・Audience・有効期限は `appsettings.Development.json` の `Jwt` セ
    }
    ```
 
-2. **子供ログイン**: POST `/api/auth/child-login`
+2. **子供用端末の登録**（保護者ログイン中）: POST `/api/devices` → レスポンスの `token` を端末に保存
+
+   ```json
+   { "name": "リビングのタブレット" }
+   ```
+
+3. **子供一覧の取得**（子供ログイン画面）: GET `/api/devices/current/children`（ヘッダー `X-Device-Token` 必須）
+
+4. **子供ログイン**: POST `/api/auth/child/login`（ヘッダー `X-Device-Token` 必須。他家庭の子供は 404）
 
    ```json
    {
-     "displayName": "太郎",
-     "pin": "1234"
+     "ChildId": "子供アカウントID",
+     "PIN": "1234"
    }
    ```
 
-3. **レスポンス**:
+5. **レスポンス**:
 
    ```json
    {

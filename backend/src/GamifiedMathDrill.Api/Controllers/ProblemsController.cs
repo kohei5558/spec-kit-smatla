@@ -2,6 +2,7 @@ using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models.DTOs;
 using GamifiedMathDrill.Core.Models.Responses;
 using Microsoft.AspNetCore.Authorization;
+using GamifiedMathDrill.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -17,11 +18,13 @@ namespace GamifiedMathDrill.Api.Controllers;
 public class ProblemsController : ControllerBase
 {
     private readonly IProblemService _problemService;
+    private readonly IStudentAccessService _studentAccess;
     private readonly ILogger<ProblemsController> _logger;
 
-    public ProblemsController(IProblemService problemService, ILogger<ProblemsController> logger)
+    public ProblemsController(IProblemService problemService, IStudentAccessService studentAccess, ILogger<ProblemsController> logger)
     {
         _problemService = problemService;
+        _studentAccess = studentAccess;
         _logger = logger;
     }
 
@@ -61,6 +64,12 @@ public class ProblemsController : ControllerBase
             return BadRequest(ApiResponse<ProblemDto>.ErrorResponse("Valid student ID is required."));
         }
 
+        // 自分（子供）または自分の子供（保護者）の学習者のみ。他家庭の学習者は存在しない扱い
+        if (!await this.CanAccessStudentAsync(_studentAccess, studentId))
+        {
+            return NotFound(ApiResponse<ProblemDto>.ErrorResponse("Student not found."));
+        }
+
         // 自動ModelState検証は無効化されているため、不正なカテゴリ（バインド失敗・未定義の数値）をここで弾く
         if (!ModelState.IsValid || (category.HasValue && !Enum.IsDefined(category.Value)))
         {
@@ -84,7 +93,9 @@ public class ProblemsController : ControllerBase
                 Id = problem.Id,
                 Question = problem.Question,
                 DifficultyLevel = problem.DifficultyLevel,
-                CalculationTypeText = problem.CalculationType.ToString()
+                CalculationTypeText = problem.CalculationType.ToString(),
+                HasRemainder = problem.CalculationType == Core.Models.CalculationType.DivisionWithRemainder,
+                TodayAnsweredCount = await _problemService.CountTodaysAnswersAsync(studentId)
             };
 
             return Ok(ApiResponse<ProblemDto>.SuccessResponse(problemDto));
@@ -160,10 +171,15 @@ public class ProblemsController : ControllerBase
             return BadRequest(ApiResponse<AnswerResultDto>.ErrorResponse("Valid problem ID is required."));
         }
 
+        if (!await this.CanAccessStudentAsync(_studentAccess, studentId))
+        {
+            return NotFound(ApiResponse<AnswerResultDto>.ErrorResponse("Student not found."));
+        }
+
         try
         {
             var (isCorrect, pointsEarned, leveledUp, newLevel) =
-                await _problemService.SubmitAnswerAsync(studentId, id, answerDto.Answer);
+                await _problemService.SubmitAnswerAsync(studentId, id, answerDto.Answer, answerDto.Remainder);
 
             _logger.LogInformation("Answer result: IsCorrect={IsCorrect}, PointsEarned={PointsEarned}",
                 isCorrect, pointsEarned);
@@ -190,6 +206,7 @@ public class ProblemsController : ControllerBase
             if (problem != null)
             {
                 result.CorrectAnswer = problem.CorrectAnswer;
+                result.CorrectRemainder = problem.CorrectRemainder;
             }
 
             return Ok(ApiResponse<AnswerResultDto>.SuccessResponse(result));

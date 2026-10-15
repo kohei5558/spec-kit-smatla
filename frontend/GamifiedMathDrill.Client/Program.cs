@@ -21,12 +21,15 @@ builder.Services.AddBlazoredSessionStorage();
 // Register TokenService first
 builder.Services.AddScoped<TokenService>();
 
+// API のアドレスは設定から読む（本番はデプロイ時に wwwroot/appsettings.json を書き換える、012）
+ImageUrls.Configure(builder.Configuration["ApiBaseAddress"]);
+
 // Configure HttpClient with API base address and authorization handler
 builder.Services.AddScoped(sp =>
 {
     var httpClient = new HttpClient(new AuthorizationMessageHandler(sp))
     {
-        BaseAddress = new Uri("http://localhost:5242")
+        BaseAddress = new Uri(ImageUrls.ApiBaseAddress)
     };
     return httpClient;
 });
@@ -52,6 +55,7 @@ builder.Services.AddScoped<RewardApiClient>();
 builder.Services.AddScoped<ExchangeRequestApiClient>();
 builder.Services.AddScoped<ParentDashboardApiClient>();
 builder.Services.AddScoped<ChildAccountApiClient>();
+builder.Services.AddScoped<DeviceApiClient>();
 
 // Register state management services
 builder.Services.AddScoped<CategoryStateService>();

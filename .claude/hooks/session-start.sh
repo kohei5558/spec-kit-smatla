@@ -20,6 +20,7 @@ if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
 fi
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
 
+dotnet tool restore
 dotnet restore backend/GamifiedMathDrill.sln
 dotnet restore frontend/GamifiedMathDrill.Client
 

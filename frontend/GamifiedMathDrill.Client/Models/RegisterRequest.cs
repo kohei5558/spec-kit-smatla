@@ -24,4 +24,9 @@ public class RegisterRequest
     /// パスワード確認（passwordと一致する必要あり）
     /// </summary>
     public string ConfirmPassword { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 招待コード（家族だけで使っている間に必要、012）
+    /// </summary>
+    public string? InviteCode { get; set; }
 }

@@ -111,7 +111,7 @@
                                 @if (!string.IsNullOrEmpty(reward.ImageUrl))
                                 {
                                     <MudAvatar Size="Size.Medium">
-                                        <MudImage Src="@reward.ImageUrl" Alt="@reward.Name" ObjectFit="ObjectFit.Cover" />
+                                        <MudImage Src="@ImageUrls.Resolve(reward.ImageUrl)" Alt="@reward.Name" ObjectFit="ObjectFit.Cover" />
                                     </MudAvatar>
                                 }
                                 else

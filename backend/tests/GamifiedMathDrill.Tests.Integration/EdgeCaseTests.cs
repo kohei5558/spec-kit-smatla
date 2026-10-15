@@ -22,6 +22,10 @@ public class EdgeCaseTests : IClassFixture<TestWebApplicationFactory>
     {
         _factory = factory;
         _client = factory.CreateClient();
+
+        // 子供ログインには登録端末のトークンが必要
+        AuthenticationHelper.EnsureTestUsersExistAsync(factory.Services).Wait();
+        AuthenticationHelper.UseParentDeviceAsync(_client, factory).Wait();
     }
 
     [Fact]

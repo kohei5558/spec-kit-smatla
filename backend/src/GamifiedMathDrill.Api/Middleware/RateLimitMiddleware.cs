@@ -112,28 +112,15 @@ public class RateLimitMiddleware
     }
 
     /// <summary>
-    /// クライアントのIPアドレスを取得（プロキシ対応）
+    /// クライアントのIPアドレスを取得
     /// </summary>
-    private string GetClientIpAddress(HttpContext context)
-    {
-        // X-Forwarded-For ヘッダーをチェック（プロキシ経由の場合）
-        var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-        if (!string.IsNullOrEmpty(forwardedFor))
-        {
-            // 複数のIPがある場合、最初のものを使用
-            return forwardedFor.Split(',')[0].Trim();
-        }
-
-        // X-Real-IP ヘッダーをチェック
-        var realIp = context.Request.Headers["X-Real-IP"].FirstOrDefault();
-        if (!string.IsNullOrEmpty(realIp))
-        {
-            return realIp;
-        }
-
-        // 直接接続の場合
-        return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-    }
+    /// <remarks>
+    /// X-Forwarded-For などのヘッダーは利用者が自由に書けるため、ここでは読まない（読むと IP を偽って制限を逃れられる）。
+    /// プロキシ（Render）の後ろでは、ASPNETCORE_FORWARDEDHEADERS_ENABLED=true により ASP.NET Core がプロキシの付けた値を
+    /// RemoteIpAddress に反映する（012）
+    /// </remarks>
+    private static string GetClientIpAddress(HttpContext context) =>
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
     /// <summary>
     /// 定期的に古い記録をクリーンアップ（バックグラウンドタスクから呼び出す）

@@ -125,22 +125,6 @@ public class PresetAvatarViewModel
 }
 
 /// <summary>
-/// 子供ログインリクエスト
-/// </summary>
-public class ChildLoginRequestModel
-{
-    /// <summary>
-    /// 子供アカウントID
-    /// </summary>
-    public string ChildAccountId { get; set; } = string.Empty;
-
-    /// <summary>
-    /// PINコード
-    /// </summary>
-    public string PIN { get; set; } = string.Empty;
-}
-
-/// <summary>
 /// 子供の学習統計情報
 /// </summary>
 public class ChildLearningStatsViewModel

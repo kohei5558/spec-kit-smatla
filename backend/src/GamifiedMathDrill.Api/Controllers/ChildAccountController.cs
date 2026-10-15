@@ -11,7 +11,7 @@ namespace GamifiedMathDrill.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/child-accounts")]
-[Authorize]
+[Authorize(Roles = "Parent")] // 子供アカウントの管理は保護者のみ
 public class ChildAccountController : ControllerBase
 {
     private readonly IChildAccountService _childAccountService;
@@ -23,17 +23,6 @@ public class ChildAccountController : ControllerBase
     {
         _childAccountService = childAccountService;
         _logger = logger;
-    }
-
-    /// <summary>
-    /// すべての有効な子供アカウント一覧を取得（認証不要、子供ログイン画面用）
-    /// </summary>
-    [HttpGet("public")]
-    [AllowAnonymous]
-    public async Task<ActionResult<List<ChildAccountDto>>> ListPublicAsync()
-    {
-        var children = await _childAccountService.ListAllActiveAsync();
-        return Ok(children);
     }
 
     /// <summary>

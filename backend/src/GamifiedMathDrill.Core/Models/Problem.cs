@@ -26,6 +26,11 @@ public class Problem
     public int CorrectAnswer { get; set; }
 
     /// <summary>
+    /// 正解のあまり（あまりのあるわり算のみ。それ以外は null）
+    /// </summary>
+    public int? CorrectRemainder { get; set; }
+
+    /// <summary>
     /// 計算種類
     /// </summary>
     [Required]
@@ -37,6 +42,11 @@ public class Problem
     [Required]
     [Range(1, 10)]
     public int DifficultyLevel { get; set; }
+
+    /// <summary>
+    /// 出題に使うか。最新の問題セット（ProblemGenerator）にない問題は、学習記録のために残したまま false にする（011）
+    /// </summary>
+    public bool IsActive { get; set; } = true;
 
     // Navigation properties
     public ICollection<LearningRecord> LearningRecords { get; set; } = new List<LearningRecord>();

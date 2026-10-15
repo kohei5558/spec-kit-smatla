@@ -36,24 +36,6 @@ public class StudentApiClient
         return await GetStudentAsync(id);
     }
 
-    public async Task<StudentDto?> CreateStudentAsync(string name)
-    {
-        var createDto = new CreateStudentDto { Name = name };
-        var response = await _httpClient.PostAsJsonAsync("api/students", createDto, _jsonOptions);
-
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<StudentDto>>(_jsonOptions);
-            return result?.Data;
-        }
-
-        return null;
-    }
-
-    public async Task<StudentDto?> CreateAsync(string name)
-    {
-        return await CreateStudentAsync(name);
-    }
 
     public async Task<StudentDto?> UpdateLoginAsync(int id)
     {

@@ -1,4 +1,5 @@
 using GamifiedMathDrill.Api.DTOs;
+using GamifiedMathDrill.Api.Extensions;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +14,12 @@ public class RewardsController : ControllerBase
 {
     private readonly IRewardService _rewardService;
     private readonly IExchangeRequestService _exchangeRequestService;
+    private readonly IStudentAccessService _studentAccess;
     private readonly ILogger<RewardsController> _logger;
 
-    public RewardsController(IRewardService rewardService, IExchangeRequestService exchangeRequestService, ILogger<RewardsController> logger)
+    public RewardsController(IRewardService rewardService, IExchangeRequestService exchangeRequestService, IStudentAccessService studentAccess, ILogger<RewardsController> logger)
     {
+        _studentAccess = studentAccess;
         _rewardService = rewardService;
         _exchangeRequestService = exchangeRequestService;
         _logger = logger;
@@ -30,7 +33,13 @@ public class RewardsController : ControllerBase
     {
         try
         {
-            var rewards = await _rewardService.GetRewardsAsync(category, maxPoints);
+            // 自分の家庭の景品のみ
+            var parentId = await this.GetFamilyParentIdAsync(_studentAccess);
+            if (parentId == null)
+            {
+                return Ok(Array.Empty<RewardDto>());
+            }
+            var rewards = await _rewardService.GetRewardsAsync(parentId, category, maxPoints);
 
             // 子供ロールの場合は有効な景品のみ表示
             var userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -39,7 +48,6 @@ public class RewardsController : ControllerBase
                 rewards = rewards.Where(r => r.IsActive);
             }
 
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
             var responseDtos = rewards.Select(r => new RewardDto
             {
                 Id = r.Id,
@@ -47,7 +55,7 @@ public class RewardsController : ControllerBase
                 Description = r.Description ?? string.Empty,
                 RequiredPoints = r.RequiredPoints,
                 Category = r.Category,
-                ImageUrl = string.IsNullOrEmpty(r.ImageUrl) ? null : $"{baseUrl}{r.ImageUrl}",
+                ImageUrl = string.IsNullOrEmpty(r.ImageUrl) ? null : r.ImageUrl, // 相対パスのまま（画面の ImageUrls.Resolve で解決する）
                 Stock = r.Stock,
                 IsPhysical = r.IsPhysical,
                 CreatedBy = r.CreatedBy,
@@ -72,13 +80,12 @@ public class RewardsController : ControllerBase
     {
         try
         {
-            var reward = await _rewardService.GetRewardByIdAsync(id);
+            var reward = await GetFamilyRewardAsync(id);
             if (reward == null)
             {
                 return NotFound(new { message = "景品が見つかりません。" });
             }
 
-            var baseUrlSingle = $"{Request.Scheme}://{Request.Host}";
             var dto = new RewardDto
             {
                 Id = reward.Id,
@@ -86,7 +93,7 @@ public class RewardsController : ControllerBase
                 Description = reward.Description ?? string.Empty,
                 RequiredPoints = reward.RequiredPoints,
                 Category = reward.Category,
-                ImageUrl = string.IsNullOrEmpty(reward.ImageUrl) ? null : $"{baseUrlSingle}{reward.ImageUrl}",
+                ImageUrl = string.IsNullOrEmpty(reward.ImageUrl) ? null : reward.ImageUrl, // 相対パスのまま（画面の ImageUrls.Resolve で解決する）
                 Stock = reward.Stock,
                 IsPhysical = reward.IsPhysical,
                 CreatedBy = reward.CreatedBy,
@@ -143,7 +150,6 @@ public class RewardsController : ControllerBase
                 createdReward = await _rewardService.CreateRewardAsync(reward, null, null, null, userId);
             }
 
-            var baseUrlCreated = $"{Request.Scheme}://{Request.Host}";
             var dto = new RewardDto
             {
                 Id = createdReward.Id,
@@ -151,7 +157,7 @@ public class RewardsController : ControllerBase
                 Description = createdReward.Description ?? string.Empty,
                 RequiredPoints = createdReward.RequiredPoints,
                 Category = createdReward.Category,
-                ImageUrl = string.IsNullOrEmpty(createdReward.ImageUrl) ? null : $"{baseUrlCreated}{createdReward.ImageUrl}",
+                ImageUrl = string.IsNullOrEmpty(createdReward.ImageUrl) ? null : createdReward.ImageUrl, // 相対パスのまま（画面の ImageUrls.Resolve で解決する）
                 Stock = createdReward.Stock,
                 IsPhysical = createdReward.IsPhysical,
                 CreatedBy = createdReward.CreatedBy,
@@ -192,6 +198,12 @@ public class RewardsController : ControllerBase
                 return Unauthorized(new { message = "ユーザー情報が取得できません。" });
             }
 
+            // 他の家庭の景品は存在しない扱い
+            if (await GetFamilyRewardAsync(id) == null)
+            {
+                return NotFound(new { message = "景品が見つかりません。" });
+            }
+
             byte[]? rowVersionBytes = null;
             if (!string.IsNullOrEmpty(request.RowVersion))
             {
@@ -228,7 +240,6 @@ public class RewardsController : ControllerBase
                 updatedReward = await _rewardService.UpdateRewardAsync(id, reward, null, null, null, userId);
             }
 
-            var baseUrlUpdated = $"{Request.Scheme}://{Request.Host}";
             var dto = new RewardDto
             {
                 Id = updatedReward.Id,
@@ -236,7 +247,7 @@ public class RewardsController : ControllerBase
                 Description = updatedReward.Description ?? string.Empty,
                 RequiredPoints = updatedReward.RequiredPoints,
                 Category = updatedReward.Category,
-                ImageUrl = string.IsNullOrEmpty(updatedReward.ImageUrl) ? null : $"{baseUrlUpdated}{updatedReward.ImageUrl}",
+                ImageUrl = string.IsNullOrEmpty(updatedReward.ImageUrl) ? null : updatedReward.ImageUrl, // 相対パスのまま（画面の ImageUrls.Resolve で解決する）
                 Stock = updatedReward.Stock,
                 IsPhysical = updatedReward.IsPhysical,
                 CreatedBy = updatedReward.CreatedBy,
@@ -274,6 +285,12 @@ public class RewardsController : ControllerBase
     {
         try
         {
+            // 他の家庭の景品は存在しない扱い
+            if (await GetFamilyRewardAsync(id) == null)
+            {
+                return NotFound(new { message = "景品が見つかりません。" });
+            }
+
             await _rewardService.DeleteRewardAsync(id);
             return NoContent();
         }
@@ -301,8 +318,14 @@ public class RewardsController : ControllerBase
                 return BadRequest(new { message = "無効な生徒IDです。" });
             }
 
+            // 子供は自分のポイントでのみ交換できる
+            if (!await this.CanAccessStudentAsync(_studentAccess, request.StudentId))
+            {
+                return NotFound(new { message = "生徒が見つかりません。" });
+            }
+
             // If the reward requires parent approval (physical items), create an exchange request
-            var reward = await _rewardService.GetRewardByIdAsync(id);
+            var reward = await GetFamilyRewardAsync(id);
             if (reward == null)
             {
                 return NotFound(new { message = "景品が見つかりません。" });
@@ -374,6 +397,11 @@ public class RewardsController : ControllerBase
                 return BadRequest(new { message = "無効な生徒IDです。" });
             }
 
+            if (!await this.CanAccessStudentAsync(_studentAccess, studentId))
+            {
+                return NotFound(new { message = "生徒が見つかりません。" });
+            }
+
             var acquiredRewards = await _rewardService.GetAcquiredRewardsAsync(studentId);
 
             var responseDtos = acquiredRewards.Select(ar => new AcquiredRewardResponseDto
@@ -396,5 +424,15 @@ public class RewardsController : ControllerBase
             _logger.LogError(ex, "Error retrieving acquired rewards for student {StudentId}", studentId);
             return StatusCode(500, new { message = "獲得景品の取得に失敗しました。" });
         }
+    }
+
+    /// <summary>
+    /// ログイン中のユーザーの家庭の景品を取得する（他の家庭の景品・家庭の情報がない景品は null）
+    /// </summary>
+    private async Task<Reward?> GetFamilyRewardAsync(int id)
+    {
+        var parentId = await this.GetFamilyParentIdAsync(_studentAccess);
+        var reward = await _rewardService.GetRewardByIdAsync(id);
+        return reward != null && parentId != null && reward.ParentId == parentId ? reward : null;
     }
 }

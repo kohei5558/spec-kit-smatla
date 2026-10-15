@@ -1,4 +1,5 @@
 using GamifiedMathDrill.Api.DTOs;
+using GamifiedMathDrill.Api.Extensions;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Infrastructure.Data;
 using GamifiedMathDrill.Infrastructure.Identity;
@@ -19,18 +20,21 @@ public class ExchangeRequestsController : ControllerBase
 {
     private readonly IExchangeRequestService _exchangeRequestService;
     private readonly IExchangeRequestRepository _exchangeRequestRepository;
-    private readonly ApplicationDbContext _db;
+    private readonly IStudentAccessService _studentAccess;
+    private readonly IRewardService _rewardService;
     private readonly ILogger<ExchangeRequestsController> _logger;
 
     public ExchangeRequestsController(
         IExchangeRequestService exchangeRequestService,
         IExchangeRequestRepository exchangeRequestRepository,
-        ApplicationDbContext db,
+        IStudentAccessService studentAccess,
+        IRewardService rewardService,
         ILogger<ExchangeRequestsController> logger)
     {
+        _studentAccess = studentAccess;
+        _rewardService = rewardService;
         _exchangeRequestService = exchangeRequestService;
         _exchangeRequestRepository = exchangeRequestRepository;
-        _db = db;
         _logger = logger;
     }
 
@@ -49,30 +53,28 @@ public class ExchangeRequestsController : ControllerBase
                 return Unauthorized(new { message = "ユーザー情報が取得できません。" });
             }
 
-            // UserIdからStudentIdを取得（DisplayNameで関連付け）
-            var user = await _db.Users.FindAsync(userId);
-            if (user == null)
+            // ログイン中の子供自身の学習者（名前ではなくアカウントの紐付けで特定する。同名の子供と取り違えない）
+            var ownStudentId = await _studentAccess.GetOwnStudentIdAsync(userId);
+            if (ownStudentId == null)
             {
-                return Unauthorized(new { message = "ユーザーが見つかりません。" });
+                return NotFound(new { message = "生徒情報が見つかりません。" });
             }
-
-            var student = await _db.Students.FirstOrDefaultAsync(s => s.Name == user.DisplayName);
-            if (student == null)
-            {
-                _logger.LogWarning($"Student not found for user {user.DisplayName} (UserId: {userId})");
-                return NotFound(new { message = $"生徒情報が見つかりません。ユーザー名: {user.DisplayName}" });
-            }
-
-            var studentId = student.Id;
-            _logger.LogInformation($"Found student {studentId} for user {user.DisplayName}");
+            var studentId = ownStudentId.Value;
 
             _logger.LogInformation("Creating exchange request for student {StudentId}, reward {RewardId}", studentId, request.RewardId);
+
+            // 自分の家庭の景品にだけ申請できる（他の家庭の景品は存在しない扱い）
+            var familyParentId = await this.GetFamilyParentIdAsync(_studentAccess);
+            var reward = await _rewardService.GetRewardByIdAsync(request.RewardId);
+            if (reward == null || familyParentId == null || reward.ParentId != familyParentId)
+            {
+                return NotFound(new { message = "景品が見つかりません。" });
+            }
 
             var exchangeRequest = await _exchangeRequestService.CreateRequestAsync(studentId, request.RewardId);
 
             _logger.LogInformation("ExchangeRequest created: {RequestId} for student {StudentId}", exchangeRequest.Id, exchangeRequest.StudentId);
 
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
             var dto = new ExchangeRequestDto
             {
                 Id = exchangeRequest.Id,
@@ -80,7 +82,8 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = exchangeRequest.Student?.Name ?? "",
                 RewardId = exchangeRequest.RewardId,
                 RewardName = exchangeRequest.Reward?.Name ?? "",
-                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : $"{baseUrl}{exchangeRequest.Reward!.ImageUrl}",
+                // 画像は相対パスのまま返す（初期景品は画面側、アップロード画像は API 側にあり、画面の ImageUrls.Resolve で解決する）
+                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : exchangeRequest.Reward!.ImageUrl,
                 RequiredPoints = exchangeRequest.RequiredPoints,
                 Status = exchangeRequest.Status,
                 RequestedAt = exchangeRequest.RequestedAt
@@ -118,24 +121,16 @@ public class ExchangeRequestsController : ControllerBase
                 return Unauthorized(new { message = "ユーザー情報が取得できません。" });
             }
 
-            // UserIdからStudentIdを取得
-            var user = await _db.Users.FindAsync(userId);
-            if (user == null)
-            {
-                return Unauthorized(new { message = "ユーザーが見つかりません。" });
-            }
-
-            var student = await _db.Students.FirstOrDefaultAsync(s => s.Name == user.DisplayName);
-            if (student == null)
+            // ログイン中の子供自身の学習者（名前ではなくアカウントの紐付けで特定する。同名の子供と取り違えない）
+            var ownStudentId = await _studentAccess.GetOwnStudentIdAsync(userId);
+            if (ownStudentId == null)
             {
                 return NotFound(new { message = "生徒情報が見つかりません。" });
             }
-
-            var studentId = student.Id;
+            var studentId = ownStudentId.Value;
 
             var requests = await _exchangeRequestService.GetRequestsByStudentAsync(studentId);
 
-            var baseUrlMy = $"{Request.Scheme}://{Request.Host}";
             var dtos = requests.Select(er => new ExchangeRequestDto
             {
                 Id = er.Id,
@@ -143,7 +138,8 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = er.Student?.Name ?? "",
                 RewardId = er.RewardId,
                 RewardName = er.Reward?.Name ?? "",
-                RewardImageUrl = string.IsNullOrEmpty(er.Reward?.ImageUrl) ? null : $"{baseUrlMy}{er.Reward!.ImageUrl}",
+                // 画像は相対パスのまま返す（初期景品は画面側、アップロード画像は API 側にあり、画面の ImageUrls.Resolve で解決する）
+                RewardImageUrl = string.IsNullOrEmpty(er.Reward?.ImageUrl) ? null : er.Reward!.ImageUrl,
                 RequiredPoints = er.RequiredPoints,
                 Status = er.Status,
                 RequestedAt = er.RequestedAt,
@@ -173,7 +169,8 @@ public class ExchangeRequestsController : ControllerBase
         try
         {
             var request = await _exchangeRequestService.GetRequestByIdAsync(id);
-            if (request == null)
+            // 自分（子供）または自分の子供（保護者）の申請のみ。他家庭の申請は存在しない扱い
+            if (request == null || !await this.CanAccessStudentAsync(_studentAccess, request.StudentId))
             {
                 return NotFound(new { message = "交換申請が見つかりません。" });
             }
@@ -221,20 +218,13 @@ public class ExchangeRequestsController : ControllerBase
                 return Unauthorized(new { message = "ユーザー情報が取得できません。" });
             }
 
-            // UserIdからStudentIdを取得
-            var user = await _db.Users.FindAsync(userId);
-            if (user == null)
-            {
-                return Unauthorized(new { message = "ユーザーが見つかりません。" });
-            }
-
-            var student = await _db.Students.FirstOrDefaultAsync(s => s.Name == user.DisplayName);
-            if (student == null)
+            // ログイン中の子供自身の学習者（名前ではなくアカウントの紐付けで特定する。同名の子供と取り違えない）
+            var ownStudentId = await _studentAccess.GetOwnStudentIdAsync(userId);
+            if (ownStudentId == null)
             {
                 return NotFound(new { message = "生徒情報が見つかりません。" });
             }
-
-            var studentId = student.Id;
+            var studentId = ownStudentId.Value;
 
             await _exchangeRequestService.CancelRequestAsync(id, studentId);
 
@@ -272,6 +262,11 @@ public class ExchangeRequestsController : ControllerBase
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized(new { message = "ユーザー情報が取得できません。" });
+            }
+
+            if (!await CanAccessRequestAsync(id))
+            {
+                return NotFound(new { message = "交換申請が見つかりません。" });
             }
 
             var exchangeRequest = await _exchangeRequestService.ApproveRequestAsync(id, userId, request.ParentNote);
@@ -323,6 +318,11 @@ public class ExchangeRequestsController : ControllerBase
                 return BadRequest(ModelState);
             }
 
+            if (!await CanAccessRequestAsync(id))
+            {
+                return NotFound(new { message = "交換申請が見つかりません。" });
+            }
+
             var exchangeRequest = await _exchangeRequestService.RejectRequestAsync(id, request.Reason, request.ParentNote);
 
             var dto = new ExchangeRequestDto
@@ -367,10 +367,16 @@ public class ExchangeRequestsController : ControllerBase
     {
         try
         {
-            // TODO: 保護者の子供のみフィルタリング
-            var requests = await _exchangeRequestRepository.GetAllAsync();
+            // 保護者の子供の申請のみ
+            var parentId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(parentId))
+            {
+                return Unauthorized(new { message = "ユーザー情報が取得できません。" });
+            }
+            var childrenStudentIds = (await _studentAccess.GetChildrenStudentIdsAsync(parentId)).ToHashSet();
+            var requests = (await _exchangeRequestRepository.GetAllAsync())
+                .Where(er => childrenStudentIds.Contains(er.StudentId));
 
-            var baseUrlAll = $"{Request.Scheme}://{Request.Host}";
             var dtos = requests.Select(er => new ExchangeRequestDto
             {
                 Id = er.Id,
@@ -378,7 +384,8 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = er.Student?.Name ?? "",
                 RewardId = er.RewardId,
                 RewardName = er.Reward?.Name ?? "",
-                RewardImageUrl = string.IsNullOrEmpty(er.Reward?.ImageUrl) ? null : $"{baseUrlAll}{er.Reward!.ImageUrl}",
+                // 画像は相対パスのまま返す（初期景品は画面側、アップロード画像は API 側にあり、画面の ImageUrls.Resolve で解決する）
+                RewardImageUrl = string.IsNullOrEmpty(er.Reward?.ImageUrl) ? null : er.Reward!.ImageUrl,
                 RequiredPoints = er.RequiredPoints,
                 Status = er.Status,
                 RequestedAt = er.RequestedAt,
@@ -397,5 +404,14 @@ public class ExchangeRequestsController : ControllerBase
             _logger.LogError(ex, "Error retrieving all exchange requests");
             return StatusCode(500, new { message = "交換申請の取得に失敗しました。" });
         }
+    }
+
+    /// <summary>
+    /// ログイン中の保護者の子供の申請か
+    /// </summary>
+    private async Task<bool> CanAccessRequestAsync(int requestId)
+    {
+        var existing = await _exchangeRequestService.GetRequestByIdAsync(requestId);
+        return existing != null && await this.CanAccessStudentAsync(_studentAccess, existing.StudentId);
     }
 }

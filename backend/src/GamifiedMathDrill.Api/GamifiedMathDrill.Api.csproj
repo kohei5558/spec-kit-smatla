@@ -23,6 +23,8 @@
   <ItemGroup>
     <ProjectReference Include="..\GamifiedMathDrill.Core\GamifiedMathDrill.Core.csproj" />
     <ProjectReference Include="..\GamifiedMathDrill.Infrastructure\GamifiedMathDrill.Infrastructure.csproj" />
+    <ProjectReference Include="..\GamifiedMathDrill.Migrations.Sqlite\GamifiedMathDrill.Migrations.Sqlite.csproj" />
+    <ProjectReference Include="..\GamifiedMathDrill.Migrations.PostgreSQL\GamifiedMathDrill.Migrations.PostgreSQL.csproj" />
   </ItemGroup>
 
 </Project>

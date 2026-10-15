@@ -9,17 +9,28 @@ public class ProblemService : IProblemService
     private readonly IStudentRepository _studentRepository;
     private readonly ILearningRecordRepository _learningRecordRepository;
     private readonly ILevelRepository _levelRepository;
+    private readonly TimeProvider _timeProvider;
 
     public ProblemService(
         IProblemRepository problemRepository,
         IStudentRepository studentRepository,
         ILearningRecordRepository learningRecordRepository,
-        ILevelRepository levelRepository)
+        ILevelRepository levelRepository,
+        TimeProvider timeProvider)
     {
         _problemRepository = problemRepository;
         _studentRepository = studentRepository;
         _learningRecordRepository = learningRecordRepository;
         _levelRepository = levelRepository;
+        _timeProvider = timeProvider;
+    }
+
+    public async Task<int> CountTodaysAnswersAsync(int studentId)
+    {
+        // 今日（日本時間）答えた数。問題画面の「今日の◯問め」に使う
+        var start = JapanTime.StartOfTodayUtc(_timeProvider);
+        var records = await _learningRecordRepository.GetByStudentIdAndDateRangeAsync(studentId, start, start.AddDays(1).AddTicks(-1));
+        return records.Count();
     }
 
     public async Task<Problem?> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null, CalculationType? category = null)
@@ -67,7 +78,8 @@ public class ProblemService : IProblemService
     public async Task<(bool IsCorrect, int PointsEarned, bool LeveledUp, Level? NewLevel)> SubmitAnswerAsync(
         int studentId,
         int problemId,
-        int answer)
+        int answer,
+        int? remainder = null)
     {
         var student = await _studentRepository.GetByIdWithDetailsAsync(studentId);
         if (student == null)
@@ -81,8 +93,11 @@ public class ProblemService : IProblemService
             throw new KeyNotFoundException($"Problem with ID {problemId} not found.");
         }
 
-        // 回答の正誤を判定
-        var isCorrect = answer == problem.CorrectAnswer;
+        // 回答の正誤を判定（あまりのあるわり算は商とあまりの両方が合うときだけ正解。それ以外はあまりを無視）
+        var hasRemainder = problem.CalculationType == CalculationType.DivisionWithRemainder;
+        var studentRemainder = hasRemainder ? remainder : null;
+        var isCorrect = answer == problem.CorrectAnswer
+            && (!hasRemainder || studentRemainder == problem.CorrectRemainder);
 
         // デバッグログ: 実際の比較内容を出力
         Console.WriteLine($"DEBUG: ProblemId={problemId}, UserAnswer={answer}, CorrectAnswer={problem.CorrectAnswer}, IsCorrect={isCorrect}");
@@ -95,6 +110,7 @@ public class ProblemService : IProblemService
             StudentId = studentId,
             ProblemId = problemId,
             StudentAnswer = answer,
+            StudentRemainder = studentRemainder,
             IsCorrect = isCorrect,
             PointsEarned = pointsEarned,
             TimeTakenSeconds = 0, // TODO: 実際の所要時間を計測

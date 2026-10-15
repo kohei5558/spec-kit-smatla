@@ -101,3 +101,32 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+/* API の起動待ち（ApiWakeGate、012） */
+.api-wake-gate {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+    font-size: 1.6rem;
+    color: #5c4ee5;
+    background: #f5f3ff;
+    text-align: center;
+}
+.api-wake-gate p { margin: 0.3rem; }
+.api-wake-icon { font-size: 4rem; }
+.api-wake-sub { font-size: 1rem; color: #666; }
+.api-wake-bounce { animation: api-wake-bounce 1s ease-in-out infinite; }
+@keyframes api-wake-bounce { 50% { transform: translateY(-12px); } }
+.api-wake-retry {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    padding: 0.6rem 1.6rem;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    background: #5c4ee5;
+    cursor: pointer;
+}

@@ -286,5 +286,51 @@ public class ChildAccountSecurityTests : AuthenticatedTestBase
         // Assert: 削除済みのため認証失敗（NotFound）
         Assert.Equal(HttpStatusCode.NotFound, loginResponse.StatusCode);
     }
-}
 
+    [Fact]
+    public async Task ChildAccountApi_AsChild_IsForbidden()
+    {
+        // Arrange: 保護者が子供アカウントを2つ作成し、そのうち1人の子供としてログイン
+        await AuthenticateAsParentAsync();
+        var self = await CreateChildAsync("権限テスト本人", "1470");
+        var sibling = await CreateChildAsync("権限テスト兄弟", "2581");
+        await AuthenticateAsChildAsync(self.Id, "1470");
+
+        // Act & Assert: 子供は保護者専用の子供アカウント操作をすべて拒否される
+        var create = await Client.PostAsJsonAsync("/api/child-accounts", new ChildAccountCreateDto
+        {
+            Name = "子供が作ったアカウント", GradeLevel = 3, PresetAvatarId = 1, PIN = "3692"
+        });
+        Assert.Equal(HttpStatusCode.Forbidden, create.StatusCode);
+
+        Assert.Equal(HttpStatusCode.Forbidden, (await Client.GetAsync("/api/child-accounts")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await Client.GetAsync($"/api/child-accounts/{sibling.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await Client.GetAsync($"/api/child-accounts/{sibling.Id}/detail")).StatusCode);
+
+        var update = await Client.PutAsJsonAsync($"/api/child-accounts/{sibling.Id}", new ChildAccountUpdateDto
+        {
+            Name = "書き換え", GradeLevel = 3, PresetAvatarId = 1
+        });
+        Assert.Equal(HttpStatusCode.Forbidden, update.StatusCode);
+
+        Assert.Equal(HttpStatusCode.Forbidden, (await Client.PostAsync($"/api/child-accounts/{sibling.Id}/suspend", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await Client.PostAsync($"/api/child-accounts/{sibling.Id}/activate", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await Client.DeleteAsync($"/api/child-accounts/{sibling.Id}")).StatusCode);
+
+        // 兄弟のアカウントは変更されていない
+        await AuthenticateAsParentAsync();
+        var siblingAfter = await Client.GetFromJsonAsync<ChildAccountDto>($"/api/child-accounts/{sibling.Id}");
+        Assert.Equal("権限テスト兄弟", siblingAfter!.Name);
+        Assert.True(siblingAfter.IsActive);
+    }
+
+    private async Task<ChildAccountDto> CreateChildAsync(string name, string pin)
+    {
+        var response = await Client.PostAsJsonAsync("/api/child-accounts", new ChildAccountCreateDto
+        {
+            Name = name, GradeLevel = 3, PresetAvatarId = 1, PIN = pin
+        });
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<ChildAccountDto>())!;
+    }
+}

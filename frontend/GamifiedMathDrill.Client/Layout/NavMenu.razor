@@ -4,18 +4,16 @@
 
 @if (_isParent)
 {
+    @* 保護者のホームはダッシュボード（"/" は子供のホームのため保護者は開けない） *@
     <MudNavMenu>
-        <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">
-            ホーム
+        <MudNavLink Href="/parent-dashboard" Icon="@Icons.Material.Filled.Home">
+            ホーム（ダッシュボード）
         </MudNavLink>
-        <MudNavLink Href="/reward-management" Icon="@Icons.Material.Filled.CardGiftcard">
+        <MudNavLink Href="/parent/rewards" Icon="@Icons.Material.Filled.CardGiftcard">
             景品管理
         </MudNavLink>
         <MudNavLink Href="/exchange-requests" Icon="@Icons.Material.Filled.RequestPage">
             交換申請一覧
-        </MudNavLink>
-        <MudNavLink Href="/parent-dashboard" Icon="@Icons.Material.Filled.Dashboard">
-            ダッシュボード
         </MudNavLink>
     </MudNavMenu>
 }
@@ -28,7 +26,8 @@ else
         <MudNavLink Href="/problem" Icon="@Icons.Material.Filled.Calculate">
             問題を解く
         </MudNavLink>
-        <MudNavLink Href="/results/1" Icon="@Icons.Material.Filled.Assessment">
+        @* 自分の学習者 ID（以前は 1 に固定されていて、ほかの子の結果を開こうとして読み込みに失敗していた） *@
+        <MudNavLink Href="@($"/results/{_studentId}")" Icon="@Icons.Material.Filled.Assessment">
             学習結果
         </MudNavLink>
         <MudNavLink Href="/rewards" Icon="@Icons.Material.Filled.EmojiEvents">
@@ -42,10 +41,12 @@ else
 
 @code {
     private bool _isParent = false;
+    private int? _studentId;
 
     protected override async Task OnInitializedAsync()
     {
         var roleStr = await TokenService.GetUserRoleAsync();
         _isParent = roleStr == "Parent";
+        _studentId = _isParent ? null : await TokenService.GetStudentIdAsync();
     }
 }

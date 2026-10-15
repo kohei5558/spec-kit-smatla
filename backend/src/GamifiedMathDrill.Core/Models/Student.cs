@@ -31,7 +31,7 @@ public class Student
     public int TotalPoints { get; set; } = 0;
 
     /// <summary>
-    /// 連続学習日数
+    /// 連続学習日数（使わない。「◯日連続」は学習記録から StudyStreak で計算する）
     /// </summary>
     [Range(0, int.MaxValue)]
     public int ConsecutiveDays { get; set; } = 0;
@@ -43,7 +43,8 @@ public class Student
     public int TotalProblems { get; set; } = 0;
 
     /// <summary>
-    /// 正解数
+    /// 連続正解数（レベルアップ判定用。不正解とレベルアップで0に戻る）。
+    /// 累計の正解数・正答率には使わず、学習記録（LearningRecords）から数えること
     /// </summary>
     [Range(0, int.MaxValue)]
     public int CorrectAnswers { get; set; } = 0;

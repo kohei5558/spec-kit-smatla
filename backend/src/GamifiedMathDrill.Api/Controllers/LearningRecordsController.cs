@@ -1,6 +1,8 @@
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Core.Models.Responses;
+using GamifiedMathDrill.Api.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -12,16 +14,20 @@ namespace GamifiedMathDrill.Api.Controllers;
 [ApiController]
 [Route("api/learning-records")]
 [Produces("application/json")]
+[Authorize(Roles = "Parent,Child")]
 public class LearningRecordsController : ControllerBase
 {
     private readonly ILearningRecordService _learningRecordService;
+    private readonly IStudentAccessService _studentAccess;
     private readonly ILogger<LearningRecordsController> _logger;
 
     public LearningRecordsController(
         ILearningRecordService learningRecordService,
+        IStudentAccessService studentAccess,
         ILogger<LearningRecordsController> logger)
     {
         _learningRecordService = learningRecordService;
+        _studentAccess = studentAccess;
         _logger = logger;
     }
 
@@ -65,6 +71,12 @@ public class LearningRecordsController : ControllerBase
                 ));
             }
 
+            // 自分（子供）または自分の子供（保護者）の記録のみ。他家庭の学習者は存在しない扱い
+            if (!await this.CanAccessStudentAsync(_studentAccess, studentId))
+            {
+                return NotFound(new ErrorResponse("StudentNotFound", "Student not found"));
+            }
+
             if (page <= 0) page = 1;
             if (pageSize <= 0 || pageSize > 100) pageSize = 20;
 
@@ -78,6 +90,8 @@ public class LearningRecordsController : ControllerBase
                 Question = r.Problem.Question,
                 CorrectAnswer = r.Problem.CorrectAnswer,
                 StudentAnswer = r.StudentAnswer,
+                CorrectRemainder = r.Problem.CorrectRemainder,
+                StudentRemainder = r.StudentRemainder,
                 IsCorrect = r.IsCorrect,
                 PointsEarned = r.PointsEarned,
                 TimeTakenSeconds = r.TimeTakenSeconds,
@@ -155,6 +169,12 @@ public class LearningRecordsController : ControllerBase
                 ));
             }
 
+            // 自分（子供）または自分の子供（保護者）の記録のみ。他家庭の学習者は存在しない扱い
+            if (!await this.CanAccessStudentAsync(_studentAccess, studentId))
+            {
+                return NotFound(new ErrorResponse("StudentNotFound", "Student not found"));
+            }
+
             var statistics = await _learningRecordService.GetStatisticsAsync(
                 studentId, startDate, endDate, calculationType);
 
@@ -202,6 +222,9 @@ public class LearningRecordDto
     public string Question { get; set; } = string.Empty;
     public int CorrectAnswer { get; set; }
     public int StudentAnswer { get; set; }
+    /// <summary>あまりのあるわり算のときだけ値が入る</summary>
+    public int? CorrectRemainder { get; set; }
+    public int? StudentRemainder { get; set; }
     public bool IsCorrect { get; set; }
     public int PointsEarned { get; set; }
     public int TimeTakenSeconds { get; set; }

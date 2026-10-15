@@ -37,4 +37,9 @@ public class RegisterRequest
     [Required(ErrorMessage = "パスワード確認は必須です")]
     [Compare(nameof(Password), ErrorMessage = "パスワードが一致しません")]
     public string ConfirmPassword { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 招待コード（設定 Registration:InviteCode があるときだけ必要、012）
+    /// </summary>
+    public string? InviteCode { get; set; }
 }

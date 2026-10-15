@@ -26,6 +26,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Level> Levels => Set<Level>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<PresetAvatar> PresetAvatars => Set<PresetAvatar>();
+    public DbSet<RegisteredDevice> RegisteredDevices => Set<RegisteredDevice>();
+    public DbSet<RewardImage> RewardImages => Set<RewardImage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -101,6 +103,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
             entity.HasIndex(e => e.RequiredPoints);
             entity.HasIndex(e => e.Category);
+            entity.HasIndex(e => e.ParentId);
         });
 
         // AcquiredReward
@@ -124,16 +127,27 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        // RewardImage（012）
+        modelBuilder.Entity<RewardImage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ContentType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Data).IsRequired();
+        });
+
         // DailyChallenge
         modelBuilder.Entity<DailyChallenge>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.TargetDate).IsRequired();
-            entity.Property(e => e.BonusPoints).HasDefaultValue(20);
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
 
-            entity.HasIndex(e => e.TargetDate).IsUnique();
-            entity.HasIndex(e => e.IsActive);
+            // 学習者ごと・日ごとに1つ（010）
+            entity.HasIndex(e => new { e.StudentId, e.TargetDate }).IsUnique();
+
+            entity.HasOne(e => e.Student)
+                .WithMany()
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(e => e.Problem)
                 .WithMany(p => p.DailyChallenges)
@@ -218,6 +232,25 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.CreatedAt).IsRequired();
 
             entity.HasIndex(e => e.DisplayOrder);
+        });
+
+        // RegisteredDevice（子供用端末）
+        modelBuilder.Entity<RegisteredDevice>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(30);
+            entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(64);
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.LastUsedAt).IsRequired();
+
+            // 保護者が削除されたら端末登録も削除
+            entity.HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(e => e.ParentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.ParentId);
+            entity.HasIndex(e => e.TokenHash).IsUnique();
         });
     }
 }

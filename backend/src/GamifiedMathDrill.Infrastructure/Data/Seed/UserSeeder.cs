@@ -13,6 +13,8 @@ public static class UserSeeder
     public static async Task SeedUsersAsync(IServiceProvider serviceProvider)
     {
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        // 子供のPINはログイン時にハッシュで照合されるため、ハッシュ化して保存する
+        var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher<ApplicationUser>>();
 
         // 保護者アカウント
         var parentEmail = "parent@example.com";
@@ -34,6 +36,11 @@ public static class UserSeeder
             var result = await userManager.CreateAsync(parent, "Parent123!");
             if (result.Succeeded)
             {
+                // デモ家庭の初期景品
+                var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Rewards.AddRange(StarterRewards.CreateFor(parent.Id));
+                await context.SaveChangesAsync();
+
                 Console.WriteLine($"Created parent user: {parentEmail}");
 
                 // 子供アカウント1
@@ -43,15 +50,17 @@ public static class UserSeeder
                     Email = $"{parent.Id}_child1@example.com",
                     DisplayName = "花子",
                     Role = UserRole.Child,
+                    GradeLevel = 3,
                     ParentId = parent.Id,
-                    PIN = "1234",
-                    AvatarUrl = "/images/avatars/girl1.png",
+                    AvatarUrl = "/avatars/rabbit.png",
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow,
                     EmailConfirmed = true
                 };
 
+                child1.PIN = passwordHasher.HashPassword(child1, "1234");
                 await userManager.CreateAsync(child1, "Child123!@#");
+                await LinkNewStudentAsync(context, child1);
                 Console.WriteLine($"Created child user: {child1.DisplayName} (PIN: 1234)");
 
                 // 子供アカウント2
@@ -61,15 +70,17 @@ public static class UserSeeder
                     Email = $"{parent.Id}_child2@example.com",
                     DisplayName = "次郎",
                     Role = UserRole.Child,
+                    GradeLevel = 1,
                     ParentId = parent.Id,
-                    PIN = "5678",
-                    AvatarUrl = "/images/avatars/boy1.png",
+                    AvatarUrl = "/avatars/lion.png",
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow,
                     EmailConfirmed = true
                 };
 
+                child2.PIN = passwordHasher.HashPassword(child2, "5678");
                 await userManager.CreateAsync(child2, "Child456!@#");
+                await LinkNewStudentAsync(context, child2);
                 Console.WriteLine($"Created child user: {child2.DisplayName} (PIN: 5678)");
             }
             else
@@ -81,5 +92,25 @@ public static class UserSeeder
         {
             Console.WriteLine($"Parent user already exists: {parentEmail}");
         }
+    }
+
+    /// <summary>
+    /// 子供アカウントに学習者を作って紐付ける（ChildAccountService.CreateAsync と同じ紐付け方）
+    /// </summary>
+    private static async Task LinkNewStudentAsync(ApplicationDbContext context, ApplicationUser child)
+    {
+        var student = new Student
+        {
+            Name = child.DisplayName,
+            ParentUserId = child.Id,
+            AvatarUrl = child.AvatarUrl,
+            CurrentLevelId = GradeStartLevel.ForGrade(child.GradeLevel ?? 1)
+        };
+        context.Students.Add(student);
+        await context.SaveChangesAsync();
+
+        var user = await context.Users.FindAsync(child.Id);
+        user!.StudentId = student.Id;
+        await context.SaveChangesAsync();
     }
 }

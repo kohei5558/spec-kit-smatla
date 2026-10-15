@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using GamifiedMathDrill.Api.DTOs;
+using GamifiedMathDrill.Core.DTOs;
 using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Infrastructure.Data;
 using GamifiedMathDrill.Infrastructure.Identity;
@@ -95,6 +96,13 @@ public static class AuthenticationHelper
                 student.TotalPoints = 0;
             }
             await db.SaveChangesAsync();
+
+            // 子供アカウントと学習者を紐付ける（学習者へのアクセスは名前ではなくこの紐付けで判定される）
+            if (existingChild.StudentId != student.Id)
+            {
+                existingChild.StudentId = student.Id;
+                await userManager.UpdateAsync(existingChild);
+            }
         }
         finally
         {
@@ -155,6 +163,85 @@ public static class AuthenticationHelper
     }
 
     /// <summary>
+    /// 新しい家庭（保護者）を登録して子供アカウントを1人作り、その学習者を返す。
+    /// クライアントはその保護者でログインした状態になる（保護者は自分の子供の学習者にだけアクセスできるため）
+    /// </summary>
+    public static async Task<TestStudentDto> CreateStudentInNewFamilyAsync(HttpClient client, string childName)
+    {
+        var register = await client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
+        {
+            Email = $"student_family_{Guid.NewGuid():N}@example.com",
+            DisplayName = "テスト保護者",
+            Password = "SecurePassword123!",
+            ConfirmPassword = "SecurePassword123!"
+        });
+        register.EnsureSuccessStatusCode();
+        var parentJwt = (await register.Content.ReadFromJsonAsync<RegisterResponse>())!.Token!;
+        AddAuthorizationHeader(client, parentJwt);
+
+        var create = await client.PostAsJsonAsync("/api/child-accounts", new ChildAccountCreateDto
+        {
+            Name = childName,
+            GradeLevel = 3,
+            PresetAvatarId = 1,
+            PIN = "1593"
+        });
+        create.EnsureSuccessStatusCode();
+        var child = (await create.Content.ReadFromJsonAsync<ChildAccountDto>())!;
+        return new TestStudentDto { Id = child.StudentId, Name = child.Name, Grade = child.GradeLevel };
+    }
+
+    /// <summary>
+    /// 端末トークンを送るHTTPヘッダー名
+    /// </summary>
+    public const string DeviceTokenHeader = "X-Device-Token";
+
+    /// <summary>
+    /// 保護者のJWTで端末を子供用に登録し、端末トークンを返す
+    /// </summary>
+    public static async Task<string> RegisterDeviceAsync(HttpClient client, string parentJwt, string name = "テスト端末")
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/devices")
+        {
+            Content = JsonContent.Create(new RegisterDeviceRequest { Name = name })
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", parentJwt);
+
+        var response = await client.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<RegisterDeviceResponse>();
+        return result?.Token ?? throw new InvalidOperationException("Failed to get device token");
+    }
+
+    /// <summary>
+    /// テスト用保護者（parent@example.com）の登録端末トークンをクライアントに設定する。
+    /// 端末の上限に達しないよう、トークンはファクトリー（テストクラス）単位で使い回す
+    /// </summary>
+    public static async Task UseParentDeviceAsync(HttpClient client, TestWebApplicationFactory factory)
+    {
+        if (factory.ParentDeviceToken == null)
+        {
+            var parentJwt = await LoginAsParentAsync(client, factory.Services);
+            factory.ParentDeviceToken = await RegisterDeviceAsync(client, parentJwt);
+        }
+
+        SetDeviceToken(client, factory.ParentDeviceToken);
+    }
+
+    /// <summary>
+    /// HTTPクライアントに端末トークンを設定（null で削除）
+    /// </summary>
+    public static void SetDeviceToken(HttpClient client, string? token)
+    {
+        client.DefaultRequestHeaders.Remove(DeviceTokenHeader);
+        if (token != null)
+        {
+            client.DefaultRequestHeaders.Add(DeviceTokenHeader, token);
+        }
+    }
+
+    /// <summary>
     /// HTTPクライアントに認証ヘッダーを追加
     /// </summary>
     public static void AddAuthorizationHeader(HttpClient client, string token)
@@ -183,7 +270,7 @@ public static class AuthenticationHelper
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        var student = db.Students.FirstOrDefault(s => s.Name == "太郎");
-        return student?.Id ?? throw new Exception("Test student not found");
+        var child = db.Users.FirstOrDefault(u => u.DisplayName == "太郎" && u.Role == UserRole.Child);
+        return child?.StudentId ?? throw new Exception("Test student not found");
     }
 }
