@@ -2,7 +2,7 @@
 
 <MudStack Spacing="3">
     <MudFileUpload T="IBrowserFile" 
-                   Accept="image/jpeg,image/png,image/gif"
+                   Accept="image/*"
                    OnFilesChanged="OnFileSelected"
                    MaximumFileCount="1">
         <ActivatorContent>
@@ -66,8 +66,12 @@
 </MudStack>
 
 @code {
-    private const long MaxFileSize = 5 * 1024 * 1024; // 5MB
-    private static readonly string[] AllowedTypes = { "image/jpeg", "image/png", "image/gif" };
+    // 選べる元の写真の大きさ（スマホの写真をそのまま選べるように大きめ）
+    private const long MaxOriginalSize = 30 * 1024 * 1024; // 30MB
+    // サーバーが受け付ける大きさ（DB に保存するため 1MB まで、012）
+    private const long MaxUploadSize = 1024 * 1024;
+    // 景品の表示にはこの大きさで十分。縮小すると数十〜数百 KB になる
+    private const int MaxImageSide = 800;
 
     private string? errorMessage;
     private string? previewUrl;
@@ -104,30 +108,50 @@
             return;
         }
 
-        // ファイルサイズチェック
-        if (file.Size > MaxFileSize)
+        if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
         {
-            errorMessage = $"ファイルサイズが大きすぎます。最大 {FormatFileSize(MaxFileSize)} までです。";
+            errorMessage = "画像ファイルを選んでください。";
             return;
         }
 
-        // MIMEタイプチェック
-        if (!AllowedTypes.Contains(file.ContentType.ToLower()))
+        if (file.Size > MaxOriginalSize)
         {
-            errorMessage = "対応していないファイル形式です。JPEG、PNG、GIF形式の画像を選択してください。";
+            errorMessage = $"ファイルサイズが大きすぎます。最大 {FormatFileSize(MaxOriginalSize)} までです。";
             return;
         }
 
-        SelectedFile = file;
-        await SelectedFileChanged.InvokeAsync(file);
-
-        // プレビュー生成
+        // スマホの写真（数 MB）もそのまま使えるよう、ブラウザの中で縮小してから送る。
+        // 透過のある PNG・GIF は PNG、それ以外（写真）は JPEG にする
+        IBrowserFile resized;
         try
         {
-            var buffer = new byte[file.Size];
-            await file.OpenReadStream(MaxFileSize).ReadAsync(buffer);
-            var base64 = Convert.ToBase64String(buffer);
-            previewUrl = $"data:{file.ContentType};base64,{base64}";
+            var type = file.ContentType.ToLowerInvariant();
+            var format = type is "image/png" or "image/gif" ? "image/png" : "image/jpeg";
+            resized = await file.RequestImageFileAsync(format, MaxImageSide, MaxImageSide);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error resizing image: {ex.Message}");
+            errorMessage = "この画像は使えませんでした。JPEG や PNG の画像を選んでください。";
+            return;
+        }
+
+        if (resized.Size > MaxUploadSize)
+        {
+            errorMessage = "画像が大きすぎます。別の画像を選んでください。";
+            return;
+        }
+
+        SelectedFile = resized;
+        await SelectedFileChanged.InvokeAsync(resized);
+
+        // プレビュー生成（縮小した画像）
+        try
+        {
+            using var stream = resized.OpenReadStream(MaxUploadSize);
+            using var buffer = new MemoryStream();
+            await stream.CopyToAsync(buffer);
+            previewUrl = $"data:{resized.ContentType};base64,{Convert.ToBase64String(buffer.ToArray())}";
         }
         catch (Exception ex)
         {

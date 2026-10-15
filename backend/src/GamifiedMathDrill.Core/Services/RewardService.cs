@@ -69,12 +69,7 @@ public class RewardService : IRewardService
         reward.UpdatedAt = DateTime.UtcNow;
         reward.IsActive = true;
 
-        // Ensure RowVersion is initialized for databases that don't auto-generate rowversion (e.g., SQLite)
-        if (reward.RowVersion == null)
-        {
-            var ticks = DateTime.UtcNow.Ticks;
-            reward.RowVersion = BitConverter.GetBytes(ticks);
-        }
+        reward.RowVersion = NewRowVersion();
 
         return await _rewardRepository.AddAsync(reward);
     }
@@ -85,6 +80,14 @@ public class RewardService : IRewardService
         if (existingReward == null)
         {
             throw new KeyNotFoundException($"景品が見つかりません（ID: {id}）");
+        }
+
+        // 楽観的同時実行制御: 画面で開いたあとに別の画面で保存されていたら、上書きしない
+        // （読み込みから保存までの間の更新は、EF が RowVersion を条件に UPDATE することで検出する）
+        if (existingReward.RowVersion != null
+            && (updatedReward.RowVersion == null || !existingReward.RowVersion.SequenceEqual(updatedReward.RowVersion)))
+        {
+            throw new InvalidOperationException("他のユーザーによって景品が更新されました。最新のデータを取得してやり直してください。");
         }
 
         // 画像更新
@@ -106,7 +109,7 @@ public class RewardService : IRewardService
         existingReward.Stock = updatedReward.Stock;
         existingReward.IsActive = updatedReward.IsActive;
         existingReward.UpdatedAt = DateTime.UtcNow;
-        existingReward.RowVersion = updatedReward.RowVersion; // 楽観的同時実行制御
+        existingReward.RowVersion = NewRowVersion();
 
         return await _rewardRepository.UpdateAsync(existingReward);
     }
@@ -194,4 +197,6 @@ public class RewardService : IRewardService
         var acquiredRewards = await _acquiredRewardRepository.GetByStudentIdAsync(studentId);
         return acquiredRewards.OrderByDescending(ar => ar.AcquiredAt);
     }
+
+    private static byte[] NewRowVersion() => Guid.NewGuid().ToByteArray();
 }

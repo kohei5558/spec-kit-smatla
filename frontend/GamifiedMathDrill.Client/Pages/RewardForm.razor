@@ -317,9 +317,11 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error saving reward: {ex.Message}");
-            errorMessage = ex.Message.Contains("concurrency") 
-                ? "他のユーザーによって更新されています。ページを再読み込みしてください。"
-                : "保存に失敗しました。入力内容を確認してください。";
+            errorMessage = ex is RewardValidationException
+                ? $"保存できませんでした: {ex.Message}"
+                : ex.Message.Contains("concurrency")
+                    ? "他のユーザーによって更新されています。ページを再読み込みしてください。"
+                    : "保存に失敗しました。入力内容を確認してください。";
         }
         finally
         {

@@ -422,7 +422,6 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("bytea");
 
                     b.Property<int?>("Stock")

@@ -82,9 +82,10 @@ public class Reward
     public bool IsActive { get; set; } = true;
 
     /// <summary>
-    /// 楽観的ロック用
+    /// 楽観的ロック用。SQLite も PostgreSQL も自動では作らないため、保存のたびにアプリで新しい値にする
+    /// （[Timestamp] だと EF が DB 任せにして値を保存せず、常に空になっていた）
     /// </summary>
-    [Timestamp]
+    [ConcurrencyCheck]
     public byte[]? RowVersion { get; set; }
 
     // Navigation properties
