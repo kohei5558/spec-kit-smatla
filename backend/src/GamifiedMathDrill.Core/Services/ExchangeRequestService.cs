@@ -1,3 +1,4 @@
+using GamifiedMathDrill.Core.Exceptions;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 
@@ -64,7 +65,15 @@ public class ExchangeRequestService : IExchangeRequestService
             // 在庫を減らす（申請時点で仮確保）
             reward.Stock--;
             reward.UpdatedAt = DateTime.UtcNow;
-            await _rewardRepository.UpdateAsync(reward);
+            reward.RenewRowVersion();
+            try
+            {
+                await _rewardRepository.UpdateAsync(reward);
+            }
+            catch (ConcurrencyConflictException)
+            {
+                throw new ConcurrencyConflictException(RewardService.SimultaneousExchangeMessage);
+            }
         }
 
         // 交換申請を作成
@@ -116,6 +125,7 @@ public class ExchangeRequestService : IExchangeRequestService
         {
             reward.Stock++;
             reward.UpdatedAt = DateTime.UtcNow;
+            reward.RenewRowVersion();
             await _rewardRepository.UpdateAsync(reward);
         }
 
@@ -198,6 +208,7 @@ public class ExchangeRequestService : IExchangeRequestService
         {
             reward.Stock++;
             reward.UpdatedAt = DateTime.UtcNow;
+            reward.RenewRowVersion();
             await _rewardRepository.UpdateAsync(reward);
         }
 

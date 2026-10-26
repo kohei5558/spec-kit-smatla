@@ -88,6 +88,11 @@ public class Reward
     [ConcurrencyCheck]
     public byte[]? RowVersion { get; set; }
 
+    /// <summary>
+    /// 内容（在庫を含む）を変えて保存するときに呼ぶ。保存前に画面で開かれていた古い値での更新を、競合（409）として検出できるようにする
+    /// </summary>
+    public void RenewRowVersion() => RowVersion = Guid.NewGuid().ToByteArray();
+
     // Navigation properties
     public ICollection<AcquiredReward> AcquiredRewards { get; set; } = new List<AcquiredReward>();
 }

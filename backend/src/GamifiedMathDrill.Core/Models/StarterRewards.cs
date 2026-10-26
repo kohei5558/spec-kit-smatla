@@ -16,7 +16,7 @@ public static class StarterRewards
             reward.ParentId = parentId;
             reward.CreatedBy = parentId;
             // SQLite など rowversion を自動生成しない DB 向けに初期化
-            reward.RowVersion = Guid.NewGuid().ToByteArray();
+            reward.RenewRowVersion();
         }
         return rewards;
     }

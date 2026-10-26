@@ -1,3 +1,4 @@
+using GamifiedMathDrill.Core.Exceptions;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 
@@ -69,7 +70,7 @@ public class RewardService : IRewardService
         reward.UpdatedAt = DateTime.UtcNow;
         reward.IsActive = true;
 
-        reward.RowVersion = NewRowVersion();
+        reward.RenewRowVersion();
 
         return await _rewardRepository.AddAsync(reward);
     }
@@ -87,7 +88,7 @@ public class RewardService : IRewardService
         if (existingReward.RowVersion != null
             && (updatedReward.RowVersion == null || !existingReward.RowVersion.SequenceEqual(updatedReward.RowVersion)))
         {
-            throw new InvalidOperationException("他のユーザーによって景品が更新されました。最新のデータを取得してやり直してください。");
+            throw new ConcurrencyConflictException("他のユーザーによって景品が更新されました。最新のデータを取得してやり直してください。");
         }
 
         // 画像更新
@@ -109,7 +110,7 @@ public class RewardService : IRewardService
         existingReward.Stock = updatedReward.Stock;
         existingReward.IsActive = updatedReward.IsActive;
         existingReward.UpdatedAt = DateTime.UtcNow;
-        existingReward.RowVersion = NewRowVersion();
+        existingReward.RenewRowVersion();
 
         return await _rewardRepository.UpdateAsync(existingReward);
     }
@@ -160,16 +161,17 @@ public class RewardService : IRewardService
         // Perform transaction (atomic update)
         try
         {
-            // Deduct points from student
-            student.TotalPoints -= reward.RequiredPoints;
-            await _studentRepository.UpdateAsync(student);
-
-            // Reduce stock for physical rewards
+            // 在庫を先に減らす（同時に交換されて競合したとき、ポイントだけ減らないように）
             if (reward.IsPhysical && reward.Stock.HasValue)
             {
                 reward.Stock -= 1;
+                reward.RenewRowVersion();
                 await _rewardRepository.UpdateAsync(reward);
             }
+
+            // Deduct points from student
+            student.TotalPoints -= reward.RequiredPoints;
+            await _studentRepository.UpdateAsync(student);
 
             // Create acquired reward record
             var acquiredReward = new AcquiredReward
@@ -185,6 +187,10 @@ public class RewardService : IRewardService
 
             return (true, $"「{reward.Name}」を交換しました！", savedAcquiredReward);
         }
+        catch (ConcurrencyConflictException)
+        {
+            return (false, SimultaneousExchangeMessage, null);
+        }
         catch (Exception ex)
         {
             // Rollback would be handled by transaction scope in production
@@ -198,5 +204,8 @@ public class RewardService : IRewardService
         return acquiredRewards.OrderByDescending(ar => ar.AcquiredAt);
     }
 
-    private static byte[] NewRowVersion() => Guid.NewGuid().ToByteArray();
+    /// <summary>
+    /// 同じ景品を同時に交換して在庫の更新がぶつかったときのメッセージ（子供向け）
+    /// </summary>
+    public const string SimultaneousExchangeMessage = "ほかの人と同時に交換したので、うまくいきませんでした。もう一度ためしてね。";
 }
