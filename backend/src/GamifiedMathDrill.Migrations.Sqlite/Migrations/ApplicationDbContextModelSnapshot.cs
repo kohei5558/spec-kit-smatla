@@ -293,6 +293,10 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(0);
 
+                    b.Property<string>("AnswerUnits")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("CalculationType")
                         .HasColumnType("INTEGER");
 

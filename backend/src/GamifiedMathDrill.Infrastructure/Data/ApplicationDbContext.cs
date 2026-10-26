@@ -72,6 +72,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.CalculationType).IsRequired();
             entity.Property(e => e.AnswerFormat).HasDefaultValue(AnswerFormat.Number);
             entity.Property(e => e.ClockTimes).HasMaxLength(20);
+            entity.Property(e => e.AnswerUnits).HasMaxLength(10);
             entity.Property(e => e.DifficultyLevel).IsRequired();
 
             entity.HasIndex(e => e.CalculationType);

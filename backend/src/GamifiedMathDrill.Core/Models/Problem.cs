@@ -42,6 +42,12 @@ public class Problem
     public string? ClockTimes { get; set; }
 
     /// <summary>
+    /// 答えの欄の単位（AnswerFormat.Units のとき。"mm"、2つなら "km m"、015）
+    /// </summary>
+    [MaxLength(10)]
+    public string? AnswerUnits { get; set; }
+
+    /// <summary>
     /// 計算種類
     /// </summary>
     [Required]

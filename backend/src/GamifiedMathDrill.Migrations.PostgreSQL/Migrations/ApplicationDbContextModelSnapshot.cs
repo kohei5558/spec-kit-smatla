@@ -314,6 +314,10 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
+                    b.Property<string>("AnswerUnits")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.Property<int>("CalculationType")
                         .HasColumnType("integer");
 

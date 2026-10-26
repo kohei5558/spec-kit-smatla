@@ -38,5 +38,10 @@ public enum AnswerFormat
     /// <summary>
     /// [ ]秒
     /// </summary>
-    Seconds = 6
+    Seconds = 6,
+
+    /// <summary>
+    /// 欄の単位を問題ごとに持つ形（[ ]mm、[ ]km[ ]m など。単位は Problem.AnswerUnits、015）
+    /// </summary>
+    Units = 7
 }
