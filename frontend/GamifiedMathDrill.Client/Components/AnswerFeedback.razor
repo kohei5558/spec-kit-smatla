@@ -28,9 +28,7 @@
                 正解は:
             </MudText>
             <MudChip T="string" Color="Color.Info" Size="Size.Large" Style="font-size: 1.5rem; padding: 16px;">
-                @(Result.CorrectRemainder.HasValue
-                    ? $"{Result.CorrectAnswer} あまり {Result.CorrectRemainder}"
-                    : Result.CorrectAnswer.ToString())
+                @AnswerText.Format(Result.AnswerFormat, Result.CorrectAnswer, Result.CorrectRemainder)
             </MudChip>
             <MudText Typo="Typo.body1" Class="mt-4" Color="Color.Secondary">
                 もう一度がんばろう！

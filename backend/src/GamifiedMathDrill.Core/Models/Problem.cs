@@ -26,9 +26,20 @@ public class Problem
     public int CorrectAnswer { get; set; }
 
     /// <summary>
-    /// 正解のあまり（あまりのあるわり算のみ。それ以外は null）
+    /// 2つ目の答えの正解（あまりのあるわり算のあまり、時こくの「分」「秒」など。答えが1つの問題は null）
     /// </summary>
     public int? CorrectRemainder { get; set; }
+
+    /// <summary>
+    /// 答えの形（欄の数と単位、013）
+    /// </summary>
+    public AnswerFormat AnswerFormat { get; set; } = AnswerFormat.Number;
+
+    /// <summary>
+    /// 時計の絵に出す時刻（"3:40"、2つなら "9:50 10:30"。時計を出さない問題は null、013）
+    /// </summary>
+    [MaxLength(20)]
+    public string? ClockTimes { get; set; }
 
     /// <summary>
     /// 計算種類

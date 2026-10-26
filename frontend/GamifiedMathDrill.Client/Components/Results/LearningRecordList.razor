@@ -40,11 +40,11 @@
                 </MudTd>
                 <MudTd DataLabel="あなたの答え">
                     <MudText Typo="Typo.body2" Style="@($"{GetAnswerStyle(context.IsCorrect)} white-space: nowrap;")">
-                        @FormatAnswer(context.StudentAnswer, context.StudentRemainder, context.CorrectRemainder.HasValue)
+                        @FormatAnswer(context.AnswerFormat, context.StudentAnswer, context.StudentRemainder, context.CorrectRemainder.HasValue)
                     </MudText>
                 </MudTd>
                 <MudTd DataLabel="正解">
-                    <strong style="white-space: nowrap;">@FormatAnswer(context.CorrectAnswer, context.CorrectRemainder, context.CorrectRemainder.HasValue)</strong>
+                    <strong style="white-space: nowrap;">@FormatAnswer(context.AnswerFormat, context.CorrectAnswer, context.CorrectRemainder, context.CorrectRemainder.HasValue)</strong>
                 </MudTd>
                 <MudTd DataLabel="結果">
                     @if (context.IsCorrect)
@@ -130,6 +130,7 @@
             "Multiplication" => Color.Tertiary,
             "Division" => Color.Info,
             "DivisionWithRemainder" => Color.Warning,
+            "Time" => Color.Tertiary,
             _ => Color.Default
         };
     }
@@ -143,13 +144,14 @@
             "Multiplication" => "かけ算",
             "Division" => "わり算",
             "DivisionWithRemainder" => "あまりのあるわり算",
+            "Time" => "時こくと時間",
             _ => type
         };
     }
 
-    /// <summary>あまりのあるわり算は「3 あまり 2」の形で表示する（あまりを答えていないときは「?」）</summary>
-    private static string FormatAnswer(int answer, int? remainder, bool hasRemainder) =>
-        hasRemainder ? $"{answer} あまり {remainder?.ToString() ?? "?"}" : answer.ToString();
+    /// <summary>答えの形に合わせて「3 あまり 2」「4時5分」のように表示する（2つ目を答えていないときは「?」、013）</summary>
+    private static string FormatAnswer(string answerFormat, int answer, int? second, bool hasSecond) =>
+        AnswerText.Format(answerFormat, answer, hasSecond ? second : null);
 
     private string GetAnswerStyle(bool isCorrect)
     {

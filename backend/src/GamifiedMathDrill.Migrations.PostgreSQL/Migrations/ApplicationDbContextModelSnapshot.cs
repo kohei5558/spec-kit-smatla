@@ -309,8 +309,17 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AnswerFormat")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<int>("CalculationType")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ClockTimes")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<int>("CorrectAnswer")
                         .HasColumnType("integer");

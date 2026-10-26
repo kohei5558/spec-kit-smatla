@@ -31,7 +31,7 @@ public class GradeStartLevelIntegrationTests : IClassFixture<TestWebApplicationF
         Assert.Equal(5, await GetLevelAsync(family.StudentId)); // FamilyTestHelper の子供は3年生
         Assert.Equal(1, await GetLevelAsync(grade1.StudentId));
 
-        // 3年生（レベル5）には難易度5〜6の問題が出る
+        // 3年生（レベル5）には、四則で難易度5〜6の問題が出る（時こくなど学年で決めない種類はレベル1から、014）
         for (var i = 0; i < 10; i++)
         {
             var difficulty = await GetNextProblemDifficultyAsync(client, family.ParentJwt, family.StudentId);
@@ -73,7 +73,7 @@ public class GradeStartLevelIntegrationTests : IClassFixture<TestWebApplicationF
 
     private static async Task<int> GetNextProblemDifficultyAsync(HttpClient client, string jwt, int studentId)
     {
-        var response = await FamilyTestHelper.SendAsync(client, HttpMethod.Get, $"/api/problems/next?studentId={studentId}", jwt);
+        var response = await FamilyTestHelper.SendAsync(client, HttpMethod.Get, $"/api/problems/next?studentId={studentId}&category=Addition", jwt);
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
         return json.GetProperty("data").GetProperty("difficultyLevel").GetInt32();

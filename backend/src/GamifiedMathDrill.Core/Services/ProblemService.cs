@@ -52,7 +52,9 @@ public class ProblemService : IProblemService
             var level = studentLevel?.Level ?? await _levelRepository.GetByIdAsync(studentLevel?.LevelId ?? 1);
             var difficultyLevel = ChooseDifficulty(level, studentLevel?.CorrectAnswers ?? 0);
 
-            var problem = await _problemRepository.GetRandomProblemAsync(difficultyLevel, type, excludeRecentIds);
+            // 最近出た問題は除く。ただし問題が少ない難易度（時こくの難易度1は3問）で除くと何も無くなるときは、最近の問題でも出す
+            var problem = await _problemRepository.GetRandomProblemAsync(difficultyLevel, type, excludeRecentIds)
+                ?? await _problemRepository.GetRandomProblemAsync(difficultyLevel, type);
             if (problem != null)
             {
                 return problem;
@@ -99,8 +101,9 @@ public class ProblemService : IProblemService
             throw new KeyNotFoundException($"Problem with ID {problemId} not found.");
         }
 
-        // 回答の正誤を判定（あまりのあるわり算は商とあまりの両方が合うときだけ正解。それ以外はあまりを無視）
-        var hasRemainder = problem.CalculationType == CalculationType.DivisionWithRemainder;
+        // 回答の正誤を判定。2つ目の答えがある問題（あまりのあるわり算、時こくの「時・分」など）は両方が合うときだけ正解。
+        // 答えが1つの問題では2つ目を無視する（013）
+        var hasRemainder = problem.CorrectRemainder != null;
         var studentRemainder = hasRemainder ? remainder : null;
         var isCorrect = answer == problem.CorrectAnswer
             && (!hasRemainder || studentRemainder == problem.CorrectRemainder);
