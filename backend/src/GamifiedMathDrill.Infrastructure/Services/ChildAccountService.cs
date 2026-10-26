@@ -303,16 +303,17 @@ public class ChildAccountService : IChildAccountService
             .Select(r => r.SolvedAt)
             .ToListAsync();
 
-        // 過去7日間のアクティビティ
-        var recentActivity = solvedAt
+        // 過去7日間のアクティビティ（古い日から今日まで。グラフが7日分に見えるよう、解いていない日は 0 問）
+        var countsByDate = solvedAt
             .GroupBy(JapanTime.ToJapanDate)
-            .Where(g => g.Key >= today.AddDays(-6))
-            .Select(g => new DailyActivity
+            .ToDictionary(g => g.Key, g => g.Count());
+        var recentActivity = Enumerable.Range(0, 7)
+            .Select(i => today.AddDays(i - 6))
+            .Select(date => new DailyActivity
             {
-                Date = g.Key.ToDateTime(TimeOnly.MinValue),
-                ProblemsCount = g.Count()
+                Date = date.ToDateTime(TimeOnly.MinValue),
+                ProblemsCount = countsByDate.GetValueOrDefault(date)
             })
-            .OrderBy(a => a.Date)
             .ToList();
 
         // 回答数・正解数は学習記録から数える（Student.CorrectAnswers はレベルアップ用の連続正解数のため使わない）
