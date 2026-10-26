@@ -72,7 +72,7 @@ public class DailyChallengeTests : IClassFixture<TestWebApplicationFactory>
 
         var student = await GetStudentAsync(family.StudentId);
         Assert.Equal(130, student.TotalPoints);
-        Assert.Equal(3, student.CorrectAnswers); // 連続正解数はチャレンジでは変わらない
+        Assert.Equal(3, (await StudentLevelTestHelper.GetAsync(_factory.Services, family.StudentId, CalculationType.Addition))!.Value.CorrectAnswers); // 連続正解数はチャレンジでは変わらない
 
         // 学習記録には1件だけ残る
         using (var scope = _factory.Services.CreateScope())
@@ -110,7 +110,7 @@ public class DailyChallengeTests : IClassFixture<TestWebApplicationFactory>
 
         var student = await GetStudentAsync(family.StudentId);
         Assert.Equal(100, student.TotalPoints);
-        Assert.Equal(3, student.CorrectAnswers); // 不正解でも連続正解数は変わらない
+        Assert.Equal(3, (await StudentLevelTestHelper.GetAsync(_factory.Services, family.StudentId, CalculationType.Addition))!.Value.CorrectAnswers); // 不正解でも連続正解数は変わらない
     }
 
     [Fact]
@@ -170,14 +170,9 @@ public class DailyChallengeTests : IClassFixture<TestWebApplicationFactory>
         return (await db.Students.AsNoTracking().FirstAsync(s => s.Id == studentId));
     }
 
-    private async Task SetStreakAsync(int studentId, int streak)
-    {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var student = await db.Students.FirstAsync(s => s.Id == studentId);
-        student.CorrectAnswers = streak;
-        await db.SaveChangesAsync();
-    }
+    // どの種類のチャレンジになっても確かめられるよう、すべての種類の連続正解数を設定する（レベルは小3の5のまま）
+    private Task SetStreakAsync(int studentId, int streak) =>
+        StudentLevelTestHelper.SetAsync(_factory.Services, studentId, 5, streak, StudentLevelRules.GradeLeveledTypes.ToArray());
 
     #endregion
 }

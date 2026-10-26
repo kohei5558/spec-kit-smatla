@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using GamifiedMathDrill.Core.DTOs;
+using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Infrastructure.Data;
 using GamifiedMathDrill.Tests.Integration.Helpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -78,18 +79,18 @@ public class GradeStartLevelIntegrationTests : IClassFixture<TestWebApplicationF
         return json.GetProperty("data").GetProperty("difficultyLevel").GetInt32();
     }
 
+    // 学年でレベルを決める5種類（014）は同じレベルのはずなので、すべて同じことを確かめてから返す
     private async Task<int> GetLevelAsync(int studentId)
     {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        return (await db.Students.FindAsync(studentId))!.CurrentLevelId;
+        var levels = new List<int>();
+        foreach (var type in StudentLevelRules.GradeLeveledTypes)
+        {
+            levels.Add((await StudentLevelTestHelper.GetAsync(_factory.Services, studentId, type))!.Value.Level);
+        }
+        Assert.Single(levels.Distinct());
+        return levels[0];
     }
 
-    private async Task SetLevelAsync(int studentId, int level)
-    {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        (await db.Students.FindAsync(studentId))!.CurrentLevelId = level;
-        await db.SaveChangesAsync();
-    }
+    private Task SetLevelAsync(int studentId, int level) =>
+        StudentLevelTestHelper.SetAsync(_factory.Services, studentId, level, 0, StudentLevelRules.GradeLeveledTypes.ToArray());
 }

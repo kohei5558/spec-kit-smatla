@@ -94,6 +94,29 @@
                         </MudItem>
                     </MudGrid>
 
+                    <!-- 計算の種類ごとのレベル（014） -->
+                    @if (childAccount.LearningStats.Levels is { Count: > 0 } levels)
+                    {
+                        <MudDivider Class="my-4" />
+                        <MudText Typo="Typo.h6" Class="mb-3">計算の種類ごとのレベル</MudText>
+                        <MudSimpleTable Dense="true" Striped="true">
+                            <thead>
+                                <tr><th>種類</th><th>レベル</th><th>解いた数</th><th>正答率</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var level in levels)
+                                {
+                                    <tr>
+                                        <td>@CalculationTypeNames.Get(level.CalculationType)</td>
+                                        <td>@level.LevelNumber</td>
+                                        <td>@level.TotalProblems</td>
+                                        <td>@(level.TotalProblems > 0 ? $"{level.AccuracyRate:F1}%" : "-")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    }
+
                     <!-- 過去7日間のアクティビティ -->
                     @if (childAccount.LearningStats.RecentActivity != null && childAccount.LearningStats.RecentActivity.Any(a => a.ProblemsCount > 0))
                     {

@@ -178,7 +178,7 @@ public class ProblemsController : ControllerBase
 
         try
         {
-            var (isCorrect, pointsEarned, leveledUp, newLevel) =
+            var (isCorrect, pointsEarned, leveledUp, newLevel, calculationType) =
                 await _problemService.SubmitAnswerAsync(studentId, id, answerDto.Answer, answerDto.Remainder);
 
             _logger.LogInformation("Answer result: IsCorrect={IsCorrect}, PointsEarned={PointsEarned}",
@@ -197,7 +197,8 @@ public class ProblemsController : ControllerBase
                     RequiredCorrectAnswers = newLevel.RequiredCorrectAnswers,
                     MinDifficulty = newLevel.MinDifficulty,
                     MaxDifficulty = newLevel.MaxDifficulty
-                } : null
+                } : null,
+                LeveledUpCalculationType = leveledUp ? calculationType.ToString() : null
             };
 
             // Get correct answer from problem repository

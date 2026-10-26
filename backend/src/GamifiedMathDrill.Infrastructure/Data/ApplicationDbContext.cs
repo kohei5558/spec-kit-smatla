@@ -17,6 +17,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     // DbSets
     public DbSet<Student> Students => Set<Student>();
+    public DbSet<StudentLevel> StudentLevels => Set<StudentLevel>();
     public DbSet<Problem> Problems => Set<Problem>();
     public DbSet<LearningRecord> LearningRecords => Set<LearningRecord>();
     public DbSet<Reward> Rewards => Set<Reward>();
@@ -41,15 +42,24 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.TotalPoints).HasDefaultValue(0);
             entity.Property(e => e.ConsecutiveDays).HasDefaultValue(0);
             entity.Property(e => e.TotalProblems).HasDefaultValue(0);
-            entity.Property(e => e.CorrectAnswers).HasDefaultValue(0);
-            entity.Property(e => e.CurrentLevelId).HasDefaultValue(1);
-
-            entity.HasIndex(e => e.CurrentLevelId);
             entity.HasIndex(e => e.LastLoginAt);
+        });
 
-            entity.HasOne(e => e.CurrentLevel)
-                .WithMany(l => l.Students)
-                .HasForeignKey(e => e.CurrentLevelId)
+        // StudentLevel（計算の種類ごとのレベル、014）
+        modelBuilder.Entity<StudentLevel>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CorrectAnswers).HasDefaultValue(0);
+            entity.HasIndex(e => new { e.StudentId, e.CalculationType }).IsUnique();
+
+            entity.HasOne(e => e.Student)
+                .WithMany(s => s.Levels)
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Level)
+                .WithMany(l => l.StudentLevels)
+                .HasForeignKey(e => e.LevelId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

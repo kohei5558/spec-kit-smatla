@@ -26,6 +26,8 @@ public class AnswerResultDto
     public int PointsEarned { get; set; }
     public bool LeveledUp { get; set; }
     public LevelDto? NewLevel { get; set; }
+    /// <summary>レベルが上がった計算の種類（Addition など、014）</summary>
+    public string? LeveledUpCalculationType { get; set; }
 }
 
 public class LevelDto
