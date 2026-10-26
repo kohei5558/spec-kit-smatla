@@ -84,3 +84,9 @@
 .vd-remainder span {
     white-space: nowrap;
 }
+
+/* 横書きの答えの欄。単位と「あまり」が並ぶとスマホ幅で欄が細くなりすぎるので、最低の幅を決めて折り返す（017） */
+.answer-row ::deep .mud-input-control {
+    min-width: 5rem;
+    flex: 1 1 5rem;
+}

@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/017-word-problems`
 **Created**: 2026年10月26日
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "文章問題で、どの計算を使うか判断する力をつける"
 
 ## 背景

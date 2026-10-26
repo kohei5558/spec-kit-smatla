@@ -26,7 +26,8 @@
                     @context.SolvedAt.ToString("MM/dd HH:mm")
                 </MudTd>
                 <MudTd DataLabel="問題">
-                    <MudText Typo="Typo.body2" Style="font-family: monospace; white-space: nowrap;">
+                    @* 文章問題は長いので折り返す（017） *@
+                    <MudText Typo="Typo.body2" Style="@(context.CalculationTypeText == "WordProblem" ? "min-width: 16em;" : "font-family: monospace; white-space: nowrap;")">
                         @context.Question
                     </MudText>
                 </MudTd>
@@ -132,6 +133,7 @@
             "DivisionWithRemainder" => Color.Warning,
             "Time" => Color.Tertiary,
             "Measurement" => Color.Dark,
+            "WordProblem" => Color.Primary,
             _ => Color.Default
         };
     }
@@ -147,6 +149,7 @@
             "DivisionWithRemainder" => "あまりのあるわり算",
             "Time" => "時こくと時間",
             "Measurement" => "長さ・重さ・かさ",
+            "WordProblem" => "文章問題",
             _ => type
         };
     }

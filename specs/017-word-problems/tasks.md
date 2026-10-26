@@ -17,5 +17,5 @@
 - [x] T001 [US1] テスト: 全問題の文章をひな形として読み直し、正解・欄の単位・難易度ごとのひな形と数の条件・問題数・重なり・長さ（100文字以内）を確認。既存の問題セットは変わらない - backend/tests/GamifiedMathDrill.Tests.Unit/WordProblemGeneratorTests.cs
 - [x] T002 [US1] `CalculationType.WordProblem`、`AnswerFormat.UnitsRemainder`、`WordProblemGenerator`
 - [x] T003 [US1] テスト: レベル1で出題・欄の単位／あまりありは両方合うときだけ正解／デイリーチャレンジに出ない - backend/tests/GamifiedMathDrill.Tests.Integration/WordProblemTests.cs
-- [ ] T004 [US1][US2] 画面（欄と「あまり」、答えの表示、種類の名前・アイコン・ボタン・タブ）
-- [ ] T005 移行の確認（今の main の DB で起動して問題が追加される）、画面の確認（Playwright）、README・CLAUDE.md
+- [x] T004 [US1][US2] 画面（欄と「あまり」、答えの表示、種類の名前・アイコン・ボタン・タブ）
+- [x] T005 移行の確認（今の main の DB で起動して問題が追加される）、画面の確認（Playwright）、README・CLAUDE.md
