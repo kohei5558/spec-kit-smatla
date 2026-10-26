@@ -105,9 +105,6 @@ public class ProblemService : IProblemService
         var isCorrect = answer == problem.CorrectAnswer
             && (!hasRemainder || studentRemainder == problem.CorrectRemainder);
 
-        // デバッグログ: 実際の比較内容を出力
-        Console.WriteLine($"DEBUG: ProblemId={problemId}, UserAnswer={answer}, CorrectAnswer={problem.CorrectAnswer}, IsCorrect={isCorrect}");
-
         var pointsEarned = isCorrect ? 10 : 0; // 基本ポイント10、不正解は0
 
         // 学習記録の作成

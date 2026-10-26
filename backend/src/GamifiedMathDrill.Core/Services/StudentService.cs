@@ -28,7 +28,8 @@ public class StudentService : IStudentService
         student.LastLoginAt = DateTime.UtcNow;
         student.CreatedAt = DateTime.UtcNow;
 
-        // 学年が分からないため、種類ごとのレベルはすべてレベル1から（014）
+        // 学年が分からないため、種類ごとのレベルはすべてレベル1から（014）。
+        // CreateForGrade(1) が作る行はすべてレベル ID 1 を指すので、そのレベルが DB にあることを先に確かめる
         var level1 = await _levelRepository.GetByIdAsync(1);
         if (level1 == null)
         {
