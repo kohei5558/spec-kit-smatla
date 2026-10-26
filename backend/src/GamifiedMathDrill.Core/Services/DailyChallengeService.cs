@@ -4,10 +4,18 @@ using GamifiedMathDrill.Core.Models;
 namespace GamifiedMathDrill.Core.Services;
 
 /// <summary>
-/// デイリーチャレンジ（010）。学習者ごと・日本時間の日ごとに、今のレベルの最大難易度の問題を1問出す
+/// デイリーチャレンジ（010）。学習者ごと・日本時間の日ごとに、選んだ種類のレベルの最大難易度の問題を1問出す（014）
 /// </summary>
 public class DailyChallengeService : IDailyChallengeService
 {
+    /// <summary>
+    /// チャレンジに出す種類（答えが1つの四則だけ）
+    /// </summary>
+    private static readonly CalculationType[] ChallengeTypes =
+    {
+        CalculationType.Addition, CalculationType.Subtraction, CalculationType.Multiplication, CalculationType.Division
+    };
+
     private readonly IDailyChallengeRepository _challengeRepository;
     private readonly IProblemRepository _problemRepository;
     private readonly IStudentRepository _studentRepository;
@@ -42,29 +50,38 @@ public class DailyChallengeService : IDailyChallengeService
             return existing;
         }
 
-        var student = await _studentRepository.GetByIdAsync(studentId);
+        var student = await _studentRepository.GetByIdWithDetailsAsync(studentId);
         if (student == null)
         {
             return null;
         }
 
-        var level = await _levelRepository.GetByIdAsync(student.CurrentLevelId);
-        if (level == null)
+        // 答えが1つの4種類（あまりのあるわり算などは除く、009）から1つ選び、その種類のレベルで出る一番難しい難易度から選ぶ（014）。
+        // 使わない問題は除く（011）。その種類に問題がなければ、ほかの種類を試す
+        var problems = (await _problemRepository.GetAllAsync()).Where(p => p.IsActive).ToList();
+        Problem? selected = null;
+        foreach (var type in ChallengeTypes.OrderBy(_ => Random.Shared.Next()))
+        {
+            var levelId = student.Levels.FirstOrDefault(l => l.CalculationType == type)?.LevelId ?? 1;
+            var level = await _levelRepository.GetByIdAsync(levelId);
+            if (level == null)
+            {
+                continue;
+            }
+
+            var candidates = problems.Where(p => p.CalculationType == type && p.DifficultyLevel == level.MaxDifficulty).ToList();
+            if (candidates.Count > 0)
+            {
+                selected = candidates[Random.Shared.Next(candidates.Count)];
+                break;
+            }
+        }
+
+        if (selected == null)
         {
             return null;
         }
 
-        // 今のレベルで出る一番難しい難易度から選ぶ。答えが1つの問題だけ（あまりのあるわり算は除く、009）。使わない問題も除く（011）
-        var problems = await _problemRepository.GetAllAsync();
-        var candidates = problems
-            .Where(p => p.IsActive && p.DifficultyLevel == level.MaxDifficulty && p.CalculationType != CalculationType.DivisionWithRemainder)
-            .ToList();
-        if (candidates.Count == 0)
-        {
-            return null;
-        }
-
-        var selected = candidates[Random.Shared.Next(candidates.Count)];
         return await _challengeRepository.AddOrGetExistingAsync(new DailyChallenge
         {
             StudentId = studentId,

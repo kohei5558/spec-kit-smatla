@@ -20,11 +20,6 @@ public class Student
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 現在のレベルID
-    /// </summary>
-    public int CurrentLevelId { get; set; } = 1;
-
-    /// <summary>
     /// 獲得ポイント総数
     /// </summary>
     [Range(0, int.MaxValue)]
@@ -41,13 +36,6 @@ public class Student
     /// </summary>
     [Range(0, int.MaxValue)]
     public int TotalProblems { get; set; } = 0;
-
-    /// <summary>
-    /// 連続正解数（レベルアップ判定用。不正解とレベルアップで0に戻る）。
-    /// 累計の正解数・正答率には使わず、学習記録（LearningRecords）から数えること
-    /// </summary>
-    [Range(0, int.MaxValue)]
-    public int CorrectAnswers { get; set; } = 0;
 
     /// <summary>
     /// アカウント作成日時
@@ -80,7 +68,10 @@ public class Student
     public decimal? AccuracyRate { get; set; }
 
     // Navigation properties
-    public Level CurrentLevel { get; set; } = null!;
+    /// <summary>
+    /// 計算の種類ごとのレベルと連続正解数（014）
+    /// </summary>
+    public ICollection<StudentLevel> Levels { get; set; } = new List<StudentLevel>();
     public ICollection<LearningRecord> LearningRecords { get; set; } = new List<LearningRecord>();
     public ICollection<AcquiredReward> AcquiredRewards { get; set; } = new List<AcquiredReward>();
 }

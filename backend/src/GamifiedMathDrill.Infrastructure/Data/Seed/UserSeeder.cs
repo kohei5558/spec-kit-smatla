@@ -104,7 +104,7 @@ public static class UserSeeder
             Name = child.DisplayName,
             ParentUserId = child.Id,
             AvatarUrl = child.AvatarUrl,
-            CurrentLevelId = GradeStartLevel.ForGrade(child.GradeLevel ?? 1)
+            Levels = StudentLevelRules.CreateForGrade(child.GradeLevel ?? 1)
         };
         context.Students.Add(student);
         await context.SaveChangesAsync();

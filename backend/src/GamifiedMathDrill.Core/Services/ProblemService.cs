@@ -41,41 +41,47 @@ public class ProblemService : IProblemService
             throw new KeyNotFoundException($"Student with ID {studentId} not found.");
         }
 
-        // 生徒の現在のレベルに基づいて問題の難易度を選択（ハイブリッド方式）
-        int difficultyLevel;
+        // 種類の指定があればその種類、「すべて」なら問題がある種類をランダムな順に試す（014: 難易度は種類ごとのレベルで決める）
+        var types = category.HasValue
+            ? new[] { category.Value }
+            : Enum.GetValues<CalculationType>().OrderBy(_ => Random.Shared.Next()).ToArray();
 
-        if (student.CurrentLevel != null)
+        foreach (var type in types)
         {
-            // レベル内の進捗率を計算（0.0～1.0）
-            var progress = student.CurrentLevel.RequiredCorrectAnswers > 0
-                ? Math.Min(1.0, (double)student.CorrectAnswers / student.CurrentLevel.RequiredCorrectAnswers)
-                : 0.0;
+            var studentLevel = student.Levels.FirstOrDefault(l => l.CalculationType == type);
+            var level = studentLevel?.Level ?? await _levelRepository.GetByIdAsync(studentLevel?.LevelId ?? 1);
+            var difficultyLevel = ChooseDifficulty(level, studentLevel?.CorrectAnswers ?? 0);
 
-            // 進捗に応じた基準難易度を計算
-            var difficultyRange = student.CurrentLevel.MaxDifficulty - student.CurrentLevel.MinDifficulty;
-            var baseDifficulty = student.CurrentLevel.MinDifficulty + (int)(difficultyRange * progress);
-
-            // ランダム要素を追加（基準難易度の±1、ただしレベル範囲内）
-            var random = new Random();
-            var minDiff = Math.Max(student.CurrentLevel.MinDifficulty, baseDifficulty - 1);
-            var maxDiff = Math.Min(student.CurrentLevel.MaxDifficulty, baseDifficulty + 1);
-
-            difficultyLevel = minDiff == maxDiff ? minDiff : random.Next(minDiff, maxDiff + 1);
-        }
-        else
-        {
-            // レベル情報がない場合はデフォルト難易度
-            difficultyLevel = 1;
+            var problem = await _problemRepository.GetRandomProblemAsync(difficultyLevel, type, excludeRecentIds);
+            if (problem != null)
+            {
+                return problem;
+            }
         }
 
-        // カテゴリパラメータを渡す（nullの場合はすべてのカテゴリから選択）
-        return await _problemRepository.GetRandomProblemAsync(
-            difficultyLevel,
-            category,
-            excludeRecentIds);
+        return null;
     }
 
-    public async Task<(bool IsCorrect, int PointsEarned, bool LeveledUp, Level? NewLevel)> SubmitAnswerAsync(
+    /// <summary>
+    /// レベルの中の進み具合（連続正解数 / 必要数）に応じて難易度を上げていき、前後1のゆらぎを入れる（ハイブリッド方式）
+    /// </summary>
+    private static int ChooseDifficulty(Level? level, int correctAnswers)
+    {
+        if (level == null)
+        {
+            return 1;
+        }
+
+        var progress = level.RequiredCorrectAnswers > 0
+            ? Math.Min(1.0, (double)correctAnswers / level.RequiredCorrectAnswers)
+            : 0.0;
+        var baseDifficulty = level.MinDifficulty + (int)((level.MaxDifficulty - level.MinDifficulty) * progress);
+        var minDiff = Math.Max(level.MinDifficulty, baseDifficulty - 1);
+        var maxDiff = Math.Min(level.MaxDifficulty, baseDifficulty + 1);
+        return minDiff == maxDiff ? minDiff : Random.Shared.Next(minDiff, maxDiff + 1);
+    }
+
+    public async Task<(bool IsCorrect, int PointsEarned, bool LeveledUp, Level? NewLevel, CalculationType CalculationType)> SubmitAnswerAsync(
         int studentId,
         int problemId,
         int answer,
@@ -119,43 +125,40 @@ public class ProblemService : IProblemService
 
         await _learningRecordRepository.AddAsync(learningRecord);
 
-        // 生徒の統計を更新
+        // 生徒の統計を更新。連続正解数とレベルは、この問題の種類のものだけを変える（014）
+        var studentLevel = StudentLevelRules.GetOrAdd(student, problem.CalculationType);
         student.TotalProblems++;
         if (isCorrect)
         {
-            student.CorrectAnswers++;
+            studentLevel.CorrectAnswers++;
             student.TotalPoints += pointsEarned;
         }
         else
         {
             // 不正解の場合は連続正解数をリセット
-            student.CorrectAnswers = 0;
+            studentLevel.CorrectAnswers = 0;
         }
-
-        await _studentRepository.UpdateAsync(student);
 
         // レベルアップのチェック
         var leveledUp = false;
         Level? newLevel = null;
 
-        if (isCorrect && student.CurrentLevel != null)
+        var currentLevel = studentLevel.Level ?? await _levelRepository.GetByIdAsync(studentLevel.LevelId);
+        if (isCorrect && currentLevel != null && studentLevel.CorrectAnswers >= currentLevel.RequiredCorrectAnswers)
         {
-            // 現在のレベルの必要正解数を達成したかチェック
-            if (student.CorrectAnswers >= student.CurrentLevel.RequiredCorrectAnswers)
+            var nextLevel = await _levelRepository.GetByIdAsync(studentLevel.LevelId + 1);
+            if (nextLevel != null)
             {
-                // 次のレベルを取得
-                var nextLevel = await _levelRepository.GetByIdAsync(student.CurrentLevelId + 1);
-                if (nextLevel != null)
-                {
-                    student.CurrentLevelId = nextLevel.Id;
-                    student.CorrectAnswers = 0; // 連続正解数をリセット
-                    leveledUp = true;
-                    newLevel = nextLevel;
-                    await _studentRepository.UpdateAsync(student);
-                }
+                studentLevel.LevelId = nextLevel.Id;
+                studentLevel.Level = nextLevel;
+                studentLevel.CorrectAnswers = 0; // 連続正解数をリセット
+                leveledUp = true;
+                newLevel = nextLevel;
             }
         }
 
-        return (isCorrect, pointsEarned, leveledUp, newLevel);
+        await _studentRepository.UpdateAsync(student);
+
+        return (isCorrect, pointsEarned, leveledUp, newLevel, problem.CalculationType);
     }
 }

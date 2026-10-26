@@ -94,7 +94,7 @@ public class ParentDashboardTests : IClassFixture<TestWebApplicationFactory>
 
     /// <summary>
     /// 回答の記録を追加する（最初の correct 問が正解、残りが不正解）。
-    /// 学習者の集計値は実際の回答と同じく更新し、CorrectAnswers（連続正解数）は最後が不正解なので 0 にする
+    /// 学習者の集計値は実際の回答と同じく更新する
     /// </summary>
     private async Task AddAnswersAsync(int studentId, int total, int correct, int points)
     {
@@ -114,7 +114,6 @@ public class ParentDashboardTests : IClassFixture<TestWebApplicationFactory>
         }
         var student = await db.Students.FindAsync(studentId);
         student!.TotalProblems = total;
-        student.CorrectAnswers = correct == total ? correct : 0;
         student.TotalPoints = points;
         await db.SaveChangesAsync();
     }

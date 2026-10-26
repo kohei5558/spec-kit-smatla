@@ -147,8 +147,8 @@ public class ChildAccountService : IChildAccountService
             Name = user.DisplayName,
             ParentUserId = user.Id,
             AvatarUrl = user.AvatarUrl,
-            // 学年に応じたレベルから始める（例: 3年生はレベル5）
-            CurrentLevelId = GradeStartLevel.ForGrade(dto.GradeLevel)
+            // 四則とあまりのあるわり算は学年に応じたレベルから始める（例: 3年生はレベル5）。新しい単元はレベル1（014）
+            Levels = StudentLevelRules.CreateForGrade(dto.GradeLevel)
         };
 
         _context.Students.Add(student);
@@ -204,18 +204,24 @@ public class ChildAccountService : IChildAccountService
         await _userManager.UpdateAsync(user);
 
         // Student同期更新（子供アカウントに紐付いた学習者）
-        var student = user.StudentId == null ? null : await _context.Students.FindAsync(user.StudentId.Value);
+        var student = user.StudentId == null
+            ? null
+            : await _context.Students.Include(s => s.Levels).FirstOrDefaultAsync(s => s.Id == user.StudentId.Value);
         if (student != null)
         {
             student.Name = user.DisplayName;
             student.AvatarUrl = user.AvatarUrl;
 
-            // 学年を上げて始めるレベルが今より高くなったら上げる（下げることはしない）
+            // 学年を上げて始めるレベルが今より高くなったら、学年でレベルを決める種類のうち低いものだけ上げる（下げることはしない、014）
             var startLevel = GradeStartLevel.ForGrade(dto.GradeLevel);
-            if (student.CurrentLevelId < startLevel)
+            foreach (var type in StudentLevelRules.GradeLeveledTypes)
             {
-                student.CurrentLevelId = startLevel;
-                student.CorrectAnswers = 0; // 新しいレベルの連続正解数を数え直す
+                var level = StudentLevelRules.GetOrAdd(student, type);
+                if (level.LevelId < startLevel)
+                {
+                    level.LevelId = startLevel;
+                    level.CorrectAnswers = 0; // 新しいレベルの連続正解数を数え直す
+                }
             }
             await _context.SaveChangesAsync();
         }

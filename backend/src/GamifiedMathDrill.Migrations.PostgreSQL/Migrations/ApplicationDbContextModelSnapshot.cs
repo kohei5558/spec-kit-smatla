@@ -483,18 +483,8 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
-                    b.Property<int>("CorrectAnswers")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("CurrentLevelId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1);
 
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("timestamp with time zone");
@@ -522,11 +512,41 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CurrentLevelId");
-
                     b.HasIndex("LastLoginAt");
 
                     b.ToTable("Students");
+                });
+
+            modelBuilder.Entity("GamifiedMathDrill.Core.Models.StudentLevel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CalculationType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CorrectAnswers")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("LevelId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LevelId");
+
+                    b.HasIndex("StudentId", "CalculationType")
+                        .IsUnique();
+
+                    b.ToTable("StudentLevels");
                 });
 
             modelBuilder.Entity("GamifiedMathDrill.Infrastructure.Identity.ApplicationUser", b =>
@@ -847,15 +867,23 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("GamifiedMathDrill.Core.Models.Student", b =>
+            modelBuilder.Entity("GamifiedMathDrill.Core.Models.StudentLevel", b =>
                 {
-                    b.HasOne("GamifiedMathDrill.Core.Models.Level", "CurrentLevel")
-                        .WithMany("Students")
-                        .HasForeignKey("CurrentLevelId")
+                    b.HasOne("GamifiedMathDrill.Core.Models.Level", "Level")
+                        .WithMany("StudentLevels")
+                        .HasForeignKey("LevelId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("CurrentLevel");
+                    b.HasOne("GamifiedMathDrill.Core.Models.Student", "Student")
+                        .WithMany("Levels")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Level");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -911,7 +939,7 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
 
             modelBuilder.Entity("GamifiedMathDrill.Core.Models.Level", b =>
                 {
-                    b.Navigation("Students");
+                    b.Navigation("StudentLevels");
                 });
 
             modelBuilder.Entity("GamifiedMathDrill.Core.Models.Problem", b =>
@@ -931,6 +959,8 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
                     b.Navigation("AcquiredRewards");
 
                     b.Navigation("LearningRecords");
+
+                    b.Navigation("Levels");
                 });
 #pragma warning restore 612, 618
         }

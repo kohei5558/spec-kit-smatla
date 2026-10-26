@@ -18,9 +18,11 @@ public class StudentsController : ControllerBase
     private readonly IStudentAccessService _studentAccess;
     private readonly ILogger<StudentsController> _logger;
     private readonly TimeProvider _timeProvider;
+    private readonly ILevelRepository _levelRepository;
 
-    public StudentsController(IStudentService studentService, IStudentAccessService studentAccess, ILogger<StudentsController> logger, TimeProvider timeProvider)
+    public StudentsController(IStudentService studentService, IStudentAccessService studentAccess, ILogger<StudentsController> logger, TimeProvider timeProvider, ILevelRepository levelRepository)
     {
+        _levelRepository = levelRepository;
         _studentService = studentService;
         _studentAccess = studentAccess;
         _logger = logger;
@@ -42,7 +44,7 @@ public class StudentsController : ControllerBase
             return NotFound(ApiResponse<StudentDto>.ErrorResponse($"Student with ID {id} not found."));
         }
 
-        var studentDto = MapToDto(student);
+        var studentDto = await MapToDtoAsync(student);
         return Ok(ApiResponse<StudentDto>.SuccessResponse(studentDto));
     }
 
@@ -59,7 +61,7 @@ public class StudentsController : ControllerBase
             await _studentService.UpdateLoginAsync(id);
             // 連続日数の計算に学習記録が必要なため、読み直す
             var student = await _studentService.GetByIdAsync(id);
-            var studentDto = MapToDto(student!);
+            var studentDto = await MapToDtoAsync(student!);
             return Ok(ApiResponse<StudentDto>.SuccessResponse(studentDto, "Login updated successfully."));
         }
         catch (KeyNotFoundException ex)
@@ -68,8 +70,9 @@ public class StudentsController : ControllerBase
         }
     }
 
-    private StudentDto MapToDto(Student student)
+    private async Task<StudentDto> MapToDtoAsync(Student student)
     {
+        var levels = StudentLevelRules.AllTypes(student, await _levelRepository.GetAllAsync());
         return new StudentDto
         {
             Id = student.Id,
@@ -77,13 +80,16 @@ public class StudentsController : ControllerBase
             TotalPoints = student.TotalPoints,
             // 1問以上解いた日（日本時間）で数える。student は学習記録を含めて読み込んだもの
             ConsecutiveDays = StudyStreak.ConsecutiveDays(student.LearningRecords.Select(r => r.SolvedAt), JapanTime.Today(_timeProvider)),
-            CorrectAnswers = student.CorrectAnswers,
             TotalProblems = student.TotalProblems,
             LastLoginAt = student.LastLoginAt,
-            CurrentLevelId = student.CurrentLevelId,
-            CurrentLevelName = $"Level {student.CurrentLevel?.LevelNumber}",
-            CurrentLevelMinDifficulty = student.CurrentLevel?.MinDifficulty,
-            CurrentLevelMaxDifficulty = student.CurrentLevel?.MaxDifficulty
+            HighestLevel = levels.Max(l => l.Level.LevelNumber),
+            Levels = levels.Select(l => new StudentLevelDto
+            {
+                CalculationType = l.Type.ToString(),
+                LevelNumber = l.Level.LevelNumber,
+                CorrectAnswers = l.CorrectAnswers,
+                RequiredCorrectAnswers = l.Level.RequiredCorrectAnswers
+            }).ToList()
         };
     }
 }
