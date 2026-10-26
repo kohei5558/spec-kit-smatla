@@ -43,5 +43,10 @@ public enum AnswerFormat
     /// <summary>
     /// 欄の単位を問題ごとに持つ形（[ ]mm、[ ]km[ ]m など。単位は Problem.AnswerUnits、015）
     /// </summary>
-    Units = 7
+    Units = 7,
+
+    /// <summary>
+    /// [ ]こ あまり [ ]こ（単位つきのあまりのあるわり算。単位は Problem.AnswerUnits の "こ こ"、017）
+    /// </summary>
+    UnitsRemainder = 8
 }
