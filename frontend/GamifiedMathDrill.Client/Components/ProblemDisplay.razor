@@ -19,57 +19,67 @@
     </div>
 }
 
-<div class="problem-display text-center my-8">
-    @* 文章の問題（時こくなど）は長いので小さめの文字にする *@
-    <MudText Typo="Typo.h2" Color="Color.Primary" Style="@(IsSentence ? "font-size: 2rem; font-weight: bold;" : "font-size: 4rem; font-weight: bold;")">
-        @Problem.Question
-    </MudText>
-</div>
+@if (Vertical is { } v)
+{
+    @* けたの多い計算は、学校と同じひっ算（たて書き）の形で見せる（016）。数字は一の位でそろえる *@
+    <div class="problem-display my-6 d-flex flex-column align-center" aria-label="@Problem.Question">
+        @if (v.Op == "÷")
+        {
+            <div class="answer-input vertical-div" style="@($"--digits: {v.A.ToString().Length + 1};")">
+                <div class="vd-quotient">@FirstInput("こたえ")</div>
+                <div class="vd-body">
+                    <span class="vd-divisor">@v.B</span>
+                    <span class="vd-dividend">@v.A</span>
+                </div>
+                @if (Problem.HasRemainder)
+                {
+                    <div class="vd-remainder">
+                        <span>あまり</span>
+                        @SecondInput("あまり")
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="answer-input vertical-calc" style="@($"--digits: {VerticalWidth(v)};")">
+                <div class="vc-row"><span class="vc-num">@v.A</span></div>
+                <div class="vc-row"><span class="vc-op">@(v.Op == "-" ? "−" : v.Op)</span><span class="vc-num">@v.B</span></div>
+                <div class="vc-line"></div>
+                <div class="vc-answer">@FirstInput("こたえ")</div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="problem-display text-center my-8">
+        @* 文章の問題（時こくなど）は長いので小さめの文字にする *@
+        <MudText Typo="Typo.h2" Color="Color.Primary" Style="@(IsSentence ? "font-size: 2rem; font-weight: bold;" : "font-size: 4rem; font-weight: bold;")">
+            @Problem.Question
+        </MudText>
+    </div>
 
-<div class="answer-input mt-6 d-flex align-center gap-3">
-    <MudTextField @ref="answerField"
-                  Value="@inputText"
-                  ValueChanged="@((string value) => HandleInput(value))"
-                  Label="@FirstLabel"
-                  Variant="Variant.Outlined"
-                  Margin="Margin.Dense"
-                  FullWidth="true"
-                  Class="mud-text-field-large"
-                  Disabled="@IsSubmitting"
-                  Style="font-size: 2rem;"
-                  Immediate="true"
-                  InputMode="InputMode.numeric"
-                  Pattern="[0-9]*"
-                  OnKeyDown="@HandleKeyDown" />
-    @if (Units.First != null)
-    {
-        <MudText Typo="Typo.h5" Style="white-space: nowrap;">@Units.First</MudText>
-    }
-    @if (Problem.HasRemainder)
-    {
-        @if (Problem.AnswerFormat == "QuotientRemainder" || Units.Second == null)
+    <div class="answer-input mt-6 d-flex align-center gap-3">
+        @FirstInput(FirstLabel)
+        @if (Units.First != null)
         {
-            <MudText Typo="Typo.h5" Style="white-space: nowrap;">あまり</MudText>
+            <MudText Typo="Typo.h5" Style="white-space: nowrap;">@Units.First</MudText>
         }
-        <MudTextField Value="@remainderText"
-                      ValueChanged="@((string value) => HandleRemainderInput(value))"
-                      Label="@(Units.Second ?? "あまり")"
-                      Variant="Variant.Outlined"
-                      Margin="Margin.Dense"
-                      FullWidth="true"
-                      Class="mud-text-field-large"
-                      Disabled="@IsSubmitting"
-                      Style="font-size: 2rem;"
-                      Immediate="true"
-                      InputMode="InputMode.numeric"
-                      Pattern="[0-9]*"
-                      OnKeyDown="@HandleKeyDown" />
-        @if (Units.Second != null)
+        @if (Problem.HasRemainder)
         {
-            <MudText Typo="Typo.h5" Style="white-space: nowrap;">@Units.Second</MudText>
+            @if (Problem.AnswerFormat == "QuotientRemainder" || Units.Second == null)
+            {
+                <MudText Typo="Typo.h5" Style="white-space: nowrap;">あまり</MudText>
+            }
+            @SecondInput(Units.Second ?? "あまり")
+            @if (Units.Second != null)
+            {
+                <MudText Typo="Typo.h5" Style="white-space: nowrap;">@Units.Second</MudText>
+            }
         }
-    }
-</div>
+    </div>
+}
 
 <div class="text-center mt-6">
     <MudButton Variant="Variant.Filled"
@@ -132,6 +142,71 @@
     // 2つの欄がある問題（あまりのあるわり算、時こくの「時・分」など）は、両方を入れたときだけ答えられる
     private bool CanSubmit => Answer.HasValue && (!Problem.HasRemainder || Remainder.HasValue);
     private MudTextField<string>? answerField;
+
+    // 答えの欄（横書き・ひっ算のどちらでも同じ欄を使う）
+    private RenderFragment FirstInput(string label) => @<MudTextField @ref="answerField"
+                      Value="@inputText"
+                      ValueChanged="@((string value) => HandleInput(value))"
+                      Label="@label"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      FullWidth="true"
+                      Class="mud-text-field-large"
+                      Disabled="@IsSubmitting"
+                      Style="font-size: 2rem;"
+                      Immediate="true"
+                      InputMode="InputMode.numeric"
+                      Pattern="[0-9]*"
+                      OnKeyDown="@HandleKeyDown" />;
+
+    private RenderFragment SecondInput(string label) => @<MudTextField Value="@remainderText"
+                      ValueChanged="@((string value) => HandleRemainderInput(value))"
+                      Label="@label"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      FullWidth="true"
+                      Class="mud-text-field-large"
+                      Disabled="@IsSubmitting"
+                      Style="font-size: 2rem;"
+                      Immediate="true"
+                      InputMode="InputMode.numeric"
+                      Pattern="[0-9]*"
+                      OnKeyDown="@HandleKeyDown" />;
+
+    /// <summary>
+    /// ひっ算の形で見せる問題（016）。たし算・ひき算・かけ算はどちらかが2けた以上、わり算は商が2けた以上のとき。それ以外は null
+    /// </summary>
+    private (int A, string Op, int B)? Vertical
+    {
+        get
+        {
+            if (IsSentence)
+            {
+                return null;
+            }
+            var m = System.Text.RegularExpressions.Regex.Match(Problem.Question, @"^(\d+) ([+\-×÷]) (\d+) = \?$");
+            if (!m.Success)
+            {
+                return null;
+            }
+            var (a, op, b) = (int.Parse(m.Groups[1].Value), m.Groups[2].Value, int.Parse(m.Groups[3].Value));
+            var vertical = op == "÷" ? b > 0 && a / b >= 10 : a >= 10 || b >= 10;
+            return vertical ? (a, op, b) : null;
+        }
+    }
+
+    // 並べる幅（けた数）。いちばん長い数（答えのけた数の目安を含む）＋記号の分
+    private static int VerticalWidth((int A, string Op, int B) v)
+    {
+        var longest = Math.Max(v.A.ToString().Length, v.B.ToString().Length);
+        var answer = v.Op switch
+        {
+            "+" => longest + 1,
+            "×" => v.A.ToString().Length + v.B.ToString().Length,
+            _ => longest
+        };
+        return Math.Max(longest, answer) + 2;
+    }
 
     protected override void OnParametersSet()
     {

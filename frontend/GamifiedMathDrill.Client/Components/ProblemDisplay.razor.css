@@ -1,0 +1,86 @@
+/* ひっ算（たて書き、016）。数字は等幅にして一の位でそろえる */
+.vertical-calc,
+.vertical-div {
+    font-family: "Roboto Mono", "Menlo", "Consolas", monospace;
+    font-size: 3.5rem;
+    font-weight: bold;
+    line-height: 1.2;
+    color: var(--mud-palette-primary);
+}
+
+.vertical-calc {
+    width: calc(var(--digits) * 1ch + 0.5ch);
+}
+
+.vc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.vc-row .vc-num {
+    margin-left: auto;
+    letter-spacing: 0.05em;
+}
+
+.vc-line {
+    border-top: 4px solid var(--mud-palette-text-primary);
+    margin: 0.15em 0 0.25em;
+}
+
+.vertical-calc ::deep input,
+.vertical-div ::deep input {
+    text-align: right;
+    font-family: "Roboto Mono", "Menlo", "Consolas", monospace;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+/* わり算の厂の形 */
+.vertical-div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: fit-content;
+}
+
+.vd-quotient {
+    width: calc(var(--digits) * 1ch + 0.5ch);
+}
+
+.vd-body {
+    display: flex;
+    align-items: stretch;
+}
+
+.vd-divisor {
+    padding-right: 0.25em;
+}
+
+.vd-dividend {
+    border-top: 4px solid var(--mud-palette-text-primary);
+    border-left: 4px solid var(--mud-palette-text-primary);
+    border-top-left-radius: 0.6em 1em;
+    padding-left: 0.3em;
+    min-width: calc(var(--digits) * 1ch);
+    text-align: right;
+    letter-spacing: 0.05em;
+}
+
+.vd-remainder {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.vd-remainder ::deep .mud-input-control {
+    width: calc(var(--digits) * 1ch + 1em);
+    font-size: 3.5rem;
+}
+
+.vd-remainder span {
+    white-space: nowrap;
+}
