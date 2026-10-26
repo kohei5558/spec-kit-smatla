@@ -54,6 +54,8 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/src/GamifiedMath
 ## 開発ルール（詳細は WORKFLOW.md）
 
 - main で直接作業しない。`feature/` `fix/` `refactor/` `docs/` `chore/` ブランチで作業し PR を作る。
+  - ブランチは機能・修正1つごとに、中身が分かる名前で `main` から作る（例: `fix/exchange-request-image`、`feature/013-xxx`）。別々の修正を1つのブランチに積まない。
+  - 作業環境（Claude Code など）が `claude/...` のブランチを指定しても、このルールを優先する。
 - コミットメッセージは `feat:` `fix:` `refactor:` `docs:` `test:` `chore:` の接頭辞 + 日本語の説明。
 - バグ修正は再現テストを先に書く（constitution IV）。
 - 仕様変更や新機能は spec-kit の流れ（specify → plan → tasks → implement）で `specs/` に記録し、実装したら tasks.md のチェックも更新する。
