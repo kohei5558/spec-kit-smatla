@@ -1,5 +1,7 @@
 # Implementation Tasks: 子供アカウント管理画面
 
+> **見直し（2026-10-26）**: 残っていた項目を「済み」「やめる（理由つき・取り消し線）」に仕分けた。T064・T065 は `feature/child-account-form-polish` で対応する。
+
 > **棚卸し（2026-10-08）**: コードと突き合わせてチェックを更新。US1〜US5 は実装・テストとも完了していた（チェック漏れ）。
 > - サービスは計画の Core ではなく `Infrastructure/Services/ChildAccountService.cs`、画面は `Pages/Parent/` ではなく `Pages/` 直下に実装
 > - PIN ロックアウトは 2026-10-08 に修正（初回失敗が2回分に数えられ、2回でロックされていた）
@@ -266,12 +268,12 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 
 - [x] T064 [P] 同一PIN警告メッセージ実装（CreateChildAccountとEditChildAccountフォーム） - frontend/GamifiedMathDrill.Client/Pages/Parent/CreateChildAccount.razor, EditChildAccount.razor
 - [x] T065 [P] デフォルトアバター自動設定ロジック追加（アバター未選択時） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs（2026-10-26: 選ばなかったとき（0）は最初のアバター。実装は Infrastructure 側）
-- [ ] T066 [P] 一覧表示パフォーマンス最適化（ParentId+Roleインデックス確認） - backend/src/GamifiedMathDrill.Infrastructure/Data/ApplicationDbContext.cs
-- [ ] T067 [P] エラーハンドリング統一（BusinessRuleViolationException、ValidationException） - backend/src/GamifiedMathDrill.Api/Middleware/ErrorHandlingMiddleware.cs
-- [ ] T068 [P] ChildAccountCard.razorのCSS調整（レスポンシブ、子供に優しいデザイン） - frontend/GamifiedMathDrill.Client/Components/ChildAccountCard.razor.css
-- [ ] T069 [P] アクセシビリティ改善（aria-label、キーボードナビゲーション） - frontend/GamifiedMathDrill.Client/Components/\*.razor
+- [x] ~~T066 [P] 一覧表示パフォーマンス最適化（ParentId+Roleインデックス確認） - backend/src/GamifiedMathDrill.Infrastructure/Data/ApplicationDbContext.cs~~ → **やめる**（2026-10-26 見直し）: 家族ごとの子供は数人で、ユーザー表の ParentId へのインデックスは効果が小さい
+- [x] ~~T067 [P] エラーハンドリング統一（BusinessRuleViolationException、ValidationException） - backend/src/GamifiedMathDrill.Api/Middleware/ErrorHandlingMiddleware.cs~~ → **やめる**（2026-10-26 見直し）: 例外は各コントローラーで扱っている（`ErrorHandlingMiddleware` は未登録のまま）。統一は大きな変更のわりに効果が小さい
+- [x] ~~T068 [P] ChildAccountCard.razorのCSS調整（レスポンシブ、子供に優しいデザイン） - frontend/GamifiedMathDrill.Client/Components/ChildAccountCard.razor.css~~ → **やめる**（2026-10-26 見直し）: 具体的な問題が出たら個別に直す。主要な画面の流れの自動テストを別の課題として立てる
+- [x] ~~T069 [P] アクセシビリティ改善（aria-label、キーボードナビゲーション） - frontend/GamifiedMathDrill.Client/Components/\*.razor~~ → **やめる**（2026-10-26 見直し）: 具体的な問題が出たら個別に直す
 - [x] T070 統合テスト全実行と回帰テスト - backend/tests/GamifiedMathDrill.Tests.Integration/
-- [ ] T071 quickstart.mdの動作確認（30分セットアップガイド） - specs/005-child-account-management/quickstart.md
+- [x] ~~T071 quickstart.mdの動作確認（30分セットアップガイド） - specs/005-child-account-management/quickstart.md~~ → **やめる**（2026-10-26 見直し）: セットアップ手順は README にまとめている
 
 ---
 
@@ -362,26 +364,26 @@ Phase 3（User Story 1）完了時点で、以下が動作する最小限のシ�
 
 ### Functional Requirements Coverage
 
-- [ ] FR-001〜FR-015: すべての機能要件が実装済み
-- [ ] 27の受け入れシナリオがすべてパス
-- [ ] 8つのエッジケースが正しく処理される
+- [x] ~~FR-001〜FR-015: すべての機能要件が実装済み~~ → **やめる**（2026-10-26 見直し）: 書いたまま検証されておらず内容も古い。機能は結合テスト（ChildAccount*Tests）と手動確認で確認している
+- [x] ~~27の受け入れシナリオがすべてパス~~ → **やめる**（2026-10-26 見直し）: 同上
+- [x] ~~8つのエッジケースが正しく処理される~~ → **やめる**（2026-10-26 見直し）: 同上
 
 ### Success Criteria Achievement
 
-- [ ] SC-001: アカウント作成3分以内
-- [ ] SC-002: 一覧表示1秒以内
-- [ ] SC-003: 編集反映1秒以内
-- [ ] SC-004: 学習統計の理解しやすさ（ユーザーテスト）
-- [ ] SC-005: 削除後データ残存なし
-- [ ] SC-006: 停止中ログインエラーメッセージ明確
-- [ ] SC-007: PINロックアウト5分自動解除
+- [x] ~~SC-001: アカウント作成3分以内~~ → **やめる**（2026-10-26 見直し）: 計測・ユーザーテストはしていない。家族で使う規模では行わない
+- [x] ~~SC-002: 一覧表示1秒以内~~ → **やめる**（2026-10-26 見直し）: 計測・ユーザーテストはしていない。家族で使う規模では行わない
+- [x] ~~SC-003: 編集反映1秒以内~~ → **やめる**（2026-10-26 見直し）: 計測・ユーザーテストはしていない。家族で使う規模では行わない
+- [x] ~~SC-004: 学習統計の理解しやすさ（ユーザーテスト）~~ → **やめる**（2026-10-26 見直し）: 計測・ユーザーテストはしていない。家族で使う規模では行わない
+- [x] SC-005: 削除後データ残存なし → **済み**（2026-10-26 見直し）: 削除後にログインできないことは `ChildAccountSecurityTests` で確認。学習者のデータが消えることは、テストは無くコード（`ChildAccountService` の削除処理）で確認
+- [x] SC-006: 停止中ログインエラーメッセージ明確 → **済み**（2026-10-26 見直し）: 停止中はログインが 403 になることを `ChildAccountSecurityTests` で確認（画面の文言は手動確認していない）
+- [x] SC-007: PINロックアウト5分自動解除 → **済み**（2026-10-26 見直し）: PIN ロックアウト（3回失敗で5分、5分後に解除）を `ChildAccountSecurityTests` で確認
 
 ### Constitution Compliance
 
-- [ ] User-Centric Design: 子供向けカードUI、保護者向けダッシュボード
-- [ ] Data Privacy: PINハッシュ化、データ最小化
-- [ ] Test-Driven: 統合テスト全パス
-- [ ] Specification-First: 実装がspec.mdに準拠
+- [x] ~~User-Centric Design: 子供向けカードUI、保護者向けダッシュボード~~ → **やめる**（2026-10-26 見直し）: チェック項目として検証できる形になっていない
+- [x] Data Privacy: PINハッシュ化、データ最小化 → **済み**（2026-10-26 見直し）: PIN はハッシュ化して保存（`ChildAccountService`）
+- [x] Test-Driven: 統合テスト全パス → **済み**（2026-10-26 見直し）: 結合テストはすべて通っている（CI）
+- [x] ~~Specification-First: 実装がspec.mdに準拠~~ → **やめる**（2026-10-26 見直し）: チェック項目として検証できる形になっていない
 
 ---
 
