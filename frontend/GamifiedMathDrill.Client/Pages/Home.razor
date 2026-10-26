@@ -65,29 +65,23 @@
                 </MudItem>
             }
 
+            @* 連続正解は計算の種類ごとに分かれたため、種類のボタンに出す（014） *@
             <MudGrid Class="mb-6">
-                <MudItem xs="6" md="3">
+                <MudItem xs="4">
                     <MudPaper Class="pa-4 text-center" Elevation="1">
                         <MudIcon Icon="@Icons.Material.Filled.Stars" Color="Color.Warning" Size="Size.Large" />
                         <MudText Typo="Typo.h5">@student.TotalPoints</MudText>
                         <MudText Typo="Typo.body2">ポイント</MudText>
                     </MudPaper>
                 </MudItem>
-                <MudItem xs="6" md="3">
+                <MudItem xs="4">
                     <MudPaper Class="pa-4 text-center" Elevation="1">
                         <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Info" Size="Size.Large" />
-                        <MudText Typo="Typo.h5">レベル @(student.CurrentLevelId)</MudText>
-                        <MudText Typo="Typo.body2">現在のレベル</MudText>
+                        <MudText Typo="Typo.h5">レベル @student.HighestLevel</MudText>
+                        <MudText Typo="Typo.body2">いちばん高いレベル</MudText>
                     </MudPaper>
                 </MudItem>
-                <MudItem xs="6" md="3">
-                    <MudPaper Class="pa-4 text-center" Elevation="1">
-                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
-                        <MudText Typo="Typo.h5">@student.CorrectAnswers</MudText>
-                        <MudText Typo="Typo.body2">連続正解</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="6" md="3">
+                <MudItem xs="4">
                     <MudPaper Class="pa-4 text-center" Elevation="1">
                         <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Tertiary" Size="Size.Large" />
                         <MudText Typo="Typo.h5">@student.ConsecutiveDays</MudText>
@@ -102,7 +96,8 @@
                     <MudIcon Icon="@Icons.Material.Filled.Category" Color="Color.Primary" />
                     計算のカテゴリを選んでね
                 </MudText>
-                <CategorySelector SelectedCategory="@selectedCategory" 
+                <CategorySelector SelectedCategory="@selectedCategory"
+                                 Levels="@student.Levels" 
                                  OnCategorySelected="OnCategorySelected" />
             </MudPaper>
 

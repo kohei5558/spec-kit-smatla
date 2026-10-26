@@ -460,6 +460,32 @@ components:
           description: 過去7日間のアクティビティ
           items:
             $ref: "#/components/schemas/DailyActivity"
+        levels:
+          type: array
+          description: 計算の種類ごとのレベル・回答数・正答率（すべての種類、014 で追加）
+          items:
+            $ref: "#/components/schemas/CalculationTypeStats"
+
+    CalculationTypeStats:
+      type: object
+      properties:
+        calculationType:
+          type: string
+          description: 計算の種類（Addition / Subtraction / Multiplication / Division / DivisionWithRemainder など）
+          example: "Multiplication"
+        levelNumber:
+          type: integer
+          description: この種類のレベル
+          example: 6
+        totalProblems:
+          type: integer
+          description: この種類の回答数
+          example: 40
+        accuracyRate:
+          type: number
+          format: float
+          description: この種類の正答率（%、回答が無ければ 0）
+          example: 85.0
 
     DailyActivity:
       type: object

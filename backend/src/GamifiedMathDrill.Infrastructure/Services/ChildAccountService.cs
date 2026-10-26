@@ -297,7 +297,9 @@ public class ChildAccountService : IChildAccountService
             .Where(u => u.Id == childId)
             .Select(u => u.StudentId)
             .FirstOrDefaultAsync();
-        var student = studentId == null ? null : await _context.Students.FindAsync(studentId.Value);
+        var student = studentId == null
+            ? null
+            : await _context.Students.Include(s => s.Levels).FirstOrDefaultAsync(s => s.Id == studentId.Value);
 
         if (student == null)
         {
@@ -324,7 +326,27 @@ public class ChildAccountService : IChildAccountService
             })
             .ToList();
 
-        // 回答数・正解数は学習記録から数える（Student.CorrectAnswers はレベルアップ用の連続正解数のため使わない）
+        // 計算の種類ごとのレベルと成績（014）
+        var byType = await _context.LearningRecords
+            .Where(r => r.StudentId == student.Id)
+            .GroupBy(r => r.Problem.CalculationType)
+            .Select(g => new { Type = g.Key, Total = g.Count(), Correct = g.Count(r => r.IsCorrect) })
+            .ToListAsync();
+        var levels = StudentLevelRules.AllTypes(student, await _context.Levels.ToListAsync())
+            .Select(l =>
+            {
+                var record = byType.FirstOrDefault(b => b.Type == l.Type);
+                return new CalculationTypeStats
+                {
+                    CalculationType = l.Type.ToString(),
+                    LevelNumber = l.Level.LevelNumber,
+                    TotalProblems = record?.Total ?? 0,
+                    AccuracyRate = record is { Total: > 0 } ? Math.Round((decimal)record.Correct / record.Total * 100, 1) : 0
+                };
+            })
+            .ToList();
+
+        // 回答数・正解数は学習記録から数える（連続正解数は種類ごとのレベルアップ用のため使わない）
         var answered = await _context.LearningRecords.CountAsync(r => r.StudentId == student.Id);
         var correct = await _context.LearningRecords.CountAsync(r => r.StudentId == student.Id && r.IsCorrect);
         var accuracyRate = answered > 0
@@ -340,7 +362,8 @@ public class ChildAccountService : IChildAccountService
             // 1問以上解いた日で数える。最後に学習した日はログインではなく最後に答えた日時
             ConsecutiveDays = StudyStreak.ConsecutiveDays(solvedAt, today),
             LastStudyDate = solvedAt.Count > 0 ? solvedAt.Max() : null,
-            RecentActivity = recentActivity
+            RecentActivity = recentActivity,
+            Levels = levels
         };
     }
 

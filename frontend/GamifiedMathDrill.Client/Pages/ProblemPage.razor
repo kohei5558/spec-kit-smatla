@@ -59,7 +59,7 @@
             <MudPaper Class="pa-6 mt-4 text-center" Elevation="3" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Style="font-size: 5rem;" />
                 <MudText Typo="Typo.h3" Class="mt-2" Style="color: white;">レベルアップ！</MudText>
-                <MudText Typo="Typo.h5" Style="color: white;">レベル @answerResult.NewLevel.LevelNumber になったよ！</MudText>
+                <MudText Typo="Typo.h5" Style="color: white;">@(string.IsNullOrEmpty(answerResult.LeveledUpCalculationType) ? "" : GetCategoryName(answerResult.LeveledUpCalculationType) + "が ")レベル @answerResult.NewLevel.LevelNumber になったよ！</MudText>
             </MudPaper>
         }
     }
@@ -79,13 +79,14 @@
                     <MudText Typo="Typo.body2" Color="Color.Secondary">ポイント</MudText>
                     <MudText Typo="Typo.h6">@student.TotalPoints</MudText>
                 </MudItem>
+                @* レベルと連続正解は、今の問題の種類のもの（014） *@
                 <MudItem xs="3">
                     <MudText Typo="Typo.body2" Color="Color.Secondary">レベル</MudText>
-                    <MudText Typo="Typo.h6">@student.CurrentLevelId</MudText>
+                    <MudText Typo="Typo.h6">@(CurrentTypeLevel?.LevelNumber.ToString() ?? "-")</MudText>
                 </MudItem>
                 <MudItem xs="3">
                     <MudText Typo="Typo.body2" Color="Color.Secondary">連続正解</MudText>
-                    <MudText Typo="Typo.h6">@student.CorrectAnswers</MudText>
+                    <MudText Typo="Typo.h6">@(CurrentTypeLevel?.CorrectAnswers.ToString() ?? "-")</MudText>
                 </MudItem>
                 <MudItem xs="3">
                     <MudText Typo="Typo.body2" Color="Color.Secondary">連続日数</MudText>
@@ -292,16 +293,7 @@
         };
     }
 
-    private string GetCategoryName(string calculationType)
-    {
-        return calculationType switch
-        {
-            "Addition" => "足し算",
-            "Subtraction" => "引き算",
-            "Multiplication" => "掛け算",
-            "Division" => "割り算",
-            "DivisionWithRemainder" => "あまりのあるわり算",
-            _ => "計算"
-        };
-    }
+    private StudentLevelDto? CurrentTypeLevel => student?.LevelFor(currentProblem?.CalculationTypeText);
+
+    private static string GetCategoryName(string calculationType) => CalculationTypeNames.Get(calculationType);
 }

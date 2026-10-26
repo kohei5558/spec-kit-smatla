@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/014-unit-levels`
 **Created**: 2026年10月26日
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "時こくと時間（013）などの新しい単元を、その単元のやさしい問題から始められるようにする。単元ごとに得意・苦手が分かるようにする"
 
 > 013（時こくと時間）より先に実装する。013 はこの仕組みの上に作る。

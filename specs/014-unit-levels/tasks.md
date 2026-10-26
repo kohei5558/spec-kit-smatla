@@ -4,6 +4,8 @@
 **Spec**: [spec.md](./spec.md)
 **Created**: 2026年10月26日
 
+> T001・T002 のテストは、型（`StudentLevel`）を先に作ってから書いたため、実装前に失敗することは確かめていない（T008 の保護者の画面のテストは、実装前に失敗することを確認した）。
+
 ## 設計メモ
 
 ### データ
@@ -39,22 +41,22 @@
 
 ## Phase 1: データとレベルの決まり
 
-- [ ] T001 [US1][US2] テスト: 種類ごとに連続正解数・レベルアップが独立する／ほかの種類は変わらない／種類ごとのレベルの難易度で出題される／「すべて」でも問題の種類のレベルで出題・判定される - backend/tests/GamifiedMathDrill.Tests.Integration/UnitLevelTests.cs
-- [ ] T002 [US2] テスト: 小3の子供は5種類がレベル5、新しい種類（行が無い種類）はレベル1／学年を上げると低い種類だけ上がる - 同上
-- [ ] T003 [US1][US2] `StudentLevel`・`StudentLevelRules`・`IStudentLevelRepository`、`Student` から2列を削除、`ApplicationDbContext` の設定 - backend/src/
-- [ ] T004 [US2] マイグレーション `AddStudentLevels`（SQLite・PostgreSQL、既存のレベルを5種類に写す）
-- [ ] T005 [US1] `ProblemService`（出題・回答）、`DailyChallengeService` を種類ごとのレベルにする
-- [ ] T006 [US2] 子供の作成（`ChildAccountService`・`UserSeeder`・`StudentService`）と学年変更で行を作る・上げる
-- [ ] T007 既存テストのうち `CurrentLevelId`・`Student.CorrectAnswers` を使うもの（GradeStartLevel・DailyChallenge・CategorySelection・ParentDashboard など）を種類ごとのレベルに直す
+- [x] T001 [US1][US2] テスト: 種類ごとに連続正解数・レベルアップが独立する／ほかの種類は変わらない／種類ごとのレベルの難易度で出題される／「すべて」でも問題の種類のレベルで出題・判定される - backend/tests/GamifiedMathDrill.Tests.Integration/UnitLevelTests.cs
+- [x] T002 [US2] テスト: 小3の子供は5種類がレベル5、新しい種類（行が無い種類）はレベル1／学年を上げると低い種類だけ上がる - 同上
+- [x] T003 [US1][US2] `StudentLevel`・`StudentLevelRules`・`IStudentLevelRepository`、`Student` から2列を削除、`ApplicationDbContext` の設定 - backend/src/
+- [x] T004 [US2] マイグレーション `AddStudentLevels`（SQLite・PostgreSQL、既存のレベルを5種類に写す）
+- [x] T005 [US1] `ProblemService`（出題・回答）、`DailyChallengeService` を種類ごとのレベルにする
+- [x] T006 [US2] 子供の作成（`ChildAccountService`・`UserSeeder`・`StudentService`）と学年変更で行を作る・上げる
+- [x] T007 既存テストのうち `CurrentLevelId`・`Student.CorrectAnswers` を使うもの（GradeStartLevel・DailyChallenge・CategorySelection・ParentDashboard など）を種類ごとのレベルに直す
 
 ## Phase 2: API と画面
 
-- [ ] T008 [US3] テスト: 学習者の API が全種類のレベル・連続正解数・いちばん高いレベルを返す／回答結果に上がった種類が入る／保護者の子供の詳細に種類ごとのレベルと正答率が入る
-- [ ] T009 [US3] `StudentDto`・`AnswerResultDto`・`ChildLearningStatsDto`、005 の contracts に追記
-- [ ] T010 [US3] ホーム（いちばん高いレベル、種類のボタンにレベルと「あと○問」）、問題画面（今の種類のレベルと連続正解数、演出に種類の名前）、保護者の子供の詳細（種類ごとの表） - frontend/
+- [x] T008 [US3] テスト: 学習者の API が全種類のレベル・連続正解数・いちばん高いレベルを返す／回答結果に上がった種類が入る／保護者の子供の詳細に種類ごとのレベルと正答率が入る
+- [x] T009 [US3] `StudentDto`・`AnswerResultDto`・`ChildLearningStatsDto`、005 の contracts に追記
+- [x] T010 [US3] ホーム（いちばん高いレベル、種類のボタンにレベルと「あと○問」）、問題画面（今の種類のレベルと連続正解数、演出に種類の名前）、保護者の子供の詳細（種類ごとの表） - frontend/
 
 ## Phase 3: 仕上げ
 
-- [ ] T011 移行の確認: 今の main で作った SQLite・PostgreSQL の DB（学習記録・レベルあり）に新しい版で起動し、5種類に今のレベルが写ること、出題される難易度が変わらないこと
-- [ ] T012 画面の確認（Playwright）: 種類ごとにレベルを変えた子供でホーム・問題画面・レベルアップ・保護者の子供の詳細
-- [ ] T013 README・CLAUDE.md（`Student.CorrectAnswers` の記述など）を更新
+- [x] T011 移行の確認: 今の main で作った SQLite・PostgreSQL の DB（学習記録・レベルあり）に新しい版で起動し、5種類に今のレベルが写ること、出題される難易度が変わらないこと
+- [x] T012 画面の確認（Playwright）: 種類ごとにレベルを変えた子供でホーム・問題画面・レベルアップ・保護者の子供の詳細
+- [x] T013 README・CLAUDE.md（`Student.CorrectAnswers` の記述など）を更新

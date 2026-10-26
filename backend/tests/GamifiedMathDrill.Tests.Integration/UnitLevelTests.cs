@@ -127,6 +127,33 @@ public class UnitLevelTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(5, levels["Addition"].GetProperty("levelNumber").GetInt32()); // 小3
     }
 
+    [Fact]
+    public async Task ParentChildDetail_ShowsEachTypesLevelAndAccuracy()
+    {
+        var client = _factory.CreateClient();
+        var family = await FamilyTestHelper.CreateFamilyAsync(client, "保護者の種類別レベル");
+        await StudentLevelTestHelper.SetAsync(_factory.Services, family.StudentId, 8, 0, CalculationType.Multiplication);
+        // かけ算を3問（2問正解）、わり算を1問（不正解）
+        await AnswerAsync(client, family, CalculationType.Multiplication, correct: true);
+        await AnswerAsync(client, family, CalculationType.Multiplication, correct: true);
+        await AnswerAsync(client, family, CalculationType.Multiplication, correct: false);
+        await AnswerAsync(client, family, CalculationType.Division, correct: false);
+
+        var response = await FamilyTestHelper.SendAsync(client, HttpMethod.Get, $"/api/child-accounts/{family.ChildId}/detail", family.ParentJwt);
+        response.EnsureSuccessStatusCode();
+        var levels = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("learningStats").GetProperty("levels")
+            .EnumerateArray().ToDictionary(l => l.GetProperty("calculationType").GetString()!);
+
+        Assert.Equal(Enum.GetNames<CalculationType>().OrderBy(n => n), levels.Keys.OrderBy(n => n));
+        Assert.Equal(8, levels["Multiplication"].GetProperty("levelNumber").GetInt32());
+        Assert.Equal(3, levels["Multiplication"].GetProperty("totalProblems").GetInt32());
+        Assert.Equal(66.7m, levels["Multiplication"].GetProperty("accuracyRate").GetDecimal());
+        Assert.Equal(1, levels["Division"].GetProperty("totalProblems").GetInt32());
+        Assert.Equal(0m, levels["Division"].GetProperty("accuracyRate").GetDecimal());
+        Assert.Equal(0, levels["Addition"].GetProperty("totalProblems").GetInt32());
+        Assert.Equal(5, levels["Addition"].GetProperty("levelNumber").GetInt32());
+    }
+
     private Task<(int, int)?> GetAsync(int studentId, CalculationType type) =>
         StudentLevelTestHelper.GetAsync(_factory.Services, studentId, type);
 
