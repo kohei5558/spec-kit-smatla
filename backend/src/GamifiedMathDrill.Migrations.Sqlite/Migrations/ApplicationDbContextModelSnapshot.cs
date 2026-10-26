@@ -288,8 +288,17 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("AnswerFormat")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
                     b.Property<int>("CalculationType")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ClockTimes")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("CorrectAnswer")
                         .HasColumnType("INTEGER");

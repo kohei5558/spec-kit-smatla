@@ -92,6 +92,7 @@ public class LearningRecordsController : ControllerBase
                 StudentAnswer = r.StudentAnswer,
                 CorrectRemainder = r.Problem.CorrectRemainder,
                 StudentRemainder = r.StudentRemainder,
+                AnswerFormat = r.Problem.AnswerFormat.ToString(),
                 IsCorrect = r.IsCorrect,
                 PointsEarned = r.PointsEarned,
                 TimeTakenSeconds = r.TimeTakenSeconds,
@@ -225,6 +226,8 @@ public class LearningRecordDto
     /// <summary>あまりのあるわり算のときだけ値が入る</summary>
     public int? CorrectRemainder { get; set; }
     public int? StudentRemainder { get; set; }
+    /// <summary>答えの形（一覧で「4時5分」のように表示するため、013）</summary>
+    public string AnswerFormat { get; set; } = "Number";
     public bool IsCorrect { get; set; }
     public int PointsEarned { get; set; }
     public int TimeTakenSeconds { get; set; }

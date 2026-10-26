@@ -33,6 +33,12 @@ public static class ProblemGenerator
                 problems.AddRange(GenerateSet(type, difficulty, random));
             }
         }
+
+        // 時こくと時間（013）。上の種類のあとに作るので、上の問題セットは変わらない
+        for (var difficulty = 1; difficulty <= 10; difficulty++)
+        {
+            problems.AddRange(TimeProblemGenerator.Generate(difficulty, random));
+        }
         return problems;
     }
 
@@ -59,6 +65,7 @@ public static class ProblemGenerator
                     _ => a / b
                 },
                 CorrectRemainder = type == CalculationType.DivisionWithRemainder ? a % b : null,
+                AnswerFormat = type == CalculationType.DivisionWithRemainder ? AnswerFormat.QuotientRemainder : AnswerFormat.Number,
                 CalculationType = type,
                 DifficultyLevel = difficulty
             });

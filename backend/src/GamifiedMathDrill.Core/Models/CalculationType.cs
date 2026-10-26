@@ -28,5 +28,10 @@ public enum CalculationType
     /// <summary>
     /// あまりのあるわり算（答えは商とあまり）
     /// </summary>
-    DivisionWithRemainder = 4
+    DivisionWithRemainder = 4,
+
+    /// <summary>
+    /// 時こくと時間（013。答えの形は問題ごとに AnswerFormat で決まる）
+    /// </summary>
+    Time = 5
 }

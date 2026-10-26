@@ -94,7 +94,9 @@ public class ProblemsController : ControllerBase
                 Question = problem.Question,
                 DifficultyLevel = problem.DifficultyLevel,
                 CalculationTypeText = problem.CalculationType.ToString(),
-                HasRemainder = problem.CalculationType == Core.Models.CalculationType.DivisionWithRemainder,
+                HasRemainder = problem.CorrectRemainder != null,
+                AnswerFormat = problem.AnswerFormat.ToString(),
+                ClockTimes = problem.ClockTimes?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
                 TodayAnsweredCount = await _problemService.CountTodaysAnswersAsync(studentId)
             };
 
@@ -208,6 +210,7 @@ public class ProblemsController : ControllerBase
             {
                 result.CorrectAnswer = problem.CorrectAnswer;
                 result.CorrectRemainder = problem.CorrectRemainder;
+                result.AnswerFormat = problem.AnswerFormat.ToString();
             }
 
             return Ok(ApiResponse<AnswerResultDto>.SuccessResponse(result));
