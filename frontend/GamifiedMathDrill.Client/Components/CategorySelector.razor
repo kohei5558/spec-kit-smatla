@@ -1,4 +1,5 @@
 @using MudBlazor
+@using GamifiedMathDrill.Client.Models
 
 <MudGrid Spacing="3" Justify="Justify.Center">
     @foreach (var category in Categories)
@@ -13,6 +14,13 @@
                              Color="@(IsSelected(category.Value) ? Color.Primary : Color.Default)"
                              Style="font-size: 3rem;" />
                     <MudText Typo="Typo.h5" Class="mt-4">@category.Name</MudText>
+                    @if (LevelOf(category.Value) is { } level)
+                    {
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="mt-2">レベル @level.LevelNumber</MudChip>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @(level.IsMaxLevel ? "いちばん上のレベル！" : $"あと {level.RemainingToLevelUp} 問れんぞく正解でレベルアップ")
+                        </MudText>
+                    }
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -25,6 +33,15 @@
 
     [Parameter]
     public EventCallback<string?> OnCategorySelected { get; set; }
+
+    /// <summary>
+    /// 計算の種類ごとのレベル（014）。種類のボタンにレベルとレベルアップまでの問題数を出す
+    /// </summary>
+    [Parameter]
+    public List<StudentLevelDto>? Levels { get; set; }
+
+    private StudentLevelDto? LevelOf(string? calculationType) =>
+        calculationType == null ? null : Levels?.FirstOrDefault(l => l.CalculationType == calculationType);
 
     private class CategoryInfo
     {

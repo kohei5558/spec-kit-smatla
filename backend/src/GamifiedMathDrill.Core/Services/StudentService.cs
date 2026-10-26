@@ -24,18 +24,18 @@ public class StudentService : IStudentService
         // デフォルト値の設定
         student.TotalPoints = 0;
         student.ConsecutiveDays = 0;
-        student.CorrectAnswers = 0;
         student.TotalProblems = 0;
         student.LastLoginAt = DateTime.UtcNow;
         student.CreatedAt = DateTime.UtcNow;
 
-        // レベル1を設定
+        // 学年が分からないため、種類ごとのレベルはすべてレベル1から（014）。
+        // CreateForGrade(1) が作る行はすべてレベル ID 1 を指すので、そのレベルが DB にあることを先に確かめる
         var level1 = await _levelRepository.GetByIdAsync(1);
         if (level1 == null)
         {
             throw new InvalidOperationException("Level 1 not found in database. Please run database seeding.");
         }
-        student.CurrentLevelId = level1.Id;
+        student.Levels = StudentLevelRules.CreateForGrade(1);
 
         return await _studentRepository.AddAsync(student);
     }
@@ -69,26 +69,6 @@ public class StudentService : IStudentService
         }
 
         student.TotalPoints += pointsToAdd;
-
-        await _studentRepository.UpdateAsync(student);
-        return student;
-    }
-
-    public async Task<Student> UpdateLevelAsync(int id, int newLevelId)
-    {
-        var student = await _studentRepository.GetByIdAsync(id);
-        if (student == null)
-        {
-            throw new KeyNotFoundException($"Student with ID {id} not found.");
-        }
-
-        var newLevel = await _levelRepository.GetByIdAsync(newLevelId);
-        if (newLevel == null)
-        {
-            throw new KeyNotFoundException($"Level with ID {newLevelId} not found.");
-        }
-
-        student.CurrentLevelId = newLevelId;
 
         await _studentRepository.UpdateAsync(student);
         return student;

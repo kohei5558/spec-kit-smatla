@@ -456,18 +456,8 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(0);
 
-                    b.Property<int>("CorrectAnswers")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(0);
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("CurrentLevelId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(1);
 
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("TEXT");
@@ -495,11 +485,39 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CurrentLevelId");
-
                     b.HasIndex("LastLoginAt");
 
                     b.ToTable("Students");
+                });
+
+            modelBuilder.Entity("GamifiedMathDrill.Core.Models.StudentLevel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CalculationType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CorrectAnswers")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("LevelId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LevelId");
+
+                    b.HasIndex("StudentId", "CalculationType")
+                        .IsUnique();
+
+                    b.ToTable("StudentLevels");
                 });
 
             modelBuilder.Entity("GamifiedMathDrill.Infrastructure.Identity.ApplicationUser", b =>
@@ -816,15 +834,23 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("GamifiedMathDrill.Core.Models.Student", b =>
+            modelBuilder.Entity("GamifiedMathDrill.Core.Models.StudentLevel", b =>
                 {
-                    b.HasOne("GamifiedMathDrill.Core.Models.Level", "CurrentLevel")
-                        .WithMany("Students")
-                        .HasForeignKey("CurrentLevelId")
+                    b.HasOne("GamifiedMathDrill.Core.Models.Level", "Level")
+                        .WithMany("StudentLevels")
+                        .HasForeignKey("LevelId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("CurrentLevel");
+                    b.HasOne("GamifiedMathDrill.Core.Models.Student", "Student")
+                        .WithMany("Levels")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Level");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -880,7 +906,7 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
 
             modelBuilder.Entity("GamifiedMathDrill.Core.Models.Level", b =>
                 {
-                    b.Navigation("Students");
+                    b.Navigation("StudentLevels");
                 });
 
             modelBuilder.Entity("GamifiedMathDrill.Core.Models.Problem", b =>
@@ -900,6 +926,8 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
                     b.Navigation("AcquiredRewards");
 
                     b.Navigation("LearningRecords");
+
+                    b.Navigation("Levels");
                 });
 #pragma warning restore 612, 618
         }

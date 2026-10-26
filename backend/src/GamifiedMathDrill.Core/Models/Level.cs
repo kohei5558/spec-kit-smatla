@@ -37,5 +37,5 @@ public class Level
     public int MaxDifficulty { get; set; }
 
     // Navigation properties
-    public ICollection<Student> Students { get; set; } = new List<Student>();
+    public ICollection<StudentLevel> StudentLevels { get; set; } = new List<StudentLevel>();
 }

@@ -118,8 +118,6 @@ public class ChildAuthController : ControllerBase
             {
                 Name = child.Name,
                 TotalPoints = 0,
-                CurrentLevelId = 1,
-                CorrectAnswers = 0,
                 ConsecutiveDays = 0,
                 LastLoginAt = DateTime.UtcNow
             };

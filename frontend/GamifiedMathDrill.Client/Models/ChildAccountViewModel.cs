@@ -153,6 +153,22 @@ public class ChildLearningStatsViewModel
     /// 過去7日間のアクティビティ（API の recentActivity。名前は specs/005 の contracts に合わせる）
     /// </summary>
     public List<DailyActivityDto>? RecentActivity { get; set; }
+
+    /// <summary>
+    /// 計算の種類ごとのレベル・回答数・正答率（API の levels、014）
+    /// </summary>
+    public List<CalculationTypeStatsDto>? Levels { get; set; }
+}
+
+/// <summary>
+/// 計算の種類ごとのレベルと成績（014）
+/// </summary>
+public class CalculationTypeStatsDto
+{
+    public string CalculationType { get; set; } = string.Empty;
+    public int LevelNumber { get; set; }
+    public int TotalProblems { get; set; }
+    public decimal AccuracyRate { get; set; }
 }
 
 /// <summary>

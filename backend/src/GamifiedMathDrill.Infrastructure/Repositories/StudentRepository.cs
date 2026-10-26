@@ -17,7 +17,7 @@ public class StudentRepository : Repository<Student>, IStudentRepository
     public async Task<Student?> GetByIdWithDetailsAsync(int id)
     {
         return await _dbSet
-            .Include(s => s.CurrentLevel)
+            .Include(s => s.Levels).ThenInclude(l => l.Level)
             .Include(s => s.LearningRecords)
             .Include(s => s.AcquiredRewards)
             .FirstOrDefaultAsync(s => s.Id == id);

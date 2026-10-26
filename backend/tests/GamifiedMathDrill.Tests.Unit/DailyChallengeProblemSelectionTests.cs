@@ -36,6 +36,32 @@ public class DailyChallengeProblemSelectionTests
         }
     }
 
+    /// <summary>
+    /// 種類を1つ選び、その種類のレベルの最大難易度から作る（014）
+    /// </summary>
+    [Fact]
+    public async Task Challenge_UsesMaxDifficultyOfChosenTypesLevel()
+    {
+        var problems = new List<Problem>
+        {
+            new() { Id = 10, CalculationType = CalculationType.Addition, DifficultyLevel = 8 },
+            new() { Id = 11, CalculationType = CalculationType.Addition, DifficultyLevel = 6 },
+            new() { Id = 12, CalculationType = CalculationType.Division, DifficultyLevel = 6 },
+            new() { Id = 13, CalculationType = CalculationType.Division, DifficultyLevel = 8 }
+        };
+        var levels = new Dictionary<CalculationType, int> { [CalculationType.Addition] = 7, [CalculationType.Division] = 5 };
+
+        var selected = new HashSet<int>();
+        for (var day = 0; day < 40; day++)
+        {
+            var (service, _) = CreateService(problems, new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero).AddDays(day), levels);
+            selected.Add((await service.GetOrCreateTodaysChallengeAsync(StudentId))!.ProblemId);
+        }
+
+        // たし算はレベル7の最大難易度8、わり算はレベル5の最大難易度6。かけ算・ひき算は問題が無いのでほかの種類になる
+        Assert.Equal(new HashSet<int> { 10, 12 }, selected);
+    }
+
     [Theory]
     [InlineData("2026-10-10T14:59:00Z", "2026-10-10")] // 日本時間 10/10 23:59
     [InlineData("2026-10-10T15:00:00Z", "2026-10-11")] // 日本時間 10/11 0:00
@@ -60,7 +86,7 @@ public class DailyChallengeProblemSelectionTests
         repository.Verify(r => r.AddOrGetExistingAsync(It.IsAny<DailyChallenge>()), Times.Never);
     }
 
-    private static (DailyChallengeService, Mock<IDailyChallengeRepository>) CreateService(List<Problem> problems, DateTimeOffset now)
+    private static (DailyChallengeService, Mock<IDailyChallengeRepository>) CreateService(List<Problem> problems, DateTimeOffset now, Dictionary<CalculationType, int>? levels = null)
     {
         var problemRepository = new Mock<IProblemRepository>();
         problemRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(problems);
@@ -68,9 +94,19 @@ public class DailyChallengeProblemSelectionTests
         challengeRepository.Setup(r => r.GetByStudentAndDateAsync(It.IsAny<int>(), It.IsAny<DateOnly>())).ReturnsAsync((DailyChallenge?)null);
         challengeRepository.Setup(r => r.AddOrGetExistingAsync(It.IsAny<DailyChallenge>())).ReturnsAsync((DailyChallenge c) => c);
         var studentRepository = new Mock<IStudentRepository>();
-        studentRepository.Setup(r => r.GetByIdAsync(StudentId)).ReturnsAsync(new Student { Id = StudentId, CurrentLevelId = 5 });
+        // 指定が無ければ、すべての種類がレベル5（最大難易度6）
+        var student = new Student
+        {
+            Id = StudentId,
+            Levels = (levels ?? StudentLevelRules.GradeLeveledTypes.ToDictionary(t => t, _ => 5))
+                .Select(l => new StudentLevel { StudentId = StudentId, CalculationType = l.Key, LevelId = l.Value }).ToList()
+        };
+        studentRepository.Setup(r => r.GetByIdWithDetailsAsync(StudentId)).ReturnsAsync(student);
         var levelRepository = new Mock<ILevelRepository>();
-        levelRepository.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(new Level { Id = 5, LevelNumber = 5, MinDifficulty = 5, MaxDifficulty = 6 });
+        foreach (var level in Enumerable.Range(1, 10))
+        {
+            levelRepository.Setup(r => r.GetByIdAsync(level)).ReturnsAsync(new Level { Id = level, LevelNumber = level, MinDifficulty = level, MaxDifficulty = Math.Min(level + 1, 10) });
+        }
 
         var service = new DailyChallengeService(
             challengeRepository.Object,
