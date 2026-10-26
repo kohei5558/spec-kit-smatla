@@ -117,7 +117,7 @@ public class ProblemService : IProblemService
             IsCorrect = isCorrect,
             PointsEarned = pointsEarned,
             TimeTakenSeconds = 0, // TODO: 実際の所要時間を計測
-            SolvedAt = DateTime.UtcNow
+            SolvedAt = _timeProvider.GetUtcNow().UtcDateTime
         };
 
         await _learningRecordRepository.AddAsync(learningRecord);
