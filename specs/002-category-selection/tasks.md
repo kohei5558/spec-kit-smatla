@@ -1,5 +1,7 @@
 # Tasks: 問題カテゴリ選択機能
 
+> **見直し（2026-10-26）**: 残っていた項目を「済み（別の方法で確認済み）」「やめる（理由つき・取り消し線）」に仕分けた。
+
 > **棚卸し（2026-10-08）**: コードと突き合わせてチェックを更新。
 > - T012/T037/T038 は `CategorySelectionTests.cs`、T044/T045 は `CategoryPerformanceTests.cs` として実装済み（ファイル名は計画と異なる）
 > - T010/T011（単体テスト）は未作成。同等の振る舞いは結合テストで検証済み
@@ -55,8 +57,8 @@
 
 ### Backend - 単体テスト（Foundational）
 
-- [ ] T010 [P] ProblemService のカテゴリフィルタリングロジックの単体テストを作成（backend/tests/GamifiedMathDrill.Tests.Unit/CategoryFilteringTests.cs）
-- [ ] T011 [P] カテゴリ null（すべて）の動作をテスト（backend/tests/GamifiedMathDrill.Tests.Unit/CategoryFilteringTests.cs）
+- [x] T010 [P] ProblemService のカテゴリフィルタリングロジックの単体テストを作成（backend/tests/GamifiedMathDrill.Tests.Unit/CategoryFilteringTests.cs） → **済み**（2026-10-26 見直し）: 単体テストではなく結合テスト（`CategorySelectionTests`）で同じ振る舞いを確認している
+- [x] T011 [P] カテゴリ null（すべて）の動作をテスト（backend/tests/GamifiedMathDrill.Tests.Unit/CategoryFilteringTests.cs） → **済み**（2026-10-26 見直し）: 結合テスト（`CategorySelectionTests` の GetNextProblem_WithoutCategory 等）で確認している
 
 ### Backend - 統合テスト（Foundational）
 
@@ -92,8 +94,8 @@
 
 ### Frontend - E2E テスト（User Story 1）
 
-- [ ] T022 [US1] カテゴリ選択フローの E2E テストを作成（足し算を選択 → 問題画面遷移 → 足し算の問題のみ出題）（frontend/tests/E2E/CategorySelectionFlowTests.cs）
-- [ ] T023 [US1] カテゴリ未選択時のバリデーションの E2E テスト（frontend/tests/E2E/CategorySelectionFlowTests.cs）
+- [x] ~~T022 [US1] カテゴリ選択フローの E2E テストを作成（足し算を選択 → 問題画面遷移 → 足し算の問題のみ出題）（frontend/tests/E2E/CategorySelectionFlowTests.cs）~~ → **やめる**（2026-10-26 見直し）: 画面のテストの仕組み（frontend/tests）が無く、個別のテスト名を並べても今の画面と合わない。主要な画面の流れの自動テストを別の課題として立てる
+- [x] ~~T023 [US1] カテゴリ未選択時のバリデーションの E2E テスト（frontend/tests/E2E/CategorySelectionFlowTests.cs）~~ → **やめる**（2026-10-26 見直し）: 画面のテストの仕組み（frontend/tests）が無く、個別のテスト名を並べても今の画面と合わない。主要な画面の流れの自動テストを別の課題として立てる
 
 **Checkpoint**: ユーザーストーリー 1 が完全に機能し、独立してテスト可能
 
@@ -117,9 +119,9 @@
 
 ### Frontend - E2E テスト（User Story 2）
 
-- [ ] T028 [US2] 5 問連続で同じカテゴリが出題されることを確認する E2E テスト（frontend/tests/E2E/CategoryPersistenceTests.cs）
-- [ ] T029 [US2] ページ再読み込み後もカテゴリが保持されることを確認する E2E テスト（frontend/tests/E2E/CategoryPersistenceTests.cs）
-- [ ] T030 [US2] ホーム画面に戻ってカテゴリを変更できることを確認する E2E テスト（frontend/tests/E2E/CategoryPersistenceTests.cs）
+- [x] ~~T028 [US2] 5 問連続で同じカテゴリが出題されることを確認する E2E テスト（frontend/tests/E2E/CategoryPersistenceTests.cs）~~ → **やめる**（2026-10-26 見直し）: 画面のテストの仕組み（frontend/tests）が無く、個別のテスト名を並べても今の画面と合わない。主要な画面の流れの自動テストを別の課題として立てる
+- [x] ~~T029 [US2] ページ再読み込み後もカテゴリが保持されることを確認する E2E テスト（frontend/tests/E2E/CategoryPersistenceTests.cs）~~ → **やめる**（2026-10-26 見直し）: 画面のテストの仕組み（frontend/tests）が無く、個別のテスト名を並べても今の画面と合わない。主要な画面の流れの自動テストを別の課題として立てる
+- [x] ~~T030 [US2] ホーム画面に戻ってカテゴリを変更できることを確認する E2E テスト（frontend/tests/E2E/CategoryPersistenceTests.cs）~~ → **やめる**（2026-10-26 見直し）: 画面のテストの仕組み（frontend/tests）が無く、個別のテスト名を並べても今の画面と合わない。主要な画面の流れの自動テストを別の課題として立てる
 
 **Checkpoint**: ユーザーストーリー 1 と 2 が両方とも独立して動作
 
@@ -143,8 +145,8 @@
 
 ### Frontend - E2E テスト（User Story 3）
 
-- [ ] T035 [US3] 「すべて」を選択して 10 問解き、複数の異なるカテゴリが含まれることを確認する E2E テスト（frontend/tests/E2E/AllCategoriesTests.cs）
-- [ ] T036 [US3] 各問題でカテゴリ名とアイコンが表示されることを確認する E2E テスト（frontend/tests/E2E/AllCategoriesTests.cs）
+- [x] ~~T035 [US3] 「すべて」を選択して 10 問解き、複数の異なるカテゴリが含まれることを確認する E2E テスト（frontend/tests/E2E/AllCategoriesTests.cs）~~ → **やめる**（2026-10-26 見直し）: 画面のテストの仕組み（frontend/tests）が無く、個別のテスト名を並べても今の画面と合わない。主要な画面の流れの自動テストを別の課題として立てる
+- [x] ~~T036 [US3] 各問題でカテゴリ名とアイコンが表示されることを確認する E2E テスト（frontend/tests/E2E/AllCategoriesTests.cs）~~ → **やめる**（2026-10-26 見直し）: 画面のテストの仕組み（frontend/tests）が無く、個別のテスト名を並べても今の画面と合わない。主要な画面の流れの自動テストを別の課題として立てる
 
 **Checkpoint**: ユーザーストーリー 1、2、3 がすべて独立して機能
 
@@ -166,11 +168,11 @@
 - [x] T039 [US4] ResultsPage.razor にカテゴリ別統計セクションを追加（frontend/GamifiedMathDrill.Client/Pages/ResultsPage.razor）
 - [x] T040 [US4] 各カテゴリの正答率と取り組み回数を並列で取得（5 回の API 呼び出し：4 カテゴリ + すべて）
 - [x] T041 [US4] カテゴリ別統計を MudDataGrid または MudSimpleTable で表形式表示
-- [ ] T042 [US4] カテゴリ別統計を MudChart でグラフ形式表示（オプション：棒グラフまたは円グラフ）
+- [x] ~~T042 [US4] カテゴリ別統計を MudChart でグラフ形式表示（オプション：棒グラフまたは円グラフ）~~ → **やめる**（2026-10-26 見直し）: 任意の項目。カテゴリ別の統計は表（T041）で見られる
 
 ### Frontend - E2E テスト（User Story 4）
 
-- [ ] T043 [US4] 複数カテゴリで問題を解いた後、結果画面でカテゴリ別統計が表示されることを確認する E2E テスト（frontend/tests/E2E/CategoryStatisticsTests.cs）
+- [x] ~~T043 [US4] 複数カテゴリで問題を解いた後、結果画面でカテゴリ別統計が表示されることを確認する E2E テスト（frontend/tests/E2E/CategoryStatisticsTests.cs）~~ → **やめる**（2026-10-26 見直し）: 画面のテストの仕組み（frontend/tests）が無く、個別のテスト名を並べても今の画面と合わない。主要な画面の流れの自動テストを別の課題として立てる
 
 **Checkpoint**: すべてのユーザーストーリーが独立して機能
 
@@ -193,7 +195,7 @@
 ### ドキュメント更新
 
 - [x] T048 [P] README.md にカテゴリ選択機能の説明を追加（repository root）
-- [ ] T049 [P] API ドキュメント（Swagger/OpenAPI）を更新し、category パラメータを記載
+- [x] ~~T049 [P] API ドキュメント（Swagger/OpenAPI）を更新し、category パラメータを記載~~ → **やめる**（2026-10-26 見直し）: Swagger は自動生成で category パラメータも表示される。説明文（XML コメント）の反映は家族で使う規模では不要
 
 ### 最終検証
 
