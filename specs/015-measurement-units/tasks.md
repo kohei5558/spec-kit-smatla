@@ -9,7 +9,7 @@
 - `CalculationType.Measurement = 6` を末尾に追加（014 により新しい種類はレベル1から。デイリーチャレンジは四則だけなので対象外のまま）
 - 答えの形 `AnswerFormat.Units = 7`（欄の単位を問題ごとに持つ形）を追加し、欄の単位を `Problem.AnswerUnits`（"mm"、2つなら "km m"）に持つ。2つ目の答えは 013 と同じく `CorrectRemainder` / `StudentRemainder`
 - マイグレーション `AddMeasurementProblems`（SQLite・PostgreSQL）: `AnswerUnits` を追加。`ProblemSynchronizer` は `AnswerUnits` も合わせる
-- `MeasurementProblemGenerator`: 種類リストの末尾（時こくのあと）で作る。単位の組は 10倍・100倍（cm-mm、m-cm、L-dL、dL-mL）と 1000倍（km-m、kg-g、t-kg、L-mL）。1000倍の組の小さい単位は10きざみ（1250m、3050g など）
+- `MeasurementProblemGenerator`: 種類リストの末尾（時こくのあと）で作る。単位の組は 10倍・100倍（cm-mm、m-cm、L-dL）と 1000倍（km-m、kg-g、t-kg、L-mL）。dL-mL は出さず、L-dL はなおし方（難易度1〜3）だけ。1000倍の組の小さい単位は10きざみ（1250m、3050g など）
   - 問題文: 「3cmは 何mm？」「4cm5mmは 何mm？」「45mmは 何cm何mm？」「1km300m + 400mは 何km何m？」。0 の部分は書かない（「2km」）
 - API: 問題・回答結果・学習記録に `answerUnits` を足す
 - 画面: `AnswerText` に単位の形を足し（「1km250m」「3050g」、小さい単位が 0 なら「2km」）、`ProblemDisplay` の欄の単位、種類の名前・アイコン・ボタン・学習結果のタブ

@@ -12,10 +12,10 @@ public static class MeasurementProblemGenerator
 
     private record UnitPair(string Big, string Small, int Factor);
 
-    // 小2で習う 10倍・100倍の組
+    // 小2で習う 10倍・100倍の組。dL と mL の組は、大人になってもほぼ使わないため出さない
     private static readonly UnitPair[] Tens =
     {
-        new("cm", "mm", 10), new("m", "cm", 100), new("L", "dL", 10), new("dL", "mL", 100)
+        new("cm", "mm", 10), new("m", "cm", 100), new("L", "dL", 10)
     };
 
     // 小3で習う 1000倍の組（小さい単位は10きざみにする）
@@ -24,7 +24,8 @@ public static class MeasurementProblemGenerator
         new("km", "m", 1000), new("kg", "g", 1000), new("t", "kg", 1000), new("L", "mL", 1000)
     };
 
-    private static readonly UnitPair[] All = Tens.Concat(Thousands).ToArray();
+    // たし算・ひき算に使う組。dL はなおし方（難易度1〜3）だけにし、かさは L と mL だけ
+    private static readonly UnitPair[] AddSubtractPairs = Tens.Where(u => u.Small != "dL").Concat(Thousands).ToArray();
 
     public static List<Problem> Generate(int difficulty, Random random)
     {
@@ -80,7 +81,7 @@ public static class MeasurementProblemGenerator
             case 8:
             case 9:
             case 10:
-                return AddOrSubtract(d, Pick(All), r);
+                return AddOrSubtract(d, Pick(AddSubtractPairs), r);
             default:
                 return null;
         }

@@ -15,9 +15,10 @@ public class MeasurementProblemGeneratorTests
         ProblemGenerator.GenerateAll().Where(p => p.CalculationType == CalculationType.Measurement).ToList();
 
     // （大きい単位, 小さい単位）→ 倍率
+    // dL と mL の組は使わない（大人になってもほぼ使わないため）。L と dL はなおし方（難易度1〜3）だけ
     private static readonly Dictionary<(string Big, string Small), int> Tens = new()
     {
-        [("cm", "mm")] = 10, [("m", "cm")] = 100, [("L", "dL")] = 10, [("dL", "mL")] = 100
+        [("cm", "mm")] = 10, [("m", "cm")] = 100, [("L", "dL")] = 10
     };
     private static readonly Dictionary<(string Big, string Small), int> Thousands = new()
     {
@@ -37,7 +38,8 @@ public class MeasurementProblemGeneratorTests
         for (var d = 1; d <= 10; d++)
         {
             var set = Problems.Where(p => p.DifficultyLevel == d).ToList();
-            Assert.Equal(ProblemGenerator.ProblemsPerSet, set.Count);
+            // 難易度1（3つの組 × 1〜9）は、ありうる問題が27問だけ
+            Assert.Equal(d == 1 ? 27 : ProblemGenerator.ProblemsPerSet, set.Count);
             Assert.Equal(set.Count, set.Select(p => p.Question).Distinct().Count());
         }
     }
@@ -83,6 +85,7 @@ public class MeasurementProblemGeneratorTests
             Assert.InRange(d, 7, 10);
             var (big, small) = (a.Groups[4].Value, a.Groups[5].Value);
             var f = Factor(big, small, d);
+            Assert.NotEqual(("L", "dL"), (big, small)); // たし算・ひき算のかさは L と mL だけ
             var (x1, x2) = Parts(a.Groups[1].Value, big, small);
             var (y1, y2) = Parts(a.Groups[3].Value, big, small);
             var plus = a.Groups[2].Value == "+";
