@@ -52,7 +52,9 @@ public class ProblemService : IProblemService
             var level = studentLevel?.Level ?? await _levelRepository.GetByIdAsync(studentLevel?.LevelId ?? 1);
             var difficultyLevel = ChooseDifficulty(level, studentLevel?.CorrectAnswers ?? 0);
 
-            var problem = await _problemRepository.GetRandomProblemAsync(difficultyLevel, type, excludeRecentIds);
+            // 最近出た問題は除く。ただし問題が少ない難易度（時こくの難易度1は3問）で除くと何も無くなるときは、最近の問題でも出す
+            var problem = await _problemRepository.GetRandomProblemAsync(difficultyLevel, type, excludeRecentIds)
+                ?? await _problemRepository.GetRandomProblemAsync(difficultyLevel, type);
             if (problem != null)
             {
                 return problem;

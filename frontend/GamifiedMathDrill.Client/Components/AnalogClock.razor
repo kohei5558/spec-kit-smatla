@@ -1,0 +1,45 @@
+@* アナログ時計（013）。Time は "3:40" の形。短針は分に合わせて進める *@
+<svg viewBox="-100 -100 200 200" width="@Size" height="@Size" role="img" aria-label="@Label" class="analog-clock">
+    <circle r="96" fill="white" stroke="#5c6bc0" stroke-width="6" />
+    @for (var i = 0; i < 60; i++)
+    {
+        var angle = i * 6 * Math.PI / 180;
+        var inner = i % 5 == 0 ? 80 : 86;
+        <line x1="@F(Math.Sin(angle) * inner)" y1="@F(-Math.Cos(angle) * inner)"
+              x2="@F(Math.Sin(angle) * 92)" y2="@F(-Math.Cos(angle) * 92)"
+              stroke="#455a64" stroke-width="@(i % 5 == 0 ? 3 : 1)" />
+    }
+    @for (var n = 1; n <= 12; n++)
+    {
+        var angle = n * 30 * Math.PI / 180;
+        @* Razor では <text> が特別な意味を持つため、SVG の文字は文字列で書く *@
+        @((MarkupString)$"<text x=\"{F(Math.Sin(angle) * 66)}\" y=\"{F(-Math.Cos(angle) * 66 + 7)}\" text-anchor=\"middle\" font-size=\"20\" font-weight=\"bold\" fill=\"#263238\">{n}</text>")
+    }
+    @* 短針 *@
+    <line x1="0" y1="0" x2="@F(Math.Sin(HourAngle) * 45)" y2="@F(-Math.Cos(HourAngle) * 45)"
+          stroke="#263238" stroke-width="8" stroke-linecap="round" />
+    @* 長針 *@
+    <line x1="0" y1="0" x2="@F(Math.Sin(MinuteAngle) * 74)" y2="@F(-Math.Cos(MinuteAngle) * 74)"
+          stroke="#e53935" stroke-width="5" stroke-linecap="round" />
+    <circle r="6" fill="#263238" />
+</svg>
+
+@code {
+    /// <summary>
+    /// 時刻（"3:40"）
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string Time { get; set; } = "12:00";
+
+    [Parameter]
+    public int Size { get; set; } = 160;
+
+    private int Hour => int.Parse(Time.Split(':')[0]);
+    private int Minute => int.Parse(Time.Split(':')[1]);
+    private double HourAngle => ((Hour % 12) + Minute / 60.0) * 30 * Math.PI / 180;
+    private double MinuteAngle => Minute * 6 * Math.PI / 180;
+    private string Label => Minute == 0 ? $"{Hour}時の時計" : $"{Hour}時{Minute}分の時計";
+
+    // SVG の座標は小数点を「.」で書く（日本語の環境でも「,」にならないように）
+    private static string F(double value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}

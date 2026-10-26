@@ -4,8 +4,24 @@
     <MudChip T="string" Color="Color.Info" Size="Size.Medium">むずかしさ @Problem.DifficultyLevel</MudChip>
 </div>
 
+@if (Problem.ClockTimes.Count > 0)
+{
+    @* 時こくの問題は、出てくる時刻を時計の絵でも見せる（013） *@
+    <div class="d-flex justify-center align-center flex-wrap gap-4 my-4">
+        @for (var i = 0; i < Problem.ClockTimes.Count; i++)
+        {
+            if (i > 0)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Large" Color="Color.Primary" />
+            }
+            <AnalogClock Time="@Problem.ClockTimes[i]" />
+        }
+    </div>
+}
+
 <div class="problem-display text-center my-8">
-    <MudText Typo="Typo.h2" Color="Color.Primary" Style="font-size: 4rem; font-weight: bold;">
+    @* 文章の問題（時こくなど）は長いので小さめの文字にする *@
+    <MudText Typo="Typo.h2" Color="Color.Primary" Style="@(IsSentence ? "font-size: 2rem; font-weight: bold;" : "font-size: 4rem; font-weight: bold;")">
         @Problem.Question
     </MudText>
 </div>
@@ -14,7 +30,7 @@
     <MudTextField @ref="answerField"
                   Value="@inputText"
                   ValueChanged="@((string value) => HandleInput(value))"
-                  Label="@(Problem.HasRemainder ? "こたえ" : "答えを入力してね")"
+                  Label="@FirstLabel"
                   Variant="Variant.Outlined"
                   Margin="Margin.Dense"
                   FullWidth="true"
@@ -25,12 +41,19 @@
                   InputMode="InputMode.numeric"
                   Pattern="[0-9]*"
                   OnKeyDown="@HandleKeyDown" />
+    @if (Units.First != null)
+    {
+        <MudText Typo="Typo.h5" Style="white-space: nowrap;">@Units.First</MudText>
+    }
     @if (Problem.HasRemainder)
     {
-        <MudText Typo="Typo.h5" Style="white-space: nowrap;">あまり</MudText>
+        @if (Problem.AnswerFormat == "QuotientRemainder" || Units.Second == null)
+        {
+            <MudText Typo="Typo.h5" Style="white-space: nowrap;">あまり</MudText>
+        }
         <MudTextField Value="@remainderText"
                       ValueChanged="@((string value) => HandleRemainderInput(value))"
-                      Label="あまり"
+                      Label="@(Units.Second ?? "あまり")"
                       Variant="Variant.Outlined"
                       Margin="Margin.Dense"
                       FullWidth="true"
@@ -41,6 +64,10 @@
                       InputMode="InputMode.numeric"
                       Pattern="[0-9]*"
                       OnKeyDown="@HandleKeyDown" />
+        @if (Units.Second != null)
+        {
+            <MudText Typo="Typo.h5" Style="white-space: nowrap;">@Units.Second</MudText>
+        }
     }
 </div>
 
@@ -90,7 +117,19 @@
     private string inputText = string.Empty;
     private string remainderText = string.Empty;
 
-    // あまりのあるわり算は、こたえとあまりの両方を入れたときだけ答えられる
+    // 答えの形に合わせた欄の単位（時こくの「時」「分」など、013）
+    private (string? First, string? Second) Units => AnswerText.Units(Problem.AnswerFormat);
+
+    private bool IsSentence => Problem.CalculationTypeText == "Time";
+
+    private string FirstLabel => Problem.AnswerFormat switch
+    {
+        "Number" => "答えを入力してね",
+        "QuotientRemainder" => "こたえ",
+        _ => Units.First ?? "こたえ"
+    };
+
+    // 2つの欄がある問題（あまりのあるわり算、時こくの「時・分」など）は、両方を入れたときだけ答えられる
     private bool CanSubmit => Answer.HasValue && (!Problem.HasRemainder || Remainder.HasValue);
     private MudTextField<string>? answerField;
 

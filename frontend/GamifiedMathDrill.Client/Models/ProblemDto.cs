@@ -6,8 +6,12 @@ public class ProblemDto
     public string Question { get; set; } = string.Empty;
     public int DifficultyLevel { get; set; }
     public string CalculationTypeText { get; set; } = string.Empty;
-    /// <summary>あまりも答える問題か（あまりのあるわり算）</summary>
+    /// <summary>2つ目の欄がある問題か（あまりのあるわり算のあまり、時こくの「分」など）</summary>
     public bool HasRemainder { get; set; }
+    /// <summary>答えの形（Number・QuotientRemainder・ClockTime など、013）</summary>
+    public string AnswerFormat { get; set; } = "Number";
+    /// <summary>時計の絵に出す時刻（"3:40" など、013）</summary>
+    public List<string> ClockTimes { get; set; } = new();
     /// <summary>今日すでに答えた数（「今日の◯問め」用）</summary>
     public int TodayAnsweredCount { get; set; }
 }
@@ -23,6 +27,8 @@ public class AnswerResultDto
     public bool IsCorrect { get; set; }
     public int CorrectAnswer { get; set; }
     public int? CorrectRemainder { get; set; }
+    /// <summary>答えの形（013）</summary>
+    public string AnswerFormat { get; set; } = "Number";
     public int PointsEarned { get; set; }
     public bool LeveledUp { get; set; }
     public LevelDto? NewLevel { get; set; }

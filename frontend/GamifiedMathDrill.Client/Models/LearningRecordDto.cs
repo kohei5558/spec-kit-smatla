@@ -7,9 +7,11 @@ public class LearningRecordDto
     public string Question { get; set; } = string.Empty;
     public int CorrectAnswer { get; set; }
     public int StudentAnswer { get; set; }
-    /// <summary>あまりのあるわり算のときだけ値が入る</summary>
+    /// <summary>2つ目の答え（あまり、時こくの「分」など）。答えが1つの問題は null</summary>
     public int? CorrectRemainder { get; set; }
     public int? StudentRemainder { get; set; }
+    /// <summary>答えの形（013）</summary>
+    public string AnswerFormat { get; set; } = "Number";
     public bool IsCorrect { get; set; }
     public int PointsEarned { get; set; }
     public int TimeTakenSeconds { get; set; }

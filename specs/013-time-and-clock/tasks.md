@@ -30,24 +30,26 @@
 - 答えの表示（回答結果・学習記録の一覧）: `AnswerFormat` に合わせて「4時5分」「1時間40分」「80分」「1分30秒」「90秒」「3 あまり 2」にする（`Models/AnswerText.cs`）
 - 種類の名前（`CalculationTypeNames`）・アイコン・ホームの種類のボタン・学習結果のタブに「時こくと時間」を足す
 
+> 画面の確認（T009）で、難易度1（3問）では「最近出た問題」を除くと出せる問題が無くなり「問題の読み込みに失敗しました」になる不具合が見つかった。最近の問題でも出すように直した（`TimeProblemTests.WhenAllProblemsAreRecent_StillReturnsAProblem`）。
+
 ## Phase 1: 問題を作る（US1）
 
-- [ ] T001 [US1] テスト: 時こくの全問題が難易度表の条件を満たす（時刻 1時〜11時台・12時をまたがない・きざみ・時をまたぐかどうか・答えが正しい・答えの形・時計の時刻・問題文が重ならない・各難易度の数） - backend/tests/GamifiedMathDrill.Tests.Unit/TimeProblemGeneratorTests.cs
-- [ ] T002 [US1] `AnswerFormat`、`CalculationType.Time`、`Problem.AnswerFormat`・`ClockTimes`、`ProblemGenerator` の時こく、`ProblemSynchronizer` - backend/src/
-- [ ] T003 [US1] マイグレーション `AddTimeProblems`（SQLite・PostgreSQL、既存のあまりのあるわり算は `QuotientRemainder`）
+- [x] T001 [US1] テスト: 時こくの全問題が難易度表の条件を満たす（時刻 1時〜11時台・12時をまたがない・きざみ・時をまたぐかどうか・答えが正しい・答えの形・時計の時刻・問題文が重ならない・各難易度の数） - backend/tests/GamifiedMathDrill.Tests.Unit/TimeProblemGeneratorTests.cs
+- [x] T002 [US1] `AnswerFormat`、`CalculationType.Time`、`Problem.AnswerFormat`・`ClockTimes`、`ProblemGenerator` の時こく、`ProblemSynchronizer` - backend/src/
+- [x] T003 [US1] マイグレーション `AddTimeProblems`（SQLite・PostgreSQL、既存のあまりのあるわり算は `QuotientRemainder`）
 
 ## Phase 2: 出題と回答（US1）
 
-- [ ] T004 [US1] テスト: 時こくを選ぶと時こくの問題がレベル1の難易度で出る／問題 API が答えの形と時刻を返す（正解は返さない）／「時・分」の問題は両方合うときだけ正解／答えが1つの問題は2つ目を無視する／回答結果と学習記録が答えの形を返す／デイリーチャレンジに出ない - backend/tests/GamifiedMathDrill.Tests.Integration/TimeProblemTests.cs
-- [ ] T005 [US1] 判定を「2つ目の答えがあるか」にする、`ProblemDto`・回答結果・学習記録の API に答えの形と時刻を足す
+- [x] T004 [US1] テスト: 時こくを選ぶと時こくの問題がレベル1の難易度で出る／問題 API が答えの形と時刻を返す（正解は返さない）／「時・分」の問題は両方合うときだけ正解／答えが1つの問題は2つ目を無視する／回答結果と学習記録が答えの形を返す／デイリーチャレンジに出ない - backend/tests/GamifiedMathDrill.Tests.Integration/TimeProblemTests.cs
+- [x] T005 [US1] 判定を「2つ目の答えがあるか」にする、`ProblemDto`・回答結果・学習記録の API に答えの形と時刻を足す
 
 ## Phase 3: 画面（US1・US2）
 
-- [ ] T006 [US1] `AnalogClock`、`ProblemDisplay`（時計・欄と単位）、答えの表示（`AnswerText`） - frontend/
-- [ ] T007 [US2] 種類の名前・アイコン・ホームのボタン・学習結果のタブ・学習記録の一覧に「時こくと時間」
+- [x] T006 [US1] `AnalogClock`、`ProblemDisplay`（時計・欄と単位）、答えの表示（`AnswerText`） - frontend/
+- [x] T007 [US2] 種類の名前・アイコン・ホームのボタン・学習結果のタブ・学習記録の一覧に「時こくと時間」
 
 ## Phase 4: 仕上げ
 
-- [ ] T008 全テスト。今の main で作った SQLite・PostgreSQL の DB に新しい版で起動し、時こくの問題が追加され、既存の問題・学習記録が変わらないこと
-- [ ] T009 画面の確認（Playwright）: 時こくを選んで、時計つきの問題・「時・分」の欄・正解／不正解の表示・学習結果
-- [ ] T010 README・CLAUDE.md を更新
+- [x] T008 全テスト。今の main で作った SQLite・PostgreSQL の DB に新しい版で起動し、時こくの問題が追加され、既存の問題・学習記録が変わらないこと
+- [x] T009 画面の確認（Playwright）: 時こくを選んで、時計つきの問題・「時・分」の欄・正解／不正解の表示・学習結果
+- [x] T010 README・CLAUDE.md を更新

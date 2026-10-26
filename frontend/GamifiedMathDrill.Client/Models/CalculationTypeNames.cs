@@ -12,6 +12,7 @@ public static class CalculationTypeNames
         "Multiplication" => "掛け算",
         "Division" => "割り算",
         "DivisionWithRemainder" => "あまりのあるわり算",
+        "Time" => "時こくと時間",
         _ => "計算"
     };
 }

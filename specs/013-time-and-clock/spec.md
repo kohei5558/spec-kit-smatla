@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/013-time-and-clock`
 **Created**: 2026年10月26日
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "小3の単元『時こくと時間』を練習できるようにする（四則演算以外のカテゴリの1つ目）"
 
 ## 背景

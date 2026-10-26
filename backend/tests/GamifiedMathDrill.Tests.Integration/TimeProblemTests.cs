@@ -42,6 +42,31 @@ public class TimeProblemTests : IClassFixture<TestWebApplicationFactory>
         }
     }
 
+    /// <summary>
+    /// 難易度1は3問しかないため、画面が「最近出た問題」をすべて除くと出せる問題が無くなっていた。
+    /// そのときは、最近出た問題でも出す（「問題の読み込みに失敗しました」にしない）
+    /// </summary>
+    [Fact]
+    public async Task WhenAllProblemsAreRecent_StillReturnsAProblem()
+    {
+        var client = _factory.CreateClient();
+        var family = await FamilyTestHelper.CreateFamilyAsync(client, "最近の問題ばかり");
+        List<int> recent;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            // レベル1（難易度1〜2）の時こくの問題をすべて「最近出た」にする
+            recent = await db.Problems.Where(p => p.CalculationType == CalculationType.Time && p.DifficultyLevel <= 2).Select(p => p.Id).ToListAsync();
+        }
+
+        var query = string.Join("", recent.Select(id => $"&excludeRecentIds={id}"));
+        var response = await FamilyTestHelper.SendAsync(client, HttpMethod.Get, $"/api/problems/next?studentId={family.StudentId}&category=Time{query}", family.ChildJwt);
+
+        Assert.True(response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+        var data = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("data");
+        Assert.Contains(data.GetProperty("id").GetInt32(), recent);
+    }
+
     [Fact]
     public async Task ClockTimeProblem_IsCorrectOnlyWhenBothHourAndMinuteMatch()
     {
