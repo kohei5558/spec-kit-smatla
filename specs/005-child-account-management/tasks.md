@@ -165,7 +165,7 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 
 ### Frontend Tasks
 
-- [x] T040 [US2] EditChildAccount.razor実装（編集フォーム、既存値プリセット、保存処理） - frontend/GamifiedMathDrill.Client/Pages/Parent/EditChildAccount.razor
+- [x] T040 [US2] EditChildAccount.razor実装（編集フォーム、既存値プリセット、保存処理） - frontend/GamifiedMathDrill.Client/Pages/Parent/EditChildAccount.razor（2026-10-26: 警告は `X-Pin-Warning: duplicate-pin`。日本語をヘッダーに入れていたため本物のサーバーでは作成後に 400 になっていた不具合も修正。`ChildAccountFormTests`）
 - [x] T041 [US2] ChildAccountManagementに「編集」ボタン追加、編集画面への遷移 - frontend/GamifiedMathDrill.Client/Pages/Parent/ChildAccountManagement.razor
 
 ### Tests
@@ -266,8 +266,8 @@ Phase 3: [US1] 子供アカウント作成・ログイン (P1) ← MVP
 
 ### Tasks
 
-- [ ] T064 [P] 同一PIN警告メッセージ実装（CreateChildAccountとEditChildAccountフォーム） - frontend/GamifiedMathDrill.Client/Pages/Parent/CreateChildAccount.razor, EditChildAccount.razor
-- [ ] T065 [P] デフォルトアバター自動設定ロジック追加（アバター未選択時） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs
+- [x] T064 [P] 同一PIN警告メッセージ実装（CreateChildAccountとEditChildAccountフォーム） - frontend/GamifiedMathDrill.Client/Pages/Parent/CreateChildAccount.razor, EditChildAccount.razor
+- [x] T065 [P] デフォルトアバター自動設定ロジック追加（アバター未選択時） - backend/src/GamifiedMathDrill.Core/Services/ChildAccountService.cs（2026-10-26: 選ばなかったとき（0）は最初のアバター。実装は Infrastructure 側）
 - [x] ~~T066 [P] 一覧表示パフォーマンス最適化（ParentId+Roleインデックス確認） - backend/src/GamifiedMathDrill.Infrastructure/Data/ApplicationDbContext.cs~~ → **やめる**（2026-10-26 見直し）: 家族ごとの子供は数人で、ユーザー表の ParentId へのインデックスは効果が小さい
 - [x] ~~T067 [P] エラーハンドリング統一（BusinessRuleViolationException、ValidationException） - backend/src/GamifiedMathDrill.Api/Middleware/ErrorHandlingMiddleware.cs~~ → **やめる**（2026-10-26 見直し）: 例外は各コントローラーで扱っている（`ErrorHandlingMiddleware` は未登録のまま）。統一は大きな変更のわりに効果が小さい
 - [x] ~~T068 [P] ChildAccountCard.razorのCSS調整（レスポンシブ、子供に優しいデザイン） - frontend/GamifiedMathDrill.Client/Components/ChildAccountCard.razor.css~~ → **やめる**（2026-10-26 見直し）: 具体的な問題が出たら個別に直す。主要な画面の流れの自動テストを別の課題として立てる

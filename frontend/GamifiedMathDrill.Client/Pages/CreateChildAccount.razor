@@ -3,6 +3,7 @@
 @using GamifiedMathDrill.Client.Services
 @inject ChildAccountApiClient ChildAccountApi
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Parent")]
 
 <div class="container mt-4">
@@ -47,7 +48,7 @@
 
                         <!-- アバター選択 -->
                         <div class="mb-4">
-                            <label class="form-label">アバター <span class="text-danger">*</span></label>
+                            <label class="form-label">アバター <small class="text-muted">（えらばないときは最初のアバターになります）</small></label>
                             @if (isLoadingAvatars)
                             {
                                 <p class="text-muted">アバターを読み込んでいます...</p>
@@ -157,8 +158,13 @@
             // アカウント作成
             var result = await ChildAccountApi.CreateChildAccountAsync(request);
             
-            if (result != null)
+            if (result.Account != null)
             {
+                if (result.HasDuplicatePin)
+                {
+                    Snackbar.Add(ChildAccountSaveResult.DuplicatePinMessage, Severity.Warning);
+                }
+
                 // 成功時、一覧画面に戻る
                 Navigation.NavigateTo("/parent/children");
             }

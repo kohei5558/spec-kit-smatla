@@ -3,6 +3,7 @@
 @using GamifiedMathDrill.Client.Services
 @inject ChildAccountApiClient ChildAccountApi
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Parent")]
 
 <div class="container mt-4">
@@ -257,9 +258,13 @@
             // アカウント更新
             var result = await ChildAccountApi.UpdateChildAccountAsync(Id, request);
             
-            if (result != null)
+            if (result.Account != null)
             {
                 successMessage = "アカウント情報を更新しました";
+                if (result.HasDuplicatePin)
+                {
+                    Snackbar.Add(ChildAccountSaveResult.DuplicatePinMessage, Severity.Warning);
+                }
                 changePIN = false; // PIN変更フラグをリセット
                 request.NewPIN = string.Empty; // PINフィールドをクリア
                 
