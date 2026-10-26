@@ -37,11 +37,24 @@ public class ExchangeRequestApiClient : ApiClientBase
             };
         }
 
-        var errorContent = await response.Content.ReadAsStringAsync();
+        // サーバーのメッセージ（例: 在庫がありません）をそのまま見せる。読めないときだけ一般的な文にする
+        string? message = null;
+        try
+        {
+            using var json = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            if (json.RootElement.TryGetProperty("message", out var m))
+            {
+                message = m.GetString();
+            }
+        }
+        catch (System.Text.Json.JsonException)
+        {
+        }
+
         return new ApiResponse<ExchangeRequestDto>
         {
             Success = false,
-            Message = $"交換申請の作成に失敗しました: {errorContent}"
+            Message = message ?? "交換申請の作成に失敗しました。"
         };
     }
 

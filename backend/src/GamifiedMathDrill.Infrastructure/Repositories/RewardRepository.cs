@@ -1,3 +1,4 @@
+using GamifiedMathDrill.Core.Exceptions;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Infrastructure.Data;
@@ -19,7 +20,7 @@ public class RewardRepository : Repository<Reward>, IRewardRepository
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new InvalidOperationException("他のユーザーによって景品が更新されました。最新のデータを取得してやり直してください。");
+            throw new ConcurrencyConflictException("他のユーザーによって景品が更新されました。最新のデータを取得してやり直してください。");
         }
     }
 

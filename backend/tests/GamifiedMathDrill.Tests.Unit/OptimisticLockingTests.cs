@@ -1,3 +1,4 @@
+using GamifiedMathDrill.Core.Exceptions;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Core.Models;
 using GamifiedMathDrill.Core.Services;
@@ -65,7 +66,7 @@ public class OptimisticLockingTests
                 else
                 {
                     // 2回目は楽観的ロック例外をシミュレート
-                    throw new InvalidOperationException("他のユーザーによって景品が更新されました。最新のデータを取得してやり直してください。");
+                    throw new ConcurrencyConflictException("他のユーザーによって景品が更新されました。最新のデータを取得してやり直してください。");
                 }
             });
 
@@ -90,6 +91,27 @@ public class OptimisticLockingTests
         // Assert
         Assert.NotNull(request1);
         Assert.Equal("在庫がありません。", exception.Message);
+    }
+
+    [Fact]
+    public async Task CreateRequestAsync_StockUpdateConflicts_ShowsMessageForChild()
+    {
+        // 在庫はまだあるが、同じ景品を同時に申請して在庫の更新がぶつかった
+        var reward = new Reward { Id = 1, Name = "Test Reward", RequiredPoints = 100, IsPhysical = true, Stock = 3, IsActive = true, RowVersion = new byte[] { 1 } };
+        var mockRewardRepo = new Mock<IRewardRepository>();
+        mockRewardRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(reward);
+        mockRewardRepo.Setup(r => r.UpdateAsync(It.IsAny<Reward>()))
+            .ThrowsAsync(new ConcurrencyConflictException("他のユーザーによって景品が更新されました。最新のデータを取得してやり直してください。"));
+        var mockStudentRepo = new Mock<IStudentRepository>();
+        mockStudentRepo.Setup(s => s.GetByIdAsync(1)).ReturnsAsync(new Student { Id = 1, Name = "Student 1", TotalPoints = 100 });
+        var mockExchangeRequestRepo = new Mock<IExchangeRequestRepository>();
+
+        var service = new ExchangeRequestService(mockExchangeRequestRepo.Object, mockRewardRepo.Object, mockStudentRepo.Object, new Mock<IAcquiredRewardRepository>().Object);
+
+        var exception = await Assert.ThrowsAsync<ConcurrencyConflictException>(() => service.CreateRequestAsync(1, 1));
+
+        Assert.Equal(RewardService.SimultaneousExchangeMessage, exception.Message);
+        mockExchangeRequestRepo.Verify(r => r.AddAsync(It.IsAny<ExchangeRequest>()), Times.Never);
     }
 
     [Fact]
@@ -128,7 +150,7 @@ public class OptimisticLockingTests
                 }
                 else
                 {
-                    throw new InvalidOperationException("他のユーザーによって景品が更新されました。最新のデータを取得してやり直してください。");
+                    throw new ConcurrencyConflictException("他のユーザーによって景品が更新されました。最新のデータを取得してやり直してください。");
                 }
             });
 
@@ -163,7 +185,7 @@ public class OptimisticLockingTests
         // Act
         var result1 = await service.UpdateRewardAsync(1, updatedReward1, null, null, null, "user1");
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+        var exception = await Assert.ThrowsAsync<ConcurrencyConflictException>(
             async () => await service.UpdateRewardAsync(1, updatedReward2, null, null, null, "user2"));
 
         // Assert
