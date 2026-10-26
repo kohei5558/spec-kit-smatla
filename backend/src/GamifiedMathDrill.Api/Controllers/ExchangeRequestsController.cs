@@ -1,4 +1,4 @@
-﻿using GamifiedMathDrill.Api.DTOs;
+using GamifiedMathDrill.Api.DTOs;
 using GamifiedMathDrill.Api.Extensions;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Infrastructure.Data;
