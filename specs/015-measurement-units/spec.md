@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/015-measurement-units`
 **Created**: 2026年10月26日
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "長さ・重さの単位を練習できるようにする（四則演算以外のカテゴリの2つ目）"
 
 ## 背景

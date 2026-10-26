@@ -13,6 +13,7 @@ public static class CalculationTypeNames
         "Division" => "割り算",
         "DivisionWithRemainder" => "あまりのあるわり算",
         "Time" => "時こくと時間",
+        "Measurement" => "長さ・重さ・かさ",
         _ => "計算"
     };
 }

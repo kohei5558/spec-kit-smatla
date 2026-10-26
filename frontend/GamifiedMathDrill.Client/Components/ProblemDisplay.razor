@@ -118,9 +118,9 @@
     private string remainderText = string.Empty;
 
     // 答えの形に合わせた欄の単位（時こくの「時」「分」など、013）
-    private (string? First, string? Second) Units => AnswerText.Units(Problem.AnswerFormat);
+    private (string? First, string? Second) Units => AnswerText.Units(Problem.AnswerFormat, Problem.AnswerUnits);
 
-    private bool IsSentence => Problem.CalculationTypeText == "Time";
+    private bool IsSentence => Problem.CalculationTypeText is "Time" or "Measurement";
 
     private string FirstLabel => Problem.AnswerFormat switch
     {

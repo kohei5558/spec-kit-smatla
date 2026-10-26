@@ -16,22 +16,22 @@
 
 ## Phase 1: 問題を作る（US1）
 
-- [ ] T001 [US1] テスト: 全問題が難易度表の条件を満たす（単位の組と倍率、答えの範囲、くり上がり・くり下がり、正解、答えの形と単位、問題文が重ならない、各難易度30問）。既存の問題セットは変わらない - backend/tests/GamifiedMathDrill.Tests.Unit/MeasurementProblemGeneratorTests.cs
-- [ ] T002 [US1] `CalculationType.Measurement`、`AnswerFormat.Units`、`Problem.AnswerUnits`、`MeasurementProblemGenerator`、`ProblemSynchronizer`
-- [ ] T003 [US1] マイグレーション `AddMeasurementProblems`（SQLite・PostgreSQL）
+- [x] T001 [US1] テスト: 全問題が難易度表の条件を満たす（単位の組と倍率、答えの範囲、くり上がり・くり下がり、正解、答えの形と単位、問題文が重ならない、各難易度30問）。既存の問題セットは変わらない - backend/tests/GamifiedMathDrill.Tests.Unit/MeasurementProblemGeneratorTests.cs
+- [x] T002 [US1] `CalculationType.Measurement`、`AnswerFormat.Units`、`Problem.AnswerUnits`、`MeasurementProblemGenerator`、`ProblemSynchronizer`
+- [x] T003 [US1] マイグレーション `AddMeasurementProblems`（SQLite・PostgreSQL）
 
 ## Phase 2: 出題と回答（US1）
 
-- [ ] T004 [US1] テスト: レベル1で出題／問題 API が答えの形と単位を返す（正解は返さない）／2つの欄は両方合うときだけ正解／回答結果・学習記録が単位を返す／デイリーチャレンジに出ない - backend/tests/GamifiedMathDrill.Tests.Integration/MeasurementProblemTests.cs
-- [ ] T005 [US1] 問題・回答結果・学習記録の API に `answerUnits`
+- [x] T004 [US1] テスト: レベル1で出題／問題 API が答えの形と単位を返す（正解は返さない）／2つの欄は両方合うときだけ正解／回答結果・学習記録が単位を返す／デイリーチャレンジに出ない - backend/tests/GamifiedMathDrill.Tests.Integration/MeasurementProblemTests.cs
+- [x] T005 [US1] 問題・回答結果・学習記録の API に `answerUnits`
 
 ## Phase 3: 画面（US1・US2）
 
-- [ ] T006 [US1] `AnswerText`（単位の形）、`ProblemDisplay`（欄の単位）、回答結果・学習記録の表示 - frontend/
-- [ ] T007 [US2] 種類の名前・アイコン・ホームのボタン・学習結果のタブと集計に「長さ・重さ・かさ」
+- [x] T006 [US1] `AnswerText`（単位の形）、`ProblemDisplay`（欄の単位）、回答結果・学習記録の表示 - frontend/
+- [x] T007 [US2] 種類の名前・アイコン・ホームのボタン・学習結果のタブと集計に「長さ・重さ・かさ」
 
 ## Phase 4: 仕上げ
 
-- [ ] T008 全テスト。今の main で作った SQLite・PostgreSQL の DB で起動し、問題が追加され既存の問題・学習記録が変わらないこと
-- [ ] T009 画面の確認（Playwright）
-- [ ] T010 README・CLAUDE.md を更新
+- [x] T008 全テスト。今の main で作った SQLite・PostgreSQL の DB で起動し、問題が追加され既存の問題・学習記録が変わらないこと
+- [x] T009 画面の確認（Playwright）
+- [x] T010 README・CLAUDE.md を更新
