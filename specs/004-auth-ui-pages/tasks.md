@@ -1,5 +1,7 @@
 # Tasks: Authentication UI Pages
 
+> **見直し（2026-10-26）**: 残っていた項目を「済み」「やめる（理由つき・取り消し線）」に仕分けた。パスワード再設定のメール送信は公開作業（フェーズ2）で扱う。
+
 > **棚卸し（2026-10-08）**: コードと突き合わせてチェックを更新。
 > - PR #1 でマージ済み（T139〜T141）。認証系 DTO には XML コメントあり（T127）
 > - bUnit テスト（T042/T043/T079〜T081/T105〜T107）は `frontend/tests` 自体が存在せず未着手
@@ -115,8 +117,8 @@
 
 ### Frontend Tests for User Story 1
 
-- [ ] T042 [P] [US1] Create bUnit test for Login.razor component rendering in frontend/tests (create if not exists)
-- [ ] T043 [P] [US1] Create bUnit test for rememberMe checkbox interaction in frontend/tests
+- [x] ~~T042 [P] [US1] Create bUnit test for Login.razor component rendering in frontend/tests (create if not exists)~~ → **やめる**（2026-10-26 見直し）: bUnit などの画面のテストの仕組みが無い。主要な画面の流れの自動テストを別の課題として立てる
+- [x] ~~T043 [P] [US1] Create bUnit test for rememberMe checkbox interaction in frontend/tests~~ → **やめる**（2026-10-26 見直し）: bUnit などの画面のテストの仕組みが無い。主要な画面の流れの自動テストを別の課題として立てる
 
 **Checkpoint**: User Story 1 complete - Parent can login with session persistence option
 
@@ -182,9 +184,9 @@
 
 ### Frontend Tests for User Story 2
 
-- [ ] T079 [P] [US2] Create bUnit test for ForgotPassword.razor rendering and submission in frontend/tests
-- [ ] T080 [P] [US2] Create bUnit test for ResetPassword.razor with valid token in frontend/tests
-- [ ] T081 [P] [US2] Create bUnit test for ResetPassword.razor with expired token in frontend/tests
+- [x] ~~T079 [P] [US2] Create bUnit test for ForgotPassword.razor rendering and submission in frontend/tests~~ → **やめる**（2026-10-26 見直し）: bUnit の仕組みが無い。パスワード再設定はメール送信（`Email:EnableSending`、既定は送らない）が必要なため、公開作業（フェーズ2）で動作も含めて扱う
+- [x] ~~T080 [P] [US2] Create bUnit test for ResetPassword.razor with valid token in frontend/tests~~ → **やめる**（2026-10-26 見直し）: bUnit の仕組みが無い。パスワード再設定はメール送信（`Email:EnableSending`、既定は送らない）が必要なため、公開作業（フェーズ2）で動作も含めて扱う
+- [x] ~~T081 [P] [US2] Create bUnit test for ResetPassword.razor with expired token in frontend/tests~~ → **やめる**（2026-10-26 見直し）: bUnit の仕組みが無い。パスワード再設定はメール送信（`Email:EnableSending`、既定は送らない）が必要なため、公開作業（フェーズ2）で動作も含めて扱う
 
 **Checkpoint**: User Story 2 complete - Password reset flow fully functional
 
@@ -238,9 +240,9 @@
 
 ### Frontend Tests for User Story 3
 
-- [ ] T105 [P] [US3] Create bUnit test for Register.razor rendering in frontend/tests
-- [ ] T106 [P] [US3] Create bUnit test for Register.razor form validation in frontend/tests
-- [ ] T107 [P] [US3] Create bUnit test for Register.razor successful submission in frontend/tests
+- [x] ~~T105 [P] [US3] Create bUnit test for Register.razor rendering in frontend/tests~~ → **やめる**（2026-10-26 見直し）: bUnit などの画面のテストの仕組みが無い。主要な画面の流れの自動テストを別の課題として立てる
+- [x] ~~T106 [P] [US3] Create bUnit test for Register.razor form validation in frontend/tests~~ → **やめる**（2026-10-26 見直し）: bUnit などの画面のテストの仕組みが無い。主要な画面の流れの自動テストを別の課題として立てる
+- [x] ~~T107 [P] [US3] Create bUnit test for Register.razor successful submission in frontend/tests~~ → **やめる**（2026-10-26 見直し）: bUnit などの画面のテストの仕組みが無い。主要な画面の流れの自動テストを別の課題として立てる
 
 **Checkpoint**: User Story 3 complete - Account creation flow fully functional
 
@@ -287,22 +289,22 @@
 
 ### API Documentation
 
-- [ ] T126 [P] Update Swagger annotations for new endpoints in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs
+- [x] ~~T126 [P] Update Swagger annotations for new endpoints in backend/src/GamifiedMathDrill.Api/Controllers/AuthController.cs~~ → **やめる**（2026-10-26 見直し）: Swagger は自動生成で動いている。説明文（XML コメント）の反映は家族で使う規模では不要
 - [x] T127 [P] Add XML documentation comments to all new DTOs in backend/src/GamifiedMathDrill.Api/DTOs/
-- [ ] T128 [P] Verify OpenAPI spec matches contracts/auth-api.yaml in backend/src/GamifiedMathDrill.Api/
+- [x] ~~T128 [P] Verify OpenAPI spec matches contracts/auth-api.yaml in backend/src/GamifiedMathDrill.Api/~~ → **やめる**（2026-10-26 見直し）: 契約（contracts/auth-api.yaml）との突き合わせは結合テストで代替している
 
 ### Developer Documentation
 
-- [ ] T129 Update README.md with new authentication features in repository root
-- [ ] T130 Update quickstart.md with any final setup steps in specs/004-auth-ui-pages/quickstart.md
-- [ ] T131 Create CHANGELOG.md entry for 004-auth-ui-pages feature in repository root
+- [x] T129 Update README.md with new authentication features in repository root → **済み**（2026-10-26 見直し）: README に保護者・子供のログイン手順を記載済み
+- [x] ~~T130 Update quickstart.md with any final setup steps in specs/004-auth-ui-pages/quickstart.md~~ → **やめる**（2026-10-26 見直し）: セットアップ手順は README と docs/DEPLOY.md にまとめている
+- [x] ~~T131 Create CHANGELOG.md entry for 004-auth-ui-pages feature in repository root~~ → **やめる**（2026-10-26 見直し）: CHANGELOG は運用していない（変更の記録は PR と specs/）
 
 ### Deployment Preparation
 
 - [x] T132 Verify all environment variables documented in appsettings.json in backend/src/GamifiedMathDrill.Api/
 - [x] T133 Create deployment checklist (database migration, email config, JWT secrets) in specs/004-auth-ui-pages/
 - [x] T134 Run security audit (password hashing, HTTPS, rate limiting, token expiry) across all new code
-- [ ] T135 Run performance testing for login/register endpoints (<5s response time) in backend/tests/
+- [x] ~~T135 Run performance testing for login/register endpoints (<5s response time) in backend/tests/~~ → **やめる**（2026-10-26 見直し）: 家族で使う規模では効果が小さい
 
 ---
 
