@@ -16,8 +16,8 @@ public class ProblemGeneratorTests
 
     public static IEnumerable<object[]> AllSets()
     {
-        // 計算（四則・あまりあり）だけ。時こくと時間は TimeProblemGeneratorTests で確かめる
-        foreach (var type in Enum.GetValues<CalculationType>().Where(t => t != CalculationType.Time))
+        // 計算（四則・あまりあり）だけ。時こく・長さ重さかさは TimeProblemGeneratorTests・MeasurementProblemGeneratorTests で確かめる
+        foreach (var type in Enum.GetValues<CalculationType>().Where(t => t <= CalculationType.DivisionWithRemainder))
         {
             for (var difficulty = 1; difficulty <= 10; difficulty++)
             {

@@ -42,6 +42,8 @@ public class ProblemDto
     public string AnswerFormat { get; set; } = "Number";
     /// <summary>時計の絵に出す時刻（"3:40" など。無ければ空、013）</summary>
     public List<string> ClockTimes { get; set; } = new();
+    /// <summary>答えの欄の単位（AnswerFormat が Units のとき。["km", "m"] など、015）</summary>
+    public List<string> AnswerUnits { get; set; } = new();
     /// <summary>今日（日本時間）すでに答えた数（問題画面の「今日の◯問め」用）</summary>
     public int TodayAnsweredCount { get; set; }
 }
@@ -61,6 +63,8 @@ public class AnswerResultDto
     public int? CorrectRemainder { get; set; }
     /// <summary>答えの形（画面が「こたえは 4時5分」のように表示するため、013）</summary>
     public string AnswerFormat { get; set; } = "Number";
+    /// <summary>答えの欄の単位（015）</summary>
+    public List<string> AnswerUnits { get; set; } = new();
     public int PointsEarned { get; set; }
     public bool LeveledUp { get; set; }
     public LevelDto? NewLevel { get; set; }

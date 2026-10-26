@@ -40,11 +40,11 @@
                 </MudTd>
                 <MudTd DataLabel="あなたの答え">
                     <MudText Typo="Typo.body2" Style="@($"{GetAnswerStyle(context.IsCorrect)} white-space: nowrap;")">
-                        @FormatAnswer(context.AnswerFormat, context.StudentAnswer, context.StudentRemainder, context.CorrectRemainder.HasValue)
+                        @FormatAnswer(context, context.StudentAnswer, context.StudentRemainder)
                     </MudText>
                 </MudTd>
                 <MudTd DataLabel="正解">
-                    <strong style="white-space: nowrap;">@FormatAnswer(context.AnswerFormat, context.CorrectAnswer, context.CorrectRemainder, context.CorrectRemainder.HasValue)</strong>
+                    <strong style="white-space: nowrap;">@FormatAnswer(context, context.CorrectAnswer, context.CorrectRemainder)</strong>
                 </MudTd>
                 <MudTd DataLabel="結果">
                     @if (context.IsCorrect)
@@ -131,6 +131,7 @@
             "Division" => Color.Info,
             "DivisionWithRemainder" => Color.Warning,
             "Time" => Color.Tertiary,
+            "Measurement" => Color.Dark,
             _ => Color.Default
         };
     }
@@ -145,13 +146,14 @@
             "Division" => "わり算",
             "DivisionWithRemainder" => "あまりのあるわり算",
             "Time" => "時こくと時間",
+            "Measurement" => "長さ・重さ・かさ",
             _ => type
         };
     }
 
     /// <summary>答えの形に合わせて「3 あまり 2」「4時5分」のように表示する（2つ目を答えていないときは「?」、013）</summary>
-    private static string FormatAnswer(string answerFormat, int answer, int? second, bool hasSecond) =>
-        AnswerText.Format(answerFormat, answer, hasSecond ? second : null);
+    private static string FormatAnswer(LearningRecordDto record, int answer, int? second) =>
+        AnswerText.Format(record.AnswerFormat, answer, record.CorrectRemainder.HasValue ? second : null, record.AnswerUnits);
 
     private string GetAnswerStyle(bool isCorrect)
     {

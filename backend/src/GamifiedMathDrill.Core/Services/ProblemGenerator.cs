@@ -39,6 +39,12 @@ public static class ProblemGenerator
         {
             problems.AddRange(TimeProblemGenerator.Generate(difficulty, random));
         }
+
+        // 長さ・重さ・かさ（015）。時こくのあとに作るので、上の問題セットは変わらない
+        for (var difficulty = 1; difficulty <= 10; difficulty++)
+        {
+            problems.AddRange(MeasurementProblemGenerator.Generate(difficulty, random));
+        }
         return problems;
     }
 

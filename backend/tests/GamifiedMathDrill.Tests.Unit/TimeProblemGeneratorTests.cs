@@ -37,7 +37,7 @@ public class TimeProblemGeneratorTests
     public void ExistingProblemSet_IsUnchanged()
     {
         // 時こくは種類リストの末尾に足したので、ほかの種類の問題は今までと同じ（011 の同期で入れ替わらない）
-        var others = ProblemGenerator.GenerateAll().Where(p => p.CalculationType != CalculationType.Time).ToList();
+        var others = ProblemGenerator.GenerateAll().Where(p => p.CalculationType <= CalculationType.DivisionWithRemainder).ToList();
         Assert.Equal(1419, others.Count);
         Assert.All(others.Where(p => p.CalculationType == CalculationType.DivisionWithRemainder), p => Assert.Equal(AnswerFormat.QuotientRemainder, p.AnswerFormat));
         Assert.All(others.Where(p => p.CalculationType != CalculationType.DivisionWithRemainder), p => Assert.Equal(AnswerFormat.Number, p.AnswerFormat));

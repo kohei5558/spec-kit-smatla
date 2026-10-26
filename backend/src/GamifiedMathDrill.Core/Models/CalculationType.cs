@@ -33,5 +33,10 @@ public enum CalculationType
     /// <summary>
     /// 時こくと時間（013。答えの形は問題ごとに AnswerFormat で決まる）
     /// </summary>
-    Time = 5
+    Time = 5,
+
+    /// <summary>
+    /// 長さ・重さ・かさ（015。答えの欄の単位は Problem.AnswerUnits）
+    /// </summary>
+    Measurement = 6
 }

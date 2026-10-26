@@ -12,6 +12,8 @@ public class LearningRecordDto
     public int? StudentRemainder { get; set; }
     /// <summary>答えの形（013）</summary>
     public string AnswerFormat { get; set; } = "Number";
+    /// <summary>答えの欄の単位（015）</summary>
+    public List<string> AnswerUnits { get; set; } = new();
     public bool IsCorrect { get; set; }
     public int PointsEarned { get; set; }
     public int TimeTakenSeconds { get; set; }

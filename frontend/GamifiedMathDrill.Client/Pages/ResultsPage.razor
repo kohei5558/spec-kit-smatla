@@ -41,7 +41,7 @@
             </MudGrid>
 
             <!-- Calculation Type Tabs -->
-            @* 種類が7つあるため、タブの最小幅（既定 160px）を狭めてPCの幅で全部並ぶようにする *@
+            @* 種類が8つあるため、タブの最小幅（既定 160px）を狭めてPCの幅で全部並ぶようにする *@
             <MudTabs ActivePanelIndex="_activeTab" Elevation="0" Rounded="true" Class="mt-4" ActivePanelIndexChanged="OnTabChanged" MinimumTabWidth="80px">
                 <MudTabPanel Text="すべて" />
                 <MudTabPanel Text="たし算" />
@@ -50,6 +50,7 @@
                 <MudTabPanel Text="わり算" />
                 <MudTabPanel Text="あまりあり" />
                 <MudTabPanel Text="時こく" />
+                <MudTabPanel Text="単位" />
             </MudTabs>
         </MudPaper>
 
@@ -233,7 +234,8 @@
             ("Multiplication", "掛け算", 3),
             ("Division", "割り算", 4),
             ("DivisionWithRemainder", "あまりのあるわり算", 5),
-            ("Time", "時こくと時間", 6)
+            ("Time", "時こくと時間", 6),
+            ("Measurement", "長さ・重さ・かさ", 7)
         };
 
         foreach (var (category, name, order) in categories)
@@ -270,6 +272,7 @@
             "Division" => Color.Error,
             "DivisionWithRemainder" => Color.Secondary,
             "Time" => Color.Tertiary,
+            "Measurement" => Color.Dark,
             _ => Color.Default
         };
     }
@@ -283,6 +286,7 @@
             "Multiplication" => Icons.Material.Filled.Close,
             "Division" or "DivisionWithRemainder" => Icons.Material.Filled.MoreHoriz,
             "Time" => Icons.Material.Filled.Schedule,
+            "Measurement" => Icons.Material.Filled.Straighten,
             _ => Icons.Material.Filled.Calculate
         };
     }
@@ -352,6 +356,7 @@
             4 => "Division",
             5 => "DivisionWithRemainder",
             6 => "Time",
+            7 => "Measurement",
             _ => null
         };
         _currentPage = 1;
