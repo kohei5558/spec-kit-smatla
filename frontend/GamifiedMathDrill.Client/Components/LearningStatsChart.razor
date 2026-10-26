@@ -36,7 +36,7 @@
                 new ChartSeries 
                 { 
                     Name = "解いた問題数", 
-                    Data = ActivityData.Select(a => (double)a.ProblemsSolved).ToArray() 
+                    Data = ActivityData.Select(a => (double)a.ProblemsCount).ToArray() 
                 }
             };
         }
