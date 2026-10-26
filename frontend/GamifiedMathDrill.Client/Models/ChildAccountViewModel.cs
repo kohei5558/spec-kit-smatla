@@ -150,9 +150,9 @@ public class ChildLearningStatsViewModel
     public int ConsecutiveDays { get; set; }
 
     /// <summary>
-    /// 過去7日間のアクティビティ
+    /// 過去7日間のアクティビティ（API の recentActivity。名前は specs/005 の contracts に合わせる）
     /// </summary>
-    public List<DailyActivityDto>? Last7DaysActivity { get; set; }
+    public List<DailyActivityDto>? RecentActivity { get; set; }
 }
 
 /// <summary>
@@ -166,12 +166,7 @@ public class DailyActivityDto
     public DateTime Date { get; set; }
 
     /// <summary>
-    /// 解いた問題数
+    /// 解いた問題数（API の problemsCount）
     /// </summary>
-    public int ProblemsSolved { get; set; }
-
-    /// <summary>
-    /// 獲得ポイント
-    /// </summary>
-    public int PointsEarned { get; set; }
+    public int ProblemsCount { get; set; }
 }
