@@ -1,4 +1,4 @@
-using GamifiedMathDrill.Api.DTOs;
+﻿using GamifiedMathDrill.Api.DTOs;
 using GamifiedMathDrill.Api.Extensions;
 using GamifiedMathDrill.Core.Interfaces;
 using GamifiedMathDrill.Infrastructure.Data;
@@ -182,7 +182,7 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = request.Student?.Name ?? "",
                 RewardId = request.RewardId,
                 RewardName = request.Reward?.Name ?? "",
-                RewardImageUrl = string.IsNullOrEmpty(request.Reward?.ImageUrl) ? null : $"{Request.Scheme}://{Request.Host}{request.Reward!.ImageUrl}",
+                RewardImageUrl = string.IsNullOrEmpty(request.Reward?.ImageUrl) ? null : request.Reward!.ImageUrl, // 相対パスのまま（画面の ImageUrls.Resolve で解決する）
                 RequiredPoints = request.RequiredPoints,
                 Status = request.Status,
                 RequestedAt = request.RequestedAt,
@@ -278,7 +278,7 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = exchangeRequest.Student?.Name ?? "",
                 RewardId = exchangeRequest.RewardId,
                 RewardName = exchangeRequest.Reward?.Name ?? "",
-                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : $"{Request.Scheme}://{Request.Host}{exchangeRequest.Reward!.ImageUrl}",
+                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : exchangeRequest.Reward!.ImageUrl, // 相対パスのまま（画面の ImageUrls.Resolve で解決する）
                 RequiredPoints = exchangeRequest.RequiredPoints,
                 Status = exchangeRequest.Status,
                 RequestedAt = exchangeRequest.RequestedAt,
@@ -332,7 +332,7 @@ public class ExchangeRequestsController : ControllerBase
                 StudentName = exchangeRequest.Student?.Name ?? "",
                 RewardId = exchangeRequest.RewardId,
                 RewardName = exchangeRequest.Reward?.Name ?? "",
-                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : $"{Request.Scheme}://{Request.Host}{exchangeRequest.Reward!.ImageUrl}",
+                RewardImageUrl = string.IsNullOrEmpty(exchangeRequest.Reward?.ImageUrl) ? null : exchangeRequest.Reward!.ImageUrl, // 相対パスのまま（画面の ImageUrls.Resolve で解決する）
                 RequiredPoints = exchangeRequest.RequiredPoints,
                 Status = exchangeRequest.Status,
                 RequestedAt = exchangeRequest.RequestedAt,
