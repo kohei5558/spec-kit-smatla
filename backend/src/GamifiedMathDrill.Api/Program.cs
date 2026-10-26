@@ -160,7 +160,9 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowCredentials()
+              // 兄弟と同じ PIN の警告（005 T064）を画面が読めるように
+              .WithExposedHeaders(GamifiedMathDrill.Api.Controllers.ChildAccountController.PinWarningHeader);
     });
 });
 

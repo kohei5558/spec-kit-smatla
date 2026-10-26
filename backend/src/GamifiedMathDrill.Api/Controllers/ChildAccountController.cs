@@ -14,6 +14,13 @@ namespace GamifiedMathDrill.Api.Controllers;
 [Authorize(Roles = "Parent")] // 子供アカウントの管理は保護者のみ
 public class ChildAccountController : ControllerBase
 {
+    /// <summary>
+    /// 兄弟と同じ PIN のときに付けるヘッダー。値は ASCII のコード（HTTP ヘッダーに日本語は入れられない）で、文言は画面で出す。
+    /// 画面は別のアドレスから呼ぶため、Program.cs の CORS で公開している
+    /// </summary>
+    public const string PinWarningHeader = "X-Pin-Warning";
+    public const string DuplicatePinWarning = "duplicate-pin";
+
     private readonly IChildAccountService _childAccountService;
     private readonly ILogger<ChildAccountController> _logger;
 
@@ -111,7 +118,7 @@ public class ChildAccountController : ControllerBase
             // 重複PIN警告をレスポンスヘッダーに含める
             if (hasDuplicatePin)
             {
-                Response.Headers["X-Pin-Warning"] = "他の子供と同じPINです。セキュリティ上推奨しません";
+                Response.Headers[PinWarningHeader] = DuplicatePinWarning;
             }
 
             return Ok(child);
@@ -154,7 +161,7 @@ public class ChildAccountController : ControllerBase
             // 重複PIN警告をレスポンスヘッダーに含める
             if (hasDuplicatePin)
             {
-                Response.Headers["X-Pin-Warning"] = "他の子供と同じPINです。セキュリティ上推奨しません";
+                Response.Headers[PinWarningHeader] = DuplicatePinWarning;
             }
 
             return Ok(child);

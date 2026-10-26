@@ -108,8 +108,10 @@ public class ChildAccountService : IChildAccountService
             throw new InvalidOperationException("同じ名前の子供アカウントが既に存在します");
         }
 
-        // プリセットアバター存在チェック
-        var avatar = await _avatarRepository.GetByIdAsync(dto.PresetAvatarId);
+        // プリセットアバター存在チェック。選ばれていない（0）ときは最初のアバターにする（005 T065）
+        var avatar = dto.PresetAvatarId == 0
+            ? (await _avatarRepository.GetAllAsync()).FirstOrDefault()
+            : await _avatarRepository.GetByIdAsync(dto.PresetAvatarId);
         if (avatar == null)
         {
             throw new InvalidOperationException("指定されたアバターが見つかりません");

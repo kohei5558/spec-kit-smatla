@@ -37,14 +37,14 @@ public class ChildAccountApiClient
     /// <summary>
     /// 子供アカウントを作成
     /// </summary>
-    public async Task<ChildAccountViewModel?> CreateChildAccountAsync(ChildAccountCreateRequest request)
+    public async Task<ChildAccountSaveResult> CreateChildAccountAsync(ChildAccountCreateRequest request)
     {
         try
         {
             await SetAuthorizationHeaderAsync();
             var response = await _httpClient.PostAsJsonAsync("api/child-accounts", request);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<ChildAccountViewModel>();
+            return new ChildAccountSaveResult(await response.Content.ReadFromJsonAsync<ChildAccountViewModel>(), HasDuplicatePinWarning(response));
         }
         catch (Exception ex)
         {
@@ -90,14 +90,14 @@ public class ChildAccountApiClient
     /// <summary>
     /// 子供アカウントを更新
     /// </summary>
-    public async Task<ChildAccountViewModel?> UpdateChildAccountAsync(string id, ChildAccountUpdateRequest request)
+    public async Task<ChildAccountSaveResult> UpdateChildAccountAsync(string id, ChildAccountUpdateRequest request)
     {
         try
         {
             await SetAuthorizationHeaderAsync();
             var response = await _httpClient.PutAsJsonAsync($"api/child-accounts/{id}", request);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<ChildAccountViewModel>();
+            return new ChildAccountSaveResult(await response.Content.ReadFromJsonAsync<ChildAccountViewModel>(), HasDuplicatePinWarning(response));
         }
         catch (Exception ex)
         {
@@ -189,4 +189,18 @@ public class ChildAccountApiClient
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         }
     }
+
+    /// <summary>
+    /// 兄弟と同じ PIN のとき、API は X-Pin-Warning: duplicate-pin を付けて返す（005 T064）
+    /// </summary>
+    private static bool HasDuplicatePinWarning(HttpResponseMessage response) =>
+        response.Headers.TryGetValues("X-Pin-Warning", out var values) && values.Contains("duplicate-pin");
+}
+
+/// <summary>
+/// 子供アカウントの作成・更新の結果。HasDuplicatePin は兄弟と同じ PIN にしたとき true（保存はできている）
+/// </summary>
+public record ChildAccountSaveResult(ChildAccountViewModel? Account, bool HasDuplicatePin)
+{
+    public const string DuplicatePinMessage = "ほかの子供と同じ PIN です。保存はしましたが、ちがう PIN にすることをおすすめします。";
 }
