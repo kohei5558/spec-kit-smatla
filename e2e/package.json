@@ -1,0 +1,16 @@
+{
+  "name": "gamified-math-drill-e2e",
+  "private": true,
+  "description": "画面の流れの自動テスト（018）。本物の API と画面を起動して Playwright で動かす",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

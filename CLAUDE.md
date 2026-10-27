@@ -25,7 +25,9 @@ dotnet test backend/tests/GamifiedMathDrill.Tests.Integration --filter "FullyQua
 ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/src/GamifiedMathDrill.Api --urls http://localhost:5242
 ```
 
-変更後は必ずビルドとテストを通してからコミットする。CI（`.github/workflows/ci.yml`）も同じ内容を実行する。
+画面の流れの自動テスト（E2E、018）は `e2e/` で `npm ci && npx playwright test`（本物の API と画面をまっさらな SQLite で起動する。開発中のサーバーは止めておく）。画面を変えたら E2E も通す。
+
+変更後は必ずビルドとテストを通してからコミットする。CI（`.github/workflows/ci.yml`）も同じ内容と E2E を実行する。
 
 ## 押さえておくべき前提
 
@@ -37,6 +39,7 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/src/GamifiedMath
   - `ASPNETCORE_ENVIRONMENT=Production DatabaseProvider=PostgreSQL Jwt__SecretKey=design-time-only-key-design-time-only-key ConnectionStrings__DefaultConnection="Host=localhost;Database=design" dotnet ef migrations add <Name> --project backend/src/GamifiedMathDrill.Migrations.PostgreSQL --startup-project backend/src/GamifiedMathDrill.Api --output-dir Migrations`
   - 反映漏れは CI の `has-pending-model-changes` で検出される
 - `Program.cs` で `SuppressModelStateInvalidFilter = true` のため、DataAnnotations やバインド失敗は自動で 400 にならない。コントローラーで明示的に検証する。
+- E2E（`e2e/tests`）: 順番は setup（保護者ログイン・端末登録）→ parent / child → approve。ログインの回数制限（15分で5回）があるので保護者のログインは setup の1回だけ（`storageState`）。問題の正解は API が返さないので E2E 用の DB から読む（`correctAnswer`）。画面の例外と API の 500 番台はどのテストでも失敗にする。
 - 結合テストはテストクラス単位で DB を共有する（`IClassFixture`）。他テストのデータが残る前提で、名前は一意にし件数に依存しない書き方をする。
 - 子供ログインの JSON キーは `ChildId`（`Api/DTOs/ChildLoginRequest.cs` とフロントの同名クラスで一致させる）。
 - 子供の一覧取得と子供ログインには、保護者が登録した端末のトークン（`X-Device-Token` ヘッダー、`DevicesController` / `DeviceService`）が必須。結合テストでは `AuthenticationHelper.UseParentDeviceAsync` で設定する（006）。

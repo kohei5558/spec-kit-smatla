@@ -52,3 +52,47 @@ jobs:
 
       - name: Test
         run: dotnet test backend/GamifiedMathDrill.sln --no-build --logger "console;verbosity=normal"
+
+  # 画面の流れの自動テスト（018）。本物の API と画面を起動して Playwright で動かす。上のジョブと同時に動く
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: Install
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      # 先にビルドしておき、テストの中でのサーバー起動を速くする
+      - name: Build
+        run: |
+          dotnet build ../backend/src/GamifiedMathDrill.Api
+          dotnet build ../frontend/GamifiedMathDrill.Client
+
+      - name: E2E
+        run: npx playwright test
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 7

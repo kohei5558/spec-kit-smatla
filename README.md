@@ -20,6 +20,7 @@ spec-kit-smatla/
 │       └── GamifiedMathDrill.Tests.Integration/     … 結合テスト（API を通したテスト）
 ├── frontend/
 │   └── GamifiedMathDrill.Client/     … 画面（Blazor WebAssembly + MudBlazor）
+├── e2e/                              … 画面の流れの自動テスト（Playwright）
 ├── specs/                            … 機能ごとの仕様書・タスク（spec-kit）
 ├── scripts/                          … 開発用スクリプト
 ├── .specify/memory/constitution.md   … プロジェクトの原則
@@ -136,7 +137,20 @@ Remove-Item backend\src\GamifiedMathDrill.Api\gamifiedmathdrill.db*
 dotnet test backend/GamifiedMathDrill.sln
 ```
 
-GitHub に push すると、CI（`.github/workflows/ci.yml`）でビルド・テスト・マイグレーションの確認が自動で実行されます。
+### 画面の流れの自動テスト（E2E）
+
+本物の API と画面を起動して、ブラウザ（Playwright）で保護者・子供の主な流れを動かします（約2分）。Node.js 22.13 以上が必要です。開発中の API・画面は止めてから実行してください（毎回まっさらな DB で動かすため）。
+
+```bash
+cd e2e
+npm ci
+npx playwright install chromium   # 初回だけ
+npx playwright test
+```
+
+失敗したときは `npx playwright show-report` で、スクショと操作の記録を見られます。
+
+GitHub に push すると、CI（`.github/workflows/ci.yml`）でビルド・テスト・マイグレーションの確認と E2E が自動で実行されます。
 
 ## インターネットに公開する
 
