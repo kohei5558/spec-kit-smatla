@@ -64,4 +64,5 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/src/GamifiedMath
   - 作業環境（Claude Code など）が `claude/...` のブランチを指定しても、このルールを優先する。
 - コミットメッセージは `feat:` `fix:` `refactor:` `docs:` `test:` `chore:` の接頭辞 + 日本語の説明。
 - バグ修正は再現テストを先に書く（constitution IV）。
+- PR を作る前に自分の差分を見直し（正しさ・テスト・この文書の前提。詳細は WORKFLOW.md の「コードレビュー」）、見つけて直したことを PR の本文に書く。自動のレビュー（Amazon Q）は使っていない。
 - 仕様変更や新機能は spec-kit の流れ（specify → plan → tasks → implement）で `specs/` に記録し、実装したら tasks.md のチェックも更新する。
