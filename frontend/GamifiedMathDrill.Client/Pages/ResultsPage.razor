@@ -52,6 +52,9 @@
                 <MudTabPanel Text="時こく" />
                 <MudTabPanel Text="単位" />
                 <MudTabPanel Text="文章" />
+                <MudTabPanel Text="読み" />
+                <MudTabPanel Text="書き" />
+                <MudTabPanel Text="ことば" />
             </MudTabs>
         </MudPaper>
 
@@ -237,7 +240,10 @@
             ("DivisionWithRemainder", "あまりのあるわり算", 5),
             ("Time", "時こくと時間", 6),
             ("Measurement", "長さ・重さ・かさ", 7),
-            ("WordProblem", "文章問題", 8)
+            ("WordProblem", "文章問題", 8),
+            ("KanjiReading", "漢字の読み", 9),
+            ("KanjiWriting", "漢字の書き", 10),
+            ("KanjiWords", "漢字のことば", 11)
         };
 
         foreach (var (category, name, order) in categories)
@@ -276,6 +282,7 @@
             "Time" => Color.Tertiary,
             "Measurement" => Color.Dark,
             "WordProblem" => Color.Primary,
+            "KanjiReading" or "KanjiWriting" or "KanjiWords" => Color.Error,
             _ => Color.Default
         };
     }
@@ -291,6 +298,9 @@
             "Time" => Icons.Material.Filled.Schedule,
             "Measurement" => Icons.Material.Filled.Straighten,
             "WordProblem" => Icons.Material.Filled.MenuBook,
+            "KanjiReading" => Icons.Material.Filled.RecordVoiceOver,
+            "KanjiWriting" => Icons.Material.Filled.Edit,
+            "KanjiWords" => Icons.Material.Filled.Translate,
             _ => Icons.Material.Filled.Calculate
         };
     }
@@ -362,6 +372,9 @@
             6 => "Time",
             7 => "Measurement",
             8 => "WordProblem",
+            9 => "KanjiReading",
+            10 => "KanjiWriting",
+            11 => "KanjiWords",
             _ => null
         };
         _currentPage = 1;

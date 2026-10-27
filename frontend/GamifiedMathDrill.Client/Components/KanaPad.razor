@@ -1,0 +1,86 @@
+@* ひらがなを入力する 50音ボタン（020）。端末のキーボード（ローマ字・変換）を使わずに入れられる *@
+<div class="kana-display" aria-live="polite">
+    @if (string.IsNullOrEmpty(Value))
+    {
+        <span class="kana-placeholder">ここに 出るよ</span>
+    }
+    else
+    {
+        @Value
+    }
+</div>
+
+<div class="kana-grid" role="group" aria-label="ひらがな">
+    @foreach (var column in Columns)
+    {
+        @foreach (var kana in column)
+        {
+            if (kana == ' ')
+            {
+                <span></span>
+            }
+            else
+            {
+                <button type="button" class="kana-key" disabled="@Disabled" @onclick="() => Append(kana)">@kana</button>
+            }
+        }
+    }
+</div>
+
+<div class="kana-actions">
+    <button type="button" class="kana-key" disabled="@Disabled" @onclick="() => Append('ん')">ん</button>
+    <button type="button" class="kana-key" disabled="@Disabled" @onclick="() => Append('ー')">ー</button>
+    <button type="button" class="kana-key kana-modifier" disabled="@Disabled" title="てんてん" @onclick="() => ChangeLast(Dakuten)">゛</button>
+    <button type="button" class="kana-key kana-modifier" disabled="@Disabled" title="まる" @onclick="() => ChangeLast(Handakuten)">゜</button>
+    <button type="button" class="kana-key kana-modifier" disabled="@Disabled" title="小さい字" @onclick="() => ChangeLast(Small)">小</button>
+    <button type="button" class="kana-key kana-delete" disabled="@Disabled" @onclick="DeleteLast">けす</button>
+</div>
+
+@code {
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    // 50音表と同じ並び（たて に あ行・か行…、右から左は CSS で並べる）。空白は空きマス
+    private static readonly string[] Columns =
+    {
+        "あいうえお", "かきくけこ", "さしすせそ", "たちつてと", "なにぬねの",
+        "はひふへほ", "まみむめも", "や ゆ よ", "らりるれろ", "わ   を"
+    };
+
+    // 最後の字を、てんてん・まる・小さい字に かえる（もう一度おすと もどる）
+    private static readonly (string From, string To) Dakuten = ("かきくけこさしすせそたちつてとはひふへほ", "がぎぐげござじずぜぞだぢづでどばびぶべぼ");
+    private static readonly (string From, string To) Handakuten = ("はひふへほ", "ぱぴぷぺぽ");
+    private static readonly (string From, string To) Small = ("あいうえおつやゆよ", "ぁぃぅぇぉっゃゅょ");
+
+    // 答えは20字まで（API と同じ）
+    private const int MaxLength = 20;
+
+    private Task Append(char kana) => Value.Length >= MaxLength ? Task.CompletedTask : Set(Value + kana);
+
+    private Task ChangeLast((string From, string To) map)
+    {
+        if (Value.Length == 0)
+        {
+            return Task.CompletedTask;
+        }
+        var last = Value[^1];
+        var i = map.From.IndexOf(last);
+        var j = map.To.IndexOf(last);
+        var changed = i >= 0 ? map.To[i] : j >= 0 ? map.From[j] : last;
+        return Set(Value[..^1] + changed);
+    }
+
+    private Task DeleteLast() => Value.Length == 0 ? Task.CompletedTask : Set(Value[..^1]);
+
+    private async Task Set(string value)
+    {
+        Value = value;
+        await ValueChanged.InvokeAsync(value);
+    }
+}

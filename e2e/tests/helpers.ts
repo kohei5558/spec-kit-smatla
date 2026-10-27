@@ -58,7 +58,8 @@ export async function waitProblem(page: Page, action: () => Promise<unknown>): P
     action(),
   ]);
   const problem = (await response.json()).data as ShownProblem;
-  await expect(page.locator('.problem-display')).toBeVisible();
+  // 算数は .problem-display、漢字は .kanji-question
+  await expect(page.locator('.problem-display, .kanji-question').first()).toBeVisible();
   return problem;
 }
 
@@ -77,6 +78,44 @@ export function correctAnswer(problemId: number): number[] {
   } finally {
     db.close();
   }
+}
+
+/**
+ * 漢字の問題（020）の文字の正解を E2E 用の DB から読む
+ */
+export function correctText(problemId: number): string {
+  const db = new DatabaseSync(join(DATA_DIR, 'e2e.db'), { readOnly: true });
+  try {
+    const row = db.prepare('SELECT CorrectText FROM Problems WHERE Id = ?').get(problemId) as { CorrectText: string | null } | undefined;
+    if (!row?.CorrectText) {
+      throw new Error(`E2E の DB に問題 ${problemId} の文字の正解がない`);
+    }
+    return row.CorrectText;
+  } finally {
+    db.close();
+  }
+}
+
+// 50音ボタンで入れるときの、もとの字と 押すボタン（てんてん・まる・小さい字）
+const KANA_CHANGES: [string, string, string][] = [
+  ['かきくけこさしすせそたちつてとはひふへほ', 'がぎぐげござじずぜぞだぢづでどばびぶべぼ', '゛'],
+  ['はひふへほ', 'ぱぴぷぺぽ', '゜'],
+  ['あいうえおつやゆよ', 'ぁぃぅぇぉっゃゅょ', '小'],
+];
+
+/**
+ * 50音ボタンで ひらがなを入れる
+ */
+export async function typeKana(page: Page, text: string) {
+  for (const ch of text) {
+    const change = KANA_CHANGES.find(([, to]) => to.includes(ch));
+    const base = change ? change[0][change[1].indexOf(ch)] : ch;
+    await page.locator('button.kana-key', { hasText: new RegExp(`^${base}$`) }).click();
+    if (change) {
+      await page.locator('button.kana-key', { hasText: new RegExp(`^${change[2]}$`) }).click();
+    }
+  }
+  await expect(page.locator('.kana-display')).toHaveText(text);
 }
 
 /**

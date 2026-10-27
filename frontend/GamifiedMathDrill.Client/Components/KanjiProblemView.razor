@@ -1,0 +1,67 @@
+@using GamifiedMathDrill.Client.Models
+@* 漢字の問題（020）。問題文の [ ] の部分を色で強調し、読みは 50音ボタン、書き・ことばは 4つの中から選ぶ *@
+
+<MudText Typo="Typo.h6" Class="text-center mb-2">@Instruction</MudText>
+
+<div class="kanji-question my-4">
+    @foreach (var (text, target) in Parts)
+    {
+        if (target)
+        {
+            <span class="kanji-target">@text</span>
+        }
+        else
+        {
+            @text
+        }
+    }
+</div>
+
+@if (Problem.AnswerFormat == "Text")
+{
+    <KanaPad Value="@Text" ValueChanged="@(value => TextChanged.InvokeAsync(value))" Disabled="@Disabled" />
+}
+else
+{
+    <div class="kanji-choices" role="radiogroup">
+        @foreach (var choice in Problem.Choices)
+        {
+            <button type="button"
+                    role="radio"
+                    aria-checked="@(choice == Text ? "true" : "false")"
+                    class="@(choice == Text ? "kanji-choice selected" : "kanji-choice")"
+                    disabled="@Disabled"
+                    @onclick="() => TextChanged.InvokeAsync(choice)">
+                @choice
+            </button>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public ProblemDto Problem { get; set; } = null!;
+
+    /// <summary>入力した ひらがな、または選んだ選択肢</summary>
+    [Parameter]
+    public string Text { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> TextChanged { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private string Instruction => Problem.CalculationTypeText switch
+    {
+        "KanjiReading" => "色の ついた 字の 読みを ひらがなで 書こう",
+        "KanjiWriting" => "色の ついた ところを 漢字で 書くと？",
+        _ => "この ことばを 漢字で 書くと？"
+    };
+
+    // 「[駅]まで あるく。」→ (駅, 強調) と (まで あるく。, ふつう)
+    private IEnumerable<(string Text, bool Target)> Parts =>
+        System.Text.RegularExpressions.Regex.Split(Problem.Question, @"(\[[^\]]+\])")
+            .Where(p => p.Length > 0)
+            .Select(p => p.StartsWith('[') && p.EndsWith(']') ? (p[1..^1], true) : (p, false));
+}

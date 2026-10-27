@@ -44,6 +44,8 @@
                 OnAnswerChange="@HandleAnswerChange"
                 Remainder="@userRemainder"
                 OnRemainderChange="@HandleRemainderChange"
+                Text="@userText"
+                OnTextChange="@(text => userText = text)"
                 OnSubmit="@HandleSubmitAnswer"
                 IsSubmitting="@isSubmitting" />
         </MudPaper>
@@ -112,6 +114,7 @@
     private AnswerResultDto? answerResult;
     private int? userAnswer;
     private int? userRemainder;
+    private string userText = string.Empty;
     private bool isLoading = true;
     private bool isSubmitting = false;
     private bool showFeedback = false;
@@ -186,6 +189,7 @@
         showFeedback = false;
         userAnswer = null;
         userRemainder = null;
+        userText = string.Empty;
 
         try
         {
@@ -238,7 +242,8 @@
         try
         {
             answerResult = await ProblemApi.SubmitAnswerAsync(currentProblem.Id, student.Id, userAnswer ?? 0,
-                currentProblem.HasRemainder ? userRemainder : null);
+                currentProblem.HasRemainder ? userRemainder : null,
+                currentProblem.AnswerFormat is "Text" or "Choice" ? userText : null);
             
             if (answerResult != null)
             {
@@ -279,6 +284,9 @@
             "Time" => Icons.Material.Filled.Schedule,
             "Measurement" => Icons.Material.Filled.Straighten,
             "WordProblem" => Icons.Material.Filled.MenuBook,
+            "KanjiReading" => Icons.Material.Filled.RecordVoiceOver,
+            "KanjiWriting" => Icons.Material.Filled.Edit,
+            "KanjiWords" => Icons.Material.Filled.Translate,
             _ => Icons.Material.Filled.Calculate
         };
     }
@@ -295,6 +303,7 @@
             "Time" => Color.Tertiary,
             "Measurement" => Color.Dark,
             "WordProblem" => Color.Primary,
+            "KanjiReading" or "KanjiWriting" or "KanjiWords" => Color.Error,
             _ => Color.Default
         };
     }

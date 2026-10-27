@@ -4,6 +4,12 @@
     <MudChip T="string" Color="Color.Info" Size="Size.Medium">むずかしさ @Problem.DifficultyLevel</MudChip>
 </div>
 
+@if (IsKanji)
+{
+    @* 漢字の問題（020）は、問題文の強調と 50音ボタン・選択肢 *@
+    <KanjiProblemView Problem="@Problem" Text="@Text" TextChanged="@HandleTextChange" Disabled="@IsSubmitting" />
+}
+
 @if (Problem.ClockTimes.Count > 0)
 {
     @* 時こくの問題は、出てくる時刻を時計の絵でも見せる（013） *@
@@ -51,7 +57,7 @@
         }
     </div>
 }
-else
+else if (!IsKanji)
 {
     <div class="problem-display text-center my-8">
         @* 文章の問題（時こくなど）は長いので小さめの文字にする。文章問題はさらに長いので、読みやすい大きさで左にそろえる *@
@@ -121,6 +127,13 @@ else
     [Parameter]
     public EventCallback OnSubmit { get; set; }
 
+    /// <summary>文字の答え（漢字の問題のときだけ使う、020）</summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnTextChange { get; set; }
+
     [Parameter]
     public bool IsSubmitting { get; set; }
 
@@ -147,7 +160,14 @@ else
     };
 
     // 2つの欄がある問題（あまりのあるわり算、時こくの「時・分」など）は、両方を入れたときだけ答えられる
-    private bool CanSubmit => Answer.HasValue && (!Problem.HasRemainder || Remainder.HasValue);
+    private bool CanSubmit => IsKanji
+        ? !string.IsNullOrEmpty(Text)
+        : Answer.HasValue && (!Problem.HasRemainder || Remainder.HasValue);
+
+    // 漢字の問題（ひらがなを入力・4つから選ぶ、020）
+    private bool IsKanji => Problem.AnswerFormat is "Text" or "Choice";
+
+    private Task HandleTextChange(string text) => OnTextChange.InvokeAsync(text);
     private MudTextField<string>? answerField;
 
     // 答えの欄（横書き・ひっ算のどちらでも同じ欄を使う）

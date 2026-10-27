@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/020-kanji`
 **Created**: 2026年10月27日
-**Status**: Draft（中身の一覧を確認中）
+**Status**: Implemented（1回目：小3の30字）
 **Input**: User description: "smart learning なので算数だけでなく、子どもが練習したい国語（漢字）を入れる"
 
 ## Clarifications

@@ -1,8 +1,18 @@
 @using MudBlazor
 @using GamifiedMathDrill.Client.Models
 
+@* 教科の切りかえ（020）。選んだ教科の種類だけを並べる *@
+<div class="d-flex justify-center gap-3 mb-4" role="tablist">
+    <MudButton Variant="@(showJapanese ? Variant.Outlined : Variant.Filled)" Color="Color.Primary" Size="Size.Large"
+               StartIcon="@Icons.Material.Filled.Calculate" OnClick="() => showJapanese = false"
+               aria-selected="@(!showJapanese)" role="tab">さんすう</MudButton>
+    <MudButton Variant="@(showJapanese ? Variant.Filled : Variant.Outlined)" Color="Color.Primary" Size="Size.Large"
+               StartIcon="@Icons.Material.Filled.MenuBook" OnClick="() => showJapanese = true"
+               aria-selected="@showJapanese" role="tab">こくご</MudButton>
+</div>
+
 <MudGrid Spacing="3" Justify="Justify.Center">
-    @foreach (var category in Categories)
+    @foreach (var category in showJapanese ? JapaneseCategories : Categories)
     {
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudCard Class="@GetCardClass(category.Value)" 
@@ -40,6 +50,19 @@
     [Parameter]
     public List<StudentLevelDto>? Levels { get; set; }
 
+    // こくごを表示しているか。選んでいる種類が国語なら、こくごから始める
+    private bool showJapanese;
+    private bool initialized;
+
+    protected override void OnParametersSet()
+    {
+        if (!initialized)
+        {
+            showJapanese = CalculationTypeNames.IsJapanese(SelectedCategory);
+            initialized = true;
+        }
+    }
+
     private StudentLevelDto? LevelOf(string? calculationType) =>
         calculationType == null ? null : Levels?.FirstOrDefault(l => l.CalculationType == calculationType);
 
@@ -61,6 +84,15 @@
         new CategoryInfo { Name = "長さ・重さ・かさ", Value = "Measurement", Icon = Icons.Material.Filled.Straighten },
         new CategoryInfo { Name = "文章問題", Value = "WordProblem", Icon = Icons.Material.Filled.MenuBook },
         new CategoryInfo { Name = "すべて（ミックス）", Value = null, Icon = Icons.Material.Filled.AllInclusive }
+    };
+
+    // 国語（漢字、020）
+    private List<CategoryInfo> JapaneseCategories = new()
+    {
+        new CategoryInfo { Name = "漢字の読み", Value = "KanjiReading", Icon = Icons.Material.Filled.RecordVoiceOver },
+        new CategoryInfo { Name = "漢字の書き", Value = "KanjiWriting", Icon = Icons.Material.Filled.Edit },
+        new CategoryInfo { Name = "漢字のことば", Value = "KanjiWords", Icon = Icons.Material.Filled.Translate },
+        new CategoryInfo { Name = "こくご ミックス", Value = CalculationTypeNames.JapaneseMix, Icon = Icons.Material.Filled.AllInclusive }
     };
 
     private bool IsSelected(string? value)

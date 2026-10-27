@@ -30,7 +30,12 @@ public class ProblemApiClient
             }
         }
 
-        if (!string.IsNullOrEmpty(category))
+        if (category == CalculationTypeNames.JapaneseMix)
+        {
+            // こくご ミックス: 国語の種類をまぜて出す（020）
+            queryParams.Add("subject=Japanese");
+        }
+        else if (!string.IsNullOrEmpty(category))
         {
             queryParams.Add($"category={category}");
         }
@@ -47,9 +52,9 @@ public class ProblemApiClient
         return null;
     }
 
-    public async Task<AnswerResultDto?> SubmitAnswerAsync(int problemId, int studentId, int answer, int? remainder = null)
+    public async Task<AnswerResultDto?> SubmitAnswerAsync(int problemId, int studentId, int answer, int? remainder = null, string? text = null)
     {
-        var submitDto = new SubmitAnswerDto { Answer = answer, Remainder = remainder };
+        var submitDto = new SubmitAnswerDto { Answer = answer, Remainder = remainder, Text = text };
         var response = await _httpClient.PostAsJsonAsync(
             $"api/problems/{problemId}/answer?studentId={studentId}", 
             submitDto,

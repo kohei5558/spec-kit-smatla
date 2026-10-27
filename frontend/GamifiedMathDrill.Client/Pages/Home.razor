@@ -94,7 +94,7 @@
             <MudPaper Class="pa-6 mb-6" Elevation="2">
                 <MudText Typo="Typo.h5" Class="mb-4">
                     <MudIcon Icon="@Icons.Material.Filled.Category" Color="Color.Primary" />
-                    計算のカテゴリを選んでね
+                    べんきょうする ものを 選んでね
                 </MudText>
                 <CategorySelector SelectedCategory="@selectedCategory"
                                  Levels="@student.Levels" 
@@ -329,7 +329,7 @@
         // カテゴリ未選択時のバリデーション
         if (!await CategoryState.HasSelectedCategoryAsync())
         {
-            Snackbar.Add("計算のカテゴリを選んでね！", Severity.Warning);
+            Snackbar.Add("べんきょうする ものを 選んでね！", Severity.Warning);
             return;
         }
 
