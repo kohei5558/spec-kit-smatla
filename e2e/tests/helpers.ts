@@ -69,7 +69,10 @@ export function correctAnswer(problemId: number): number[] {
   const db = new DatabaseSync(join(DATA_DIR, 'e2e.db'), { readOnly: true });
   try {
     const row = db.prepare('SELECT CorrectAnswer, CorrectRemainder FROM Problems WHERE Id = ?').get(problemId) as
-      { CorrectAnswer: number; CorrectRemainder: number | null };
+      { CorrectAnswer: number; CorrectRemainder: number | null } | undefined;
+    if (!row) {
+      throw new Error(`E2E の DB に問題 ${problemId} がない`);
+    }
     return row.CorrectRemainder === null ? [row.CorrectAnswer] : [row.CorrectAnswer, row.CorrectRemainder];
   } finally {
     db.close();

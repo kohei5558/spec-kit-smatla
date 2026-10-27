@@ -97,9 +97,14 @@ test('デイリーチャレンジに正解すると、今日はおわりにな�
   await page.waitForURL(u => u.pathname === '/daily-challenge');
   await expect(page.locator('.problem-display')).toBeVisible();
   const question: string = (await today.json()).question;
-  const [, a, op, b] = question.match(/^(\d+) (.) (\d+)/)!;
+  // デイリーチャレンジは四則だけ（答えは1つ）
+  const match = question.match(/^(\d+) ([+\-×÷]) (\d+) = \?$/);
+  if (!match) {
+    throw new Error(`四則の問題ではない: ${question}`);
+  }
+  const [, a, op, b] = match;
   const x = Number(a), y = Number(b);
-  const value = op === '+' ? x + y : op === '-' ? x - y : op === '×' ? x * y : Math.floor(x / y);
+  const value = op === '+' ? x + y : op === '-' ? x - y : op === '×' ? x * y : x / y;
   await page.locator('.answer-input input').first().fill(String(value));
   await page.getByRole('button', { name: '答える' }).click();
   await expect(page.getByText('せいかい！ 🎉')).toBeVisible();
@@ -116,7 +121,7 @@ test('景品の交換を申請する', async ({ page }) => {
   await expect.poll(() => card.locator('.mud-card-media').evaluate(e => getComputedStyle(e).backgroundImage)).toContain('umaibo');
   await card.getByRole('button', { name: '交換する' }).click();
   const [response] = await Promise.all([
-    page.waitForResponse(r => r.url().startsWith(`${API}/api/`) && r.request().method() === 'POST'),
+    page.waitForResponse(r => /\/api\/rewards\/\d+\/exchange$/i.test(new URL(r.url()).pathname) && r.request().method() === 'POST'),
     page.getByRole('button', { name: '交換する' }).last().click(),
   ]);
   expect(response.status()).toBeLessThan(300);
