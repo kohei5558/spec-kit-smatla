@@ -10,8 +10,8 @@
 
 ## Phase 2: 出題と判定
 
-- [ ] T004 テスト: 教科ごとの出題（国語ミックスに算数が出ない・算数ミックスに漢字が出ない）、文字の答えの判定、API が正解を返さない、学習記録の文字の答え - backend/tests/GamifiedMathDrill.Tests.Integration/KanjiProblemTests.cs
-- [ ] T005 API（`subject`・`text`・`choices`・`correctText`・`studentText`）
+- [x] T004 テスト: 教科ごとの出題（国語ミックスに算数が出ない・算数ミックスに漢字が出ない）、文字の答えの判定、API が正解を返さない、学習記録の文字の答え - backend/tests/GamifiedMathDrill.Tests.Integration/KanjiProblemTests.cs
+- [x] T005 API（`subject`・`text`・`choices`・`correctText`・`studentText`）
 
 ## Phase 3: 画面
 

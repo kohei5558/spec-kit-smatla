@@ -33,7 +33,7 @@ public class ProblemService : IProblemService
         return records.Count();
     }
 
-    public async Task<Problem?> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null, CalculationType? category = null)
+    public async Task<Problem?> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null, CalculationType? category = null, Subject? subject = null)
     {
         var student = await _studentRepository.GetByIdWithDetailsAsync(studentId);
         if (student == null)
@@ -41,10 +41,10 @@ public class ProblemService : IProblemService
             throw new KeyNotFoundException($"Student with ID {studentId} not found.");
         }
 
-        // 種類の指定があればその種類、「すべて」なら問題がある種類をランダムな順に試す（014: 難易度は種類ごとのレベルで決める）
+        // 種類の指定があればその種類、「すべて」なら その教科（無ければ算数、020）の種類をランダムな順に試す（014: 難易度は種類ごとのレベルで決める）
         var types = category.HasValue
             ? new[] { category.Value }
-            : Enum.GetValues<CalculationType>().OrderBy(_ => Random.Shared.Next()).ToArray();
+            : Subjects.Types(subject ?? Subject.Math).OrderBy(_ => Random.Shared.Next()).ToArray();
 
         foreach (var type in types)
         {
@@ -87,7 +87,8 @@ public class ProblemService : IProblemService
         int studentId,
         int problemId,
         int answer,
-        int? remainder = null)
+        int? remainder = null,
+        string? text = null)
     {
         var student = await _studentRepository.GetByIdWithDetailsAsync(studentId);
         if (student == null)
@@ -108,6 +109,18 @@ public class ProblemService : IProblemService
         var isCorrect = answer == problem.CorrectAnswer
             && (!hasRemainder || studentRemainder == problem.CorrectRemainder);
 
+        // 文字の答えの問題（漢字、020）は、前後の空白を除いた文字が正解と同じときだけ正解。数の欄は見ない
+        string? studentText = null;
+        if (problem.CorrectText != null)
+        {
+            studentText = text?.Trim() ?? string.Empty;
+            if (studentText.Length > 20)
+            {
+                studentText = studentText[..20];
+            }
+            isCorrect = studentText == problem.CorrectText;
+        }
+
         var pointsEarned = isCorrect ? 10 : 0; // 基本ポイント10、不正解は0
 
         // 学習記録の作成
@@ -117,6 +130,7 @@ public class ProblemService : IProblemService
             ProblemId = problemId,
             StudentAnswer = answer,
             StudentRemainder = studentRemainder,
+            StudentText = studentText,
             IsCorrect = isCorrect,
             PointsEarned = pointsEarned,
             TimeTakenSeconds = 0, // TODO: 実際の所要時間を計測
