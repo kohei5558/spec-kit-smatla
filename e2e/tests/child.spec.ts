@@ -50,6 +50,9 @@ test('足し算: 正解・不正解の判定と、けたの多い問題のひっ
     if (i === 0) {
       await answer(page, [correctAnswer(problem.id)[0] + 1]);
       await expect(page.getByText('不正解')).toBeVisible();
+      // まちがえたら解説が出る（019）
+      await expect(page.getByText('💡 かんがえかた')).toBeVisible();
+      await expect(page.getByText(`しき: ${a} + ${b} = ${correctAnswer(problem.id)[0]}`)).toBeVisible();
     } else {
       await solveCorrectly(page, problem.id);
     }

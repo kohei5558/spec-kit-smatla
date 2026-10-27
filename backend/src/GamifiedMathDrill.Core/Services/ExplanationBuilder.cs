@@ -36,6 +36,10 @@ public static partial class ExplanationBuilder
         }
 
         var (a, b) = (int.Parse(m.Groups[1].Value), int.Parse(m.Groups[3].Value));
+        if (b == 0 && m.Groups[2].Value == "÷")
+        {
+            return null;
+        }
         return type switch
         {
             CalculationType.Addition => Add(a, b, answer),

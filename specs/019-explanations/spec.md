@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/019-explanations`
 **Created**: 2026年10月27日
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "不正解の場合は解説が欲しい"
 
 ## 背景
