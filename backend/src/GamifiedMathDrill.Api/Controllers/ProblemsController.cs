@@ -1,4 +1,5 @@
 using GamifiedMathDrill.Core.Interfaces;
+using GamifiedMathDrill.Core.Services;
 using GamifiedMathDrill.Core.Models.DTOs;
 using GamifiedMathDrill.Core.Models.Responses;
 using Microsoft.AspNetCore.Authorization;
@@ -213,6 +214,11 @@ public class ProblemsController : ControllerBase
                 result.CorrectRemainder = problem.CorrectRemainder;
                 result.AnswerFormat = problem.AnswerFormat.ToString();
                 result.AnswerUnits = problem.AnswerUnits?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
+                if (!isCorrect && ExplanationBuilder.Build(problem, answerDto.Answer, answerDto.Remainder) is { } explanation)
+                {
+                    result.Explanation = explanation.Steps.ToList();
+                    result.Hint = explanation.Hint;
+                }
             }
 
             return Ok(ApiResponse<AnswerResultDto>.SuccessResponse(result));

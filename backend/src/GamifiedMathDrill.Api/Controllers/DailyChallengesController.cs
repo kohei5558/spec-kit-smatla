@@ -1,5 +1,6 @@
 using GamifiedMathDrill.Api.DTOs;
 using GamifiedMathDrill.Core.Interfaces;
+using GamifiedMathDrill.Core.Services;
 using GamifiedMathDrill.Api.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +61,10 @@ public class DailyChallengesController : ControllerBase
         }
 
         var answered = challenge.AnsweredAt != null;
+        // まちがえたあとに開き直しても解説が見られるように
+        var explanation = answered && challenge.IsCorrect == false && challenge.StudentAnswer is { } studentAnswer
+            ? ExplanationBuilder.Build(problem, studentAnswer, null)
+            : null;
         return Ok(new DailyChallengeResponseDto
         {
             Id = challenge.Id,
@@ -71,7 +76,9 @@ public class DailyChallengesController : ControllerBase
             IsCorrect = challenge.IsCorrect,
             StudentAnswer = challenge.StudentAnswer,
             // 答える前に正解を返さない
-            CorrectAnswer = answered ? problem.CorrectAnswer : null
+            CorrectAnswer = answered ? problem.CorrectAnswer : null,
+            Explanation = explanation?.Steps.ToList() ?? new List<string>(),
+            Hint = explanation?.Hint
         });
     }
 
@@ -107,7 +114,9 @@ public class DailyChallengesController : ControllerBase
             {
                 IsCorrect = result.IsCorrect,
                 BonusPoints = result.BonusPoints,
-                CorrectAnswer = result.CorrectAnswer
+                CorrectAnswer = result.CorrectAnswer,
+                Explanation = result.Explanation?.Steps.ToList() ?? new List<string>(),
+                Hint = result.Explanation?.Hint
             })
         };
     }

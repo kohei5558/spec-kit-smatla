@@ -70,6 +70,10 @@ public class AnswerResultDto
     public LevelDto? NewLevel { get; set; }
     /// <summary>レベルが上がった計算の種類（Addition など。上がっていなければ null、014）</summary>
     public string? LeveledUpCalculationType { get; set; }
+    /// <summary>まちがえたときの考え方（正解のときは空、019）</summary>
+    public List<string> Explanation { get; set; } = new();
+    /// <summary>よくある まちがいの一言（当てはまらなければ null、019）</summary>
+    public string? Hint { get; set; }
 }
 
 public class LevelDto
