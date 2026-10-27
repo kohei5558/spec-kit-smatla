@@ -1,0 +1,24 @@
+@* まちがえたときの解説（019）。考え方の文と、よくある まちがいの一言 *@
+@if (Steps.Count > 0)
+{
+    @* 中央そろえの不正解の表示の中でも、解説は左にそろえて読みやすくする *@
+    <MudPaper Class="pa-4 mt-6" Elevation="0" Outlined="true" Style="text-align: left; line-height: 1.8; max-width: 640px; margin-left: auto; margin-right: auto;">
+        <MudText Typo="Typo.h6" Class="mb-2">💡 かんがえかた</MudText>
+        @foreach (var step in Steps)
+        {
+            <MudText Typo="Typo.body1" Class="mb-1" Style="font-size: 1.15rem;">@step</MudText>
+        }
+        @if (!string.IsNullOrEmpty(Hint))
+        {
+            <MudText Typo="Typo.body1" Class="mt-3" Color="Color.Warning" Style="font-size: 1.15rem; font-weight: bold;">🔍 @Hint</MudText>
+        }
+    </MudPaper>
+}
+
+@code {
+    [Parameter]
+    public List<string> Steps { get; set; } = new();
+
+    [Parameter]
+    public string? Hint { get; set; }
+}

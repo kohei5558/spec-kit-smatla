@@ -1,4 +1,5 @@
 using GamifiedMathDrill.Core.Models;
+using GamifiedMathDrill.Core.Services;
 
 namespace GamifiedMathDrill.Core.Interfaces;
 
@@ -20,4 +21,5 @@ public enum DailyChallengeAnswerStatus
     AlreadyAnswered
 }
 
-public record DailyChallengeAnswerResult(DailyChallengeAnswerStatus Status, bool IsCorrect = false, int BonusPoints = 0, int CorrectAnswer = 0);
+/// <param name="Explanation">まちがえたときの解説（正解のときは null、019）</param>
+public record DailyChallengeAnswerResult(DailyChallengeAnswerStatus Status, bool IsCorrect = false, int BonusPoints = 0, int CorrectAnswer = 0, Explanation? Explanation = null);

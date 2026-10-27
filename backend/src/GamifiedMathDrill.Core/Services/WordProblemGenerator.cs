@@ -4,7 +4,7 @@ namespace GamifiedMathDrill.Core.Services;
 
 /// <summary>
 /// 文章問題（017）。文章は保護者が確認したひな形（specs/017-word-problems/templates.md）に数を入れるだけで作る。
-/// ひな形の番号は templates.md と同じ
+/// ひな形の文と番号は WordProblemTemplates（templates.md と同じ）
 /// </summary>
 public static class WordProblemGenerator
 {
@@ -65,18 +65,18 @@ public static class WordProblemGenerator
                     var a = b * q + r.Next(1, b);
                     return Pick(d == 7 ? new[] { 14, 15 } : new[] { 16, 17 }) switch
                     {
-                        14 => New($"{a}この あめを {b}人で 同じ数ずつ 分けます。1人 何こに なって、何こ あまりますか。", q, "こ こ", a % b),
-                        15 => New($"{a}まいの 画用紙を 1人に {b}まいずつ くばります。何人に くばれて、何まい あまりますか。", q, "人 まい", a % b),
+                        14 => New(WordProblemTemplates.Format(14, a, b), q, "こ こ", a % b),
+                        15 => New(WordProblemTemplates.Format(15, a, b), q, "人 まい", a % b),
                         // あまりの分も1はこいる
-                        16 => New($"ケーキが {a}こ あります。1はこに {b}こずつ 入れます。ぜんぶ 入れるには、はこは 何こ いりますか。", q + 1, "こ"),
+                        16 => New(WordProblemTemplates.Format(16, a, b), q + 1, "こ"),
                         // あまりのお金では買えない
-                        _ => New($"{a}円で 1こ {b}円の あめを 買います。何こ 買えますか。", q, "こ")
+                        _ => New(WordProblemTemplates.Format(17, a, b), q, "こ")
                     };
                 }
             case 9:
                 {
                     var (a, b) = (r.Next(10, 100), Kuku());
-                    return New($"1こ {a}円の ガムを {b}こ 買います。何円 ですか。", a * b, "円");
+                    return New(WordProblemTemplates.Format(9, a, b), a * b, "円");
                 }
             case 10:
                 return TwoSteps(Pick(18, 19, 20), r);
@@ -102,10 +102,10 @@ public static class WordProblemGenerator
 
         return template switch
         {
-            1 => New($"赤い 花が {a}本、白い 花が {b}本 さいています。あわせて 何本 ですか。", answer, "本"),
-            2 => New($"バスに {a}人 のっています。{b}人 のってきました。みんなで 何人 ですか。", answer, "人"),
-            3 => New($"シールを {a}まい もっています。友だちに {b}まい あげました。のこりは 何まい ですか。", answer, "まい"),
-            _ => New($"兄は {a}円、弟は {b}円 もっています。ちがいは 何円 ですか。", answer, "円")
+            1 => New(WordProblemTemplates.Format(1, a, b), answer, "本"),
+            2 => New(WordProblemTemplates.Format(2, a, b), answer, "人"),
+            3 => New(WordProblemTemplates.Format(3, a, b), answer, "まい"),
+            _ => New(WordProblemTemplates.Format(4, a, b), answer, "円")
         };
     }
 
@@ -120,19 +120,19 @@ public static class WordProblemGenerator
         {
             // はじめ + b = c なので、ひき算
             var c = start + b;
-            return c >= 100 ? null : New($"かごに みかんが 何こか あります。{b}こ 入れたら、ぜんぶで {c}こ に なりました。はじめに 何こ ありましたか。", start, "こ");
+            return c >= 100 ? null : New(WordProblemTemplates.Format(5, b: b, c: c), start, "こ");
         }
 
         // はじめ - b = c なので、たし算
         var left = start - b;
-        return left < 10 ? null : New($"公園で 子どもが あそんでいます。{b}人 帰ったので、{left}人 に なりました。はじめに 何人 いましたか。", start, "人");
+        return left < 10 ? null : New(WordProblemTemplates.Format(6, b: b, c: left), start, "人");
     }
 
     private static Problem Multiply(int template, int a, int b) => template switch
     {
-        7 => New($"1はこに {a}こずつ 入った クッキーが {b}はこ あります。ぜんぶで 何こ ですか。", a * b, "こ"),
-        8 => New($"子どもが {a}人ずつ {b}れつに ならんでいます。みんなで 何人 ですか。", a * b, "人"),
-        _ => New($"1日に {a}ページずつ 本を 読みます。{b}日間 では 何ページ 読めますか。", a * b, "ページ")
+        7 => New(WordProblemTemplates.Format(7, a, b), a * b, "こ"),
+        8 => New(WordProblemTemplates.Format(8, a, b), a * b, "人"),
+        _ => New(WordProblemTemplates.Format(10, a, b), a * b, "ページ")
     };
 
     /// <summary>
@@ -140,9 +140,9 @@ public static class WordProblemGenerator
     /// </summary>
     private static Problem Divide(int template, int b, int q) => template switch
     {
-        11 => New($"{b * q}まいの 色紙を {b}人で 同じ数ずつ 分けます。1人 何まい ですか。", q, "まい"),
-        12 => New($"えんぴつが {b * q}本 あります。{b}本ずつ たばに すると、何たば できますか。", q, "たば"),
-        _ => New($"{b * q}cmの テープを {b}cmずつ 切ります。何本 できますか。", q, "本")
+        11 => New(WordProblemTemplates.Format(11, a: b * q, b: b), q, "まい"),
+        12 => New(WordProblemTemplates.Format(12, a: b * q, b: b), q, "たば"),
+        _ => New(WordProblemTemplates.Format(13, a: b * q, b: b), q, "本")
     };
 
     /// <summary>
@@ -157,20 +157,20 @@ public static class WordProblemGenerator
                     // 300〜1000円をもって、1こ 50〜200円のパンを 2〜5こ
                     var (money, price, count) = (r.Next(3, 11) * 100, r.Next(5, 21) * 10, r.Next(2, 6));
                     var left = money - price * count;
-                    return left <= 0 ? null : New($"{money}円 もって 買いものに 行きました。1こ {price}円の パンを {count}こ 買うと、のこりは 何円 ですか。", left, "円");
+                    return left <= 0 ? null : New(WordProblemTemplates.Format(18, a: money, b: price, c: count), left, "円");
                 }
             case 19:
                 {
                     // 2人の合計を、九九の範囲でわり切れるように分ける
                     var (people, each) = (r.Next(2, 10), r.Next(2, 10));
                     var mine = r.Next(1, people * each);
-                    return New($"どんぐりを、わたしは {mine}こ、妹は {people * each - mine}こ ひろいました。2人の どんぐりを {people}人で 同じ数ずつ 分けると、1人 何こ ですか。", each, "こ");
+                    return New(WordProblemTemplates.Format(19, a: mine, b: people * each - mine, c: people), each, "こ");
                 }
             default:
                 {
                     var (a, b) = (r.Next(2, 10), r.Next(2, 10));
                     var eaten = r.Next(1, a * b);
-                    return New($"1ふくろ {a}こ入りの あめを {b}ふくろ 買いました。{eaten}こ 食べると、のこりは 何こ ですか。", a * b - eaten, "こ");
+                    return New(WordProblemTemplates.Format(20, a, b, eaten), a * b - eaten, "こ");
                 }
         }
     }

@@ -56,6 +56,10 @@
                 <MudText Typo="Typo.h3" Color="Color.Error" Class="mt-4 mb-4">ざんねん…</MudText>
             }
             <MudText Typo="Typo.h5" Class="mt-4">@challenge.Question.Replace("?", challenge.CorrectAnswer?.ToString() ?? "?")</MudText>
+            @if (challenge.IsCorrect == false)
+            {
+                <ExplanationBox Steps="@challenge.Explanation" Hint="@challenge.Hint" />
+            }
             <MudText Typo="Typo.body1" Class="mt-4" Color="Color.Secondary">
                 今日のチャレンジはおわり。また明日ちょうせんしてね
             </MudText>

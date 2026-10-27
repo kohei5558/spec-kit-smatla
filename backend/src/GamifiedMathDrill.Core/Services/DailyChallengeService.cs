@@ -139,6 +139,7 @@ public class DailyChallengeService : IDailyChallengeService
         student.TotalPoints += bonusPoints;
         await _studentRepository.UpdateAsync(student);
 
-        return new DailyChallengeAnswerResult(DailyChallengeAnswerStatus.Answered, isCorrect, bonusPoints, problem.CorrectAnswer);
+        return new DailyChallengeAnswerResult(DailyChallengeAnswerStatus.Answered, isCorrect, bonusPoints, problem.CorrectAnswer,
+            isCorrect ? null : ExplanationBuilder.Build(problem, answer, null));
     }
 }
