@@ -51,6 +51,7 @@
                 <MudTabPanel Text="あまりあり" />
                 <MudTabPanel Text="時こく" />
                 <MudTabPanel Text="単位" />
+                <MudTabPanel Text="文章" />
             </MudTabs>
         </MudPaper>
 
@@ -235,7 +236,8 @@
             ("Division", "割り算", 4),
             ("DivisionWithRemainder", "あまりのあるわり算", 5),
             ("Time", "時こくと時間", 6),
-            ("Measurement", "長さ・重さ・かさ", 7)
+            ("Measurement", "長さ・重さ・かさ", 7),
+            ("WordProblem", "文章問題", 8)
         };
 
         foreach (var (category, name, order) in categories)
@@ -273,6 +275,7 @@
             "DivisionWithRemainder" => Color.Secondary,
             "Time" => Color.Tertiary,
             "Measurement" => Color.Dark,
+            "WordProblem" => Color.Primary,
             _ => Color.Default
         };
     }
@@ -287,6 +290,7 @@
             "Division" or "DivisionWithRemainder" => Icons.Material.Filled.MoreHoriz,
             "Time" => Icons.Material.Filled.Schedule,
             "Measurement" => Icons.Material.Filled.Straighten,
+            "WordProblem" => Icons.Material.Filled.MenuBook,
             _ => Icons.Material.Filled.Calculate
         };
     }
@@ -357,6 +361,7 @@
             5 => "DivisionWithRemainder",
             6 => "Time",
             7 => "Measurement",
+            8 => "WordProblem",
             _ => null
         };
         _currentPage = 1;

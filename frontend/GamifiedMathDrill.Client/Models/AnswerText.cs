@@ -6,8 +6,8 @@ namespace GamifiedMathDrill.Client.Models;
 public static class AnswerText
 {
     /// <summary>
-    /// 「4時5分」「1時間40分」「80分」「1分30秒」「90秒」「1km250m」「3050g」「3 あまり 2」「42」。2つ目を答えていないときは「?」。
-    /// units は欄の単位（答えの形が Units のとき、015）
+    /// 「4時5分」「1時間40分」「80分」「1分30秒」「90秒」「1km250m」「3050g」「3 あまり 2」「6こ あまり 2こ」「42」。2つ目を答えていないときは「?」。
+    /// units は欄の単位（答えの形が Units・UnitsRemainder のとき、015・017）
     /// </summary>
     public static string Format(string? answerFormat, int first, int? second, IReadOnlyList<string>? units = null)
     {
@@ -16,6 +16,7 @@ public static class AnswerText
         {
             "Units" when units is { Count: 2 } => second == 0 ? $"{first}{units[0]}" : $"{first}{units[0]}{s}{units[1]}",
             "Units" when units is { Count: 1 } => $"{first}{units[0]}",
+            "UnitsRemainder" when units is { Count: 2 } => $"{first}{units[0]} あまり {s}{units[1]}",
             "QuotientRemainder" => $"{first} あまり {s}",
             "ClockTime" => second == 0 ? $"{first}時" : $"{first}時{s}分",
             "HoursMinutes" => second == 0 ? $"{first}時間" : $"{first}時間{s}分",
@@ -32,7 +33,7 @@ public static class AnswerText
     /// </summary>
     public static (string? First, string? Second) Units(string? answerFormat, IReadOnlyList<string>? units = null) => answerFormat switch
     {
-        "Units" => (units?.ElementAtOrDefault(0), units?.ElementAtOrDefault(1)),
+        "Units" or "UnitsRemainder" => (units?.ElementAtOrDefault(0), units?.ElementAtOrDefault(1)),
         "ClockTime" => ("時", "分"),
         "HoursMinutes" => ("時間", "分"),
         "Minutes" => ("分", null),

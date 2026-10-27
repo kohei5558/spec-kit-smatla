@@ -38,5 +38,10 @@ public enum CalculationType
     /// <summary>
     /// 長さ・重さ・かさ（015。答えの欄の単位は Problem.AnswerUnits）
     /// </summary>
-    Measurement = 6
+    Measurement = 6,
+
+    /// <summary>
+    /// 文章問題（017。文章は specs/017-word-problems/templates.md のひな形だけ）
+    /// </summary>
+    WordProblem = 7
 }

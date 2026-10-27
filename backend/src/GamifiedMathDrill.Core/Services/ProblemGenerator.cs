@@ -45,6 +45,12 @@ public static class ProblemGenerator
         {
             problems.AddRange(MeasurementProblemGenerator.Generate(difficulty, random));
         }
+
+        // 文章問題（017）。長さ・重さ・かさのあとに作るので、上の問題セットは変わらない
+        for (var difficulty = 1; difficulty <= 10; difficulty++)
+        {
+            problems.AddRange(WordProblemGenerator.Generate(difficulty, random));
+        }
         return problems;
     }
 

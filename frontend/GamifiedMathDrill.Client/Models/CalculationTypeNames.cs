@@ -14,6 +14,7 @@ public static class CalculationTypeNames
         "DivisionWithRemainder" => "あまりのあるわり算",
         "Time" => "時こくと時間",
         "Measurement" => "長さ・重さ・かさ",
+        "WordProblem" => "文章問題",
         _ => "計算"
     };
 }
