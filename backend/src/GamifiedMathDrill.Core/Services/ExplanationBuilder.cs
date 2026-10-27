@@ -22,6 +22,8 @@ public static partial class ExplanationBuilder
         CalculationType.Time => Time(problem.Question, answer, remainder),
         CalculationType.Measurement => Measurement(problem.Question, answer, remainder),
         CalculationType.WordProblem => WordProblem(problem.Question, answer, remainder),
+        // 漢字（020）の解説は、文の一覧を保護者に確認してもらってから足す
+        CalculationType.KanjiReading or CalculationType.KanjiWriting or CalculationType.KanjiWords => null,
         _ => Arithmetic(problem.CalculationType, problem.Question, answer, remainder)
     };
 

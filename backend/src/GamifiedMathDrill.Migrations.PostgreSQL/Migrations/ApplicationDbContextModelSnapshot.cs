@@ -179,6 +179,10 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
                     b.Property<int?>("StudentRemainder")
                         .HasColumnType("integer");
 
+                    b.Property<string>("StudentText")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<int>("TimeTakenSeconds")
                         .HasColumnType("integer");
 
@@ -321,6 +325,10 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
                     b.Property<int>("CalculationType")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Choices")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
                     b.Property<string>("ClockTimes")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
@@ -330,6 +338,10 @@ namespace GamifiedMathDrill.Migrations.PostgreSQL.Migrations
 
                     b.Property<int?>("CorrectRemainder")
                         .HasColumnType("integer");
+
+                    b.Property<string>("CorrectText")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<int>("DifficultyLevel")
                         .HasColumnType("integer");

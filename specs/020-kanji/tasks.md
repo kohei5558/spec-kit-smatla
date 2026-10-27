@@ -4,9 +4,9 @@
 
 ## Phase 1: 問題を作る
 
-- [ ] T001 テスト: 漢字の問題が kanji-batch1.md どおり（字・例文・答え・選択肢の中身、正解が選択肢に1つ、むずかしさの分け方）。算数の問題セットは変わらない - backend/tests/GamifiedMathDrill.Tests.Unit/KanjiProblemGeneratorTests.cs
-- [ ] T002 `CalculationType`・`Subject`・`AnswerFormat`・`Problem`・`LearningRecord` のモデル、`KanjiBatch1`、`KanjiProblemGenerator`、`ProblemSynchronizer`
-- [ ] T003 マイグレーション `AddKanjiProblems`（SQLite・PostgreSQL）
+- [x] T001 テスト: 漢字の問題が kanji-batch1.md どおり（字・例文・答え・選択肢の中身、正解が選択肢に1つ、むずかしさの分け方）。算数の問題セットは変わらない - backend/tests/GamifiedMathDrill.Tests.Unit/KanjiProblemGeneratorTests.cs
+- [x] T002 `CalculationType`・`Subject`・`AnswerFormat`・`Problem`・`LearningRecord` のモデル、`KanjiBatch1`、`KanjiProblemGenerator`、`ProblemSynchronizer`
+- [x] T003 マイグレーション `AddKanjiProblems`（SQLite・PostgreSQL）
 
 ## Phase 2: 出題と判定
 
