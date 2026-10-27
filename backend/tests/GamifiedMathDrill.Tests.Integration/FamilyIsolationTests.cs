@@ -42,10 +42,11 @@ public class FamilyIsolationTests : IClassFixture<TestWebApplicationFactory>
     public async Task DailyChallengeAnswer_WithoutLogin_ReturnsUnauthorized()
     {
         var client = _factory.CreateClient();
-        var challengeId = await AddChallengeAsync(null);
+        var family = await FamilyTestHelper.CreateFamilyAsync(client, "分離未ログイン");
+        var challengeId = await AddChallengeAsync(family.StudentId);
 
         var response = await client.PostAsJsonAsync($"/api/dailychallenges/{challengeId}/answer",
-            new DailyChallengeAnswerRequestDto { StudentId = 1, Answer = 0 });
+            new DailyChallengeAnswerRequestDto { StudentId = family.StudentId, Answer = 0 });
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -169,15 +170,15 @@ public class FamilyIsolationTests : IClassFixture<TestWebApplicationFactory>
     private Task GivePointsAsync(int studentId, int points) => FamilyTestHelper.SetPointsAsync(_factory.Services, studentId, points);
 
     /// <summary>
-    /// 学習者のチャレンジを直接作る（学習者を指定しない場合は既存のいずれかの学習者）
+    /// 学習者のチャレンジを直接作る
     /// </summary>
-    private async Task<int> AddChallengeAsync(int? studentId)
+    private async Task<int> AddChallengeAsync(int studentId)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var challenge = new DailyChallenge
         {
-            StudentId = studentId ?? db.Students.First().Id,
+            StudentId = studentId,
             ProblemId = db.Problems.First().Id,
             TargetDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-100)
         };
