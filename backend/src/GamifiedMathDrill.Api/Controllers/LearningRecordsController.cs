@@ -94,6 +94,8 @@ public class LearningRecordsController : ControllerBase
                 StudentRemainder = r.StudentRemainder,
                 AnswerFormat = r.Problem.AnswerFormat.ToString(),
                 AnswerUnits = r.Problem.AnswerUnits?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
+                CorrectText = r.Problem.CorrectText,
+                StudentText = r.StudentText,
                 IsCorrect = r.IsCorrect,
                 PointsEarned = r.PointsEarned,
                 TimeTakenSeconds = r.TimeTakenSeconds,
@@ -231,6 +233,9 @@ public class LearningRecordDto
     public string AnswerFormat { get; set; } = "Number";
     /// <summary>答えの欄の単位（015）</summary>
     public List<string> AnswerUnits { get; set; } = new();
+    /// <summary>文字の正解と子どもの文字の答え（漢字の問題のときだけ、020）</summary>
+    public string? CorrectText { get; set; }
+    public string? StudentText { get; set; }
     public bool IsCorrect { get; set; }
     public int PointsEarned { get; set; }
     public int TimeTakenSeconds { get; set; }

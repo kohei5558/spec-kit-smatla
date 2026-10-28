@@ -48,5 +48,15 @@ public enum AnswerFormat
     /// <summary>
     /// [ ]こ あまり [ ]こ（単位つきのあまりのあるわり算。単位は Problem.AnswerUnits の "こ こ"、017）
     /// </summary>
-    UnitsRemainder = 8
+    UnitsRemainder = 8,
+
+    /// <summary>
+    /// ひらがなを入力（漢字の読み。正解は Problem.CorrectText、020）
+    /// </summary>
+    Text = 9,
+
+    /// <summary>
+    /// 4つから選ぶ（漢字の書き・ことば。選択肢は Problem.Choices、正解は Problem.CorrectText、020）
+    /// </summary>
+    Choice = 10
 }

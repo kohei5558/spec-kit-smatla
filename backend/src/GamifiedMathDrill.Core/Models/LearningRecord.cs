@@ -42,6 +42,12 @@ public class LearningRecord
     public int? StudentRemainder { get; set; }
 
     /// <summary>
+    /// 児童の文字の答え（漢字の問題のみ、020）
+    /// </summary>
+    [MaxLength(20)]
+    public string? StudentText { get; set; }
+
+    /// <summary>
     /// 獲得ポイント
     /// </summary>
     [Range(0, int.MaxValue)]

@@ -58,7 +58,8 @@ public class ProblemsController : ControllerBase
     public async Task<ActionResult<ApiResponse<ProblemDto>>> GetNext(
         [FromQuery][Required] int studentId,
         [FromQuery] List<int>? excludeRecentIds = null,
-        [FromQuery] Core.Models.CalculationType? category = null)
+        [FromQuery] Core.Models.CalculationType? category = null,
+        [FromQuery] Core.Models.Subject? subject = null)
     {
         if (studentId <= 0)
         {
@@ -72,14 +73,14 @@ public class ProblemsController : ControllerBase
         }
 
         // 自動ModelState検証は無効化されているため、不正なカテゴリ（バインド失敗・未定義の数値）をここで弾く
-        if (!ModelState.IsValid || (category.HasValue && !Enum.IsDefined(category.Value)))
+        if (!ModelState.IsValid || (category.HasValue && !Enum.IsDefined(category.Value)) || (subject.HasValue && !Enum.IsDefined(subject.Value)))
         {
             return BadRequest(ApiResponse<ProblemDto>.ErrorResponse("Invalid category."));
         }
 
         try
         {
-            var problem = await _problemService.GetNextProblemAsync(studentId, excludeRecentIds, category);
+            var problem = await _problemService.GetNextProblemAsync(studentId, excludeRecentIds, category, subject);
             if (problem == null)
             {
                 var message = category.HasValue
@@ -99,6 +100,7 @@ public class ProblemsController : ControllerBase
                 AnswerFormat = problem.AnswerFormat.ToString(),
                 ClockTimes = problem.ClockTimes?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
                 AnswerUnits = problem.AnswerUnits?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
+                Choices = problem.Choices?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
                 TodayAnsweredCount = await _problemService.CountTodaysAnswersAsync(studentId)
             };
 
@@ -124,6 +126,9 @@ public class ProblemsController : ControllerBase
             Core.Models.CalculationType.Subtraction => "引き算",
             Core.Models.CalculationType.Multiplication => "掛け算",
             Core.Models.CalculationType.Division => "割り算",
+            Core.Models.CalculationType.KanjiReading => "漢字の読み",
+            Core.Models.CalculationType.KanjiWriting => "漢字の書き",
+            Core.Models.CalculationType.KanjiWords => "漢字のことば",
             _ => category.ToString()
         };
     }
@@ -183,7 +188,7 @@ public class ProblemsController : ControllerBase
         try
         {
             var (isCorrect, pointsEarned, leveledUp, newLevel, calculationType) =
-                await _problemService.SubmitAnswerAsync(studentId, id, answerDto.Answer, answerDto.Remainder);
+                await _problemService.SubmitAnswerAsync(studentId, id, answerDto.Answer, answerDto.Remainder, answerDto.Text);
 
             _logger.LogInformation("Answer result: IsCorrect={IsCorrect}, PointsEarned={PointsEarned}",
                 isCorrect, pointsEarned);
@@ -214,6 +219,7 @@ public class ProblemsController : ControllerBase
                 result.CorrectRemainder = problem.CorrectRemainder;
                 result.AnswerFormat = problem.AnswerFormat.ToString();
                 result.AnswerUnits = problem.AnswerUnits?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
+                result.CorrectText = problem.CorrectText;
                 if (!isCorrect && ExplanationBuilder.Build(problem, answerDto.Answer, answerDto.Remainder) is { } explanation)
                 {
                     result.Explanation = explanation.Steps.ToList();

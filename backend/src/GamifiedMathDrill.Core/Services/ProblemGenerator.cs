@@ -51,6 +51,9 @@ public static class ProblemGenerator
         {
             problems.AddRange(WordProblemGenerator.Generate(difficulty, random));
         }
+
+        // 漢字（020、国語）。文章問題のあとに作るので、上の問題セットは変わらない
+        problems.AddRange(KanjiProblemGenerator.Generate(random));
         return problems;
     }
 

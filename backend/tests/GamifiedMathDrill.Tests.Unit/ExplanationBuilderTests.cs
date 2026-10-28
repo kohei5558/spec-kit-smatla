@@ -10,7 +10,8 @@ namespace GamifiedMathDrill.Tests.Unit;
 /// </summary>
 public class ExplanationBuilderTests
 {
-    private static readonly List<Problem> AllProblems = ProblemGenerator.GenerateAll();
+    // 解説は算数の問題だけ（漢字の解説は、文の一覧を確認してから足す、020）
+    private static readonly List<Problem> AllProblems = ProblemGenerator.GenerateAll().Where(p => Subjects.Of(p.CalculationType) == Subject.Math).ToList();
 
     [Fact]
     public void EveryProblem_HasExplanation_EndingWithTheCorrectAnswer()
@@ -30,6 +31,13 @@ public class ExplanationBuilderTests
                 : numbers.Count >= 2 && (numbers[^2], numbers[^1]) == (p.CorrectAnswer, r.Value);
             Assert.True(endsWithAnswer, $"{p.Question} → {string.Join(" / ", e.Steps)}（正解 {p.CorrectAnswer} {r}）");
         }
+    }
+
+    [Fact]
+    public void KanjiProblems_HaveNoExplanationYet()
+    {
+        Assert.All(ProblemGenerator.GenerateAll().Where(p => Subjects.Of(p.CalculationType) == Subject.Japanese),
+            p => Assert.Null(ExplanationBuilder.Build(p, 0, null)));
     }
 
     [Fact]

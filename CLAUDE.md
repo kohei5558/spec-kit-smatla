@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-小学生（主な対象は小3・8〜9歳）向けのゲーミフィケーション型算数ドリル。spec-kit による仕様駆動開発。
+小学生（主な対象は小3・8〜9歳）向けのゲーミフィケーション型学習ドリル（算数と、国語の漢字）。spec-kit による仕様駆動開発。
 
 ## 構成
 
@@ -52,6 +52,7 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/src/GamifiedMath
 - 長さ・重さ・かさ（`CalculationType.Measurement`、015）は `MeasurementProblemGenerator` が作る。答えの形は `AnswerFormat.Units` で、欄の単位を `Problem.AnswerUnits`（"mm"、2つなら "km m"）に持つ（API は `answerUnits` のリスト）。単位の組は 10倍・100倍（cm-mm、m-cm、L-dL）と 1000倍（km-m、kg-g、t-kg、L-mL）。dL は大人になってもほぼ使わないため、dL-mL は出さず、L-dL はなおし方（難易度1〜3）だけ。
 - 文章問題（`CalculationType.WordProblem`、017）は `WordProblemGenerator` が、保護者が確認したひな形（`specs/017-word-problems/templates.md`）に数を入れて作る。**ひな形の文章を変える・足すときは、先に templates.md を保護者に確認してもらう**（テストもひな形の文章をそのまま持っている）。答えは `AnswerFormat.Units`（"本"）か、あまりのあるわり算は `AnswerFormat.UnitsRemainder`（"人 まい"、画面は「[ ]人 あまり [ ]まい」）。
 - まちがえたときの解説（019）は `ExplanationBuilder`（Core/Services、種類ごとに partial）が問題文を読み直して作る（DB には持たない）。文は保護者が確認した `specs/019-explanations/explanations.md` の形で、**文を変える・足すときは先に保護者に確認する**。回答の結果（問題・デイリーチャレンジ）の `explanation`・`hint` に入る（不正解のときだけ）。問題の作り方（問題文の形）を変えたら解説も合わせる（`ExplanationBuilderTests` が全問題で確かめる）。文章問題のひな形の文は `WordProblemTemplates` にまとめてある。
+- 国語（漢字、020）: 問題の種類は `CalculationType.KanjiReading`（読み）・`KanjiWriting`（書き）・`KanjiWords`（ことば）。教科は `Subjects.Of(type)` で決まる（`Subject` は DB に持たない）。答えは文字で、`Problem.CorrectText`（正解）・`Problem.Choices`（選択肢、スペース区切り）・`LearningRecord.StudentText`。答えの形は `AnswerFormat.Text`（50音ボタンで ひらがな）と `Choice`（4つから選ぶ）。`CorrectText` がある問題は文字で判定する（数の欄は見ない）。中身は保護者が確認した `specs/020-kanji/kanji-batch1.md` だけで、`Core/Models/KanjiBatch1.cs` に同じ中身を持つ。**中身を変える・足すときは、先に一覧を保護者に確認してもらう**（`KanjiProblemGeneratorTests` が一覧のファイルと比べる）。出題の「すべて」は教科ごと（API の `subject`、無ければ算数）。画面では「こくご ミックス」を `"Japanese"` として持つ（`CalculationTypeNames.JapaneseMix`）。漢字の解説（019）はまだない。
 - デイリーチャレンジ（010）は学習者ごと・日本時間の日ごとに1つ（`DailyChallenge.StudentId`）。その日に初めて開いたときに、四則から1つ選んだ種類のレベルの最大難易度から作る。回答は子供本人だけ・1日1回（2回目は 409、`AnsweredAt` を同時実行の確認に使う）。連続正解数・レベルは変えない。時刻は `TimeProvider` で取得し、「今日」は `Core/Services/JapanTime`（日本時間、DB の日時は UTC）で決める。
 - 公開（012、手順は `docs/DEPLOY.md`）: 画面は Cloudflare Pages、API は Render（`backend/Dockerfile`・`render.yaml`）、DB は Neon。画面が使う API のアドレスは `wwwroot/appsettings.json` の `ApiBaseAddress`（デプロイ時に書き換え。Blazor はビルド時にあった設定ファイルしか読まないので `appsettings.Production.json` は足さない）。API の CORS は `Cors:AllowedOrigins`、招待コードは `Registration:InviteCode`（設定があるときだけ登録に必要）。保護者がアップロードした景品の画像は DB（`RewardImage`、`/api/reward-images/{id}`、ログイン不要・1MB まで）に保存し、画面では `ImageUrls.Resolve` で API のアドレスを付ける。無料の API は止まるため、画面は `ApiWakeGate` が `/healthz` で起動を待つ。接続元 IP は `RemoteIpAddress` だけを使い、`X-Forwarded-For` を自分で読まない（偽装で回数制限を逃れられるため）。プロキシの後ろでは `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true`（`render.yaml`）で ASP.NET Core に反映させる。
 - PIN ロックアウトは `IMemoryCache` で 3 回失敗 → 5 分（`ChildAccountService`）。

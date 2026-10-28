@@ -166,6 +166,10 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
                     b.Property<int?>("StudentRemainder")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("StudentText")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("TimeTakenSeconds")
                         .HasColumnType("INTEGER");
 
@@ -300,6 +304,10 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
                     b.Property<int>("CalculationType")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Choices")
+                        .HasMaxLength(60)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ClockTimes")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
@@ -309,6 +317,10 @@ namespace GamifiedMathDrill.Migrations.Sqlite.Migrations
 
                     b.Property<int?>("CorrectRemainder")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("CorrectText")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("DifficultyLevel")
                         .HasColumnType("INTEGER");

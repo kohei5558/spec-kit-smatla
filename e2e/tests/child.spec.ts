@@ -1,4 +1,4 @@
-import { test, expect, childLogin, waitProblem, correctAnswer, answer, API } from './helpers';
+import { test, expect, childLogin, waitProblem, correctAnswer, correctText, typeKana, answer, API } from './helpers';
 import type { Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
@@ -82,10 +82,38 @@ for (const { category, check } of units) {
   });
 }
 
+test('こくご: 漢字の読みを 50音ボタンで答え、書きを選ぶ', async ({ page }) => {
+  await page.getByRole('tab', { name: 'こくご' }).click();
+  let problem = await startCategory(page, '漢字の読み');
+  // まちがえると 正しい読みが出る
+  await typeKana(page, 'ん');
+  await page.getByRole('button', { name: '答える' }).click();
+  await expect(page.getByText('不正解')).toBeVisible();
+  await expect(page.getByText(correctText(problem.id), { exact: true })).toBeVisible();
+
+  problem = await waitProblem(page, () => page.getByRole('button', { name: '次の問題へ' }).click());
+  await expect(page.locator('.kanji-target')).toBeVisible();
+  await typeKana(page, correctText(problem.id));
+  await page.getByRole('button', { name: '答える' }).click();
+  await expect(page.getByText('正解！ 🎉')).toBeVisible();
+
+  await page.goto('/');
+  await page.getByRole('tab', { name: 'こくご' }).click();
+  for (const category of ['漢字の書き', '漢字のことば']) {
+    problem = await startCategory(page, category);
+    await expect(page.locator('.kanji-choice')).toHaveCount(4);
+    await page.locator('.kanji-choice', { hasText: new RegExp(`^${correctText(problem.id)}$`) }).click();
+    await page.getByRole('button', { name: '答える' }).click();
+    await expect(page.getByText('正解！ 🎉')).toBeVisible();
+    await page.goto('/');
+    await page.getByRole('tab', { name: 'こくご' }).click();
+  }
+});
+
 test('学習結果に種類ごとのタブと集計が出る', async ({ page }) => {
   await nav(page, '学習結果');
   await expect(page.getByText('統計サマリー')).toBeVisible();
-  for (const tab of ['すべて', 'たし算', 'あまりあり', '時こく', '単位', '文章']) {
+  for (const tab of ['すべて', 'たし算', 'あまりあり', '時こく', '単位', '文章', '読み', '書き', 'ことば']) {
     // タブは横にスクロールするので、表示されているかではなく、あるかを見る
     await expect(page.locator('.mud-tab', { hasText: new RegExp(`^${tab}$`) })).toHaveCount(1);
   }

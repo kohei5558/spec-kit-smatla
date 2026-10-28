@@ -48,6 +48,18 @@ public class Problem
     public string? AnswerUnits { get; set; }
 
     /// <summary>
+    /// 文字の正解（漢字の問題。"えき"、"駅"。数の問題は null、020）
+    /// </summary>
+    [MaxLength(20)]
+    public string? CorrectText { get; set; }
+
+    /// <summary>
+    /// 選択肢（AnswerFormat.Choice のとき。スペース区切りで "馬 駅 験 訳"、020）
+    /// </summary>
+    [MaxLength(60)]
+    public string? Choices { get; set; }
+
+    /// <summary>
     /// 計算種類
     /// </summary>
     [Required]

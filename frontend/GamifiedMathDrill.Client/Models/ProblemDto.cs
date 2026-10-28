@@ -14,6 +14,8 @@ public class ProblemDto
     public List<string> ClockTimes { get; set; } = new();
     /// <summary>答えの欄の単位（AnswerFormat が Units のとき。["km", "m"] など、015）</summary>
     public List<string> AnswerUnits { get; set; } = new();
+    /// <summary>選択肢（AnswerFormat が Choice のとき、020）</summary>
+    public List<string> Choices { get; set; } = new();
     /// <summary>今日すでに答えた数（「今日の◯問め」用）</summary>
     public int TodayAnsweredCount { get; set; }
 }
@@ -22,6 +24,8 @@ public class SubmitAnswerDto
 {
     public int Answer { get; set; }
     public int? Remainder { get; set; }
+    /// <summary>文字の答え（漢字の問題、020）</summary>
+    public string? Text { get; set; }
 }
 
 public class AnswerResultDto
@@ -33,6 +37,8 @@ public class AnswerResultDto
     public string AnswerFormat { get; set; } = "Number";
     /// <summary>答えの欄の単位（015）</summary>
     public List<string> AnswerUnits { get; set; } = new();
+    /// <summary>文字の正解（漢字の問題、020）</summary>
+    public string? CorrectText { get; set; }
     public int PointsEarned { get; set; }
     public bool LeveledUp { get; set; }
     public LevelDto? NewLevel { get; set; }

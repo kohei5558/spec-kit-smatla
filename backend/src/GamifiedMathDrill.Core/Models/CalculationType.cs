@@ -43,5 +43,20 @@ public enum CalculationType
     /// <summary>
     /// 文章問題（017。文章は specs/017-word-problems/templates.md のひな形だけ）
     /// </summary>
-    WordProblem = 7
+    WordProblem = 7,
+
+    /// <summary>
+    /// 漢字の読み（020、国語。答えは ひらがな）
+    /// </summary>
+    KanjiReading = 8,
+
+    /// <summary>
+    /// 漢字の書き（020、国語。4つから選ぶ）
+    /// </summary>
+    KanjiWriting = 9,
+
+    /// <summary>
+    /// 漢字のことば（熟語、020、国語。4つから選ぶ）
+    /// </summary>
+    KanjiWords = 10
 }

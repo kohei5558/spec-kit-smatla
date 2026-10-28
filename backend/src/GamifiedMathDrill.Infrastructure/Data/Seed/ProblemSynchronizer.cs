@@ -39,6 +39,8 @@ public static class ProblemSynchronizer
                     AnswerFormat = problem.AnswerFormat,
                     ClockTimes = problem.ClockTimes,
                     AnswerUnits = problem.AnswerUnits,
+                    CorrectText = problem.CorrectText,
+                    Choices = problem.Choices,
                     CalculationType = problem.CalculationType,
                     DifficultyLevel = problem.DifficultyLevel,
                     IsActive = true
@@ -53,16 +55,19 @@ public static class ProblemSynchronizer
                 reactivated++;
             }
 
-            // 作り方の誤りを直したとき（同じ問題で正解・答えの形・時計の時刻・欄の単位が違う）は、最新のセットに合わせる
+            // 作り方の誤りを直したとき（同じ問題で正解・答えの形・時計の時刻・欄の単位・文字の正解・選択肢が違う）は、最新のセットに合わせる
             if (current.CorrectAnswer != problem.CorrectAnswer || current.CorrectRemainder != problem.CorrectRemainder
                 || current.AnswerFormat != problem.AnswerFormat || current.ClockTimes != problem.ClockTimes
-                || current.AnswerUnits != problem.AnswerUnits)
+                || current.AnswerUnits != problem.AnswerUnits || current.CorrectText != problem.CorrectText
+                || current.Choices != problem.Choices)
             {
                 current.CorrectAnswer = problem.CorrectAnswer;
                 current.CorrectRemainder = problem.CorrectRemainder;
                 current.AnswerFormat = problem.AnswerFormat;
                 current.ClockTimes = problem.ClockTimes;
                 current.AnswerUnits = problem.AnswerUnits;
+                current.CorrectText = problem.CorrectText;
+                current.Choices = problem.Choices;
                 corrected++;
             }
         }
