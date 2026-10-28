@@ -33,11 +33,46 @@ public class ExplanationBuilderTests
         }
     }
 
+    // 漢字の解説（022、型は specs/022-kanji-explanations/explanations.md）。中身は確認済みの KanjiBatch1 から作る
     [Fact]
-    public void KanjiProblems_HaveNoExplanationYet()
+    public void EveryKanjiProblem_HasExplanation_FromTheBatch()
     {
-        Assert.All(ProblemGenerator.GenerateAll().Where(p => Subjects.Of(p.CalculationType) == Subject.Japanese),
-            p => Assert.Null(ExplanationBuilder.Build(p, 0, null)));
+        var problems = ProblemGenerator.GenerateAll().Where(p => Subjects.Of(p.CalculationType) == Subject.Japanese).ToList();
+        Assert.Equal(88, problems.Count);
+        foreach (var p in problems)
+        {
+            var e = ExplanationBuilder.Build(p, 0, null, "ん");
+            Assert.True(e != null, p.Question);
+            Assert.Contains(p.CorrectText!, e!.Steps[0]);
+            Assert.Null(e.Hint);
+        }
+    }
+
+    [Theory]
+    [InlineData(CalculationType.KanjiReading, "[駅]まで あるく。", "えき", "「駅」は「えき」と 読むよ|ことば: 駅員（えきいん）")]
+    [InlineData(CalculationType.KanjiReading, "[野球]を する。", "やきゅう", "「野球」は「やきゅう」と 読むよ|ことば: 地球（ちきゅう）")]
+    [InlineData(CalculationType.KanjiReading, "[寒]い 日が つづく。", "さむ", "「寒」は「さむ」と 読むよ")]
+    [InlineData(CalculationType.KanjiWriting, "[えき]の まえで まつ。", "駅", "「えき」は「駅」と 書くよ|ことば: 駅員（えきいん）")]
+    [InlineData(CalculationType.KanjiWords, "[えきいん]", "駅員", "「えきいん」は「駅員」と 書くよ|「駅」を つかう ことばだよ")]
+    public void KanjiSteps_MatchTheTemplates(CalculationType type, string question, string correct, string expected)
+    {
+        var e = ExplanationBuilder.Build(new Problem { Question = question, CalculationType = type, CorrectText = correct }, 0, null, "ん");
+        Assert.Equal(expected.Split('|'), e!.Steps);
+    }
+
+    [Theory]
+    [InlineData(CalculationType.KanjiReading, "なつは [暑]い。", "あつ", "あつい", "ひらがなの ところ（い）は 入れないよ")]
+    [InlineData(CalculationType.KanjiReading, "夏[祭]りに 行く。", "まつ", "まつり", "ひらがなの ところ（り）は 入れないよ")]
+    [InlineData(CalculationType.KanjiReading, "なつは [暑]い。", "あつ", "あたた", null)]
+    [InlineData(CalculationType.KanjiWords, "[えきいん]", "駅員", "駅貝", "「駅」は あってるよ。2つめの 字を よく 見てね")]
+    [InlineData(CalculationType.KanjiWords, "[えきいん]", "駅員", "馬員", "1つめの 字が ちがうよ。「駅」だよ")]
+    [InlineData(CalculationType.KanjiWords, "[のみもの]", "飲み物", "食み物", "1つめの 字が ちがうよ。「飲」だよ")]
+    [InlineData(CalculationType.KanjiWords, "[ゆうえんち]", "遊園地", "遊園池", "「遊」は あってるよ。3つめの 字を よく 見てね")]
+    [InlineData(CalculationType.KanjiWriting, "[えき]の まえで まつ。", "駅", "馬", null)]
+    public void KanjiHint_OnlyForCommonMistakes(CalculationType type, string question, string correct, string text, string? hint)
+    {
+        var e = ExplanationBuilder.Build(new Problem { Question = question, CalculationType = type, CorrectText = correct }, 0, null, text);
+        Assert.Equal(hint, e!.Hint);
     }
 
     [Fact]

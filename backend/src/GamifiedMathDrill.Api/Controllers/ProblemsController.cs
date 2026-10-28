@@ -220,7 +220,7 @@ public class ProblemsController : ControllerBase
                 result.AnswerFormat = problem.AnswerFormat.ToString();
                 result.AnswerUnits = problem.AnswerUnits?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
                 result.CorrectText = problem.CorrectText;
-                if (!isCorrect && ExplanationBuilder.Build(problem, answerDto.Answer, answerDto.Remainder) is { } explanation)
+                if (!isCorrect && ExplanationBuilder.Build(problem, answerDto.Answer, answerDto.Remainder, answerDto.Text) is { } explanation)
                 {
                     result.Explanation = explanation.Steps.ToList();
                     result.Hint = explanation.Hint;
