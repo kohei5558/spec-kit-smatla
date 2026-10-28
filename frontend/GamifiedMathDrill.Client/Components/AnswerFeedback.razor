@@ -1,5 +1,7 @@
 @using GamifiedMathDrill.Client.Models
 
+@* 結果の画面では Enter で次の問題へ進める（021）。キーを受け取れるように、表示したら この枠にフォーカスを移す *@
+<div @ref="panel" tabindex="-1" @onkeydown="HandleKeyDown" style="outline: none;">
 <MudPaper Class="pa-8 text-center" Elevation="3">
     @if (Result.IsCorrect)
     {
@@ -41,13 +43,15 @@
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    Size="Size.Large"
-                   OnClick="OnNext"
+                   OnClick="GoNextAsync"
                    EndIcon="@Icons.Material.Filled.ArrowForward"
                    Style="font-size: 1.25rem; padding: 12px 32px;">
             次の問題へ
         </MudButton>
+        <MudText Typo="Typo.caption" Class="mt-2 d-block" Color="Color.Secondary">Enter キーでも つぎへ すすめるよ</MudText>
     </div>
 </MudPaper>
+</div>
 
 
 @code {
@@ -56,4 +60,35 @@
 
     [Parameter]
     public EventCallback OnNext { get; set; }
+
+    private ElementReference panel;
+    private bool moving;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await panel.FocusAsync();
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        // 押しっぱなし（答えたときの Enter のくり返し）では進まない
+        if (e.Key == "Enter" && !e.Repeat)
+        {
+            await GoNextAsync();
+        }
+    }
+
+    // ボタンにフォーカスがあるときの Enter は、クリックとキーの両方が来るので、1回だけ進む
+    private async Task GoNextAsync()
+    {
+        if (moving)
+        {
+            return;
+        }
+        moving = true;
+        await OnNext.InvokeAsync();
+    }
 }
