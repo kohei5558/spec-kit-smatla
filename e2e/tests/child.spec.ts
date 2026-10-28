@@ -48,7 +48,10 @@ test('足し算: 正解・不正解の判定と、けたの多い問題のひっ
     // どちらかが2けた以上なら、ひっ算の形（016）
     await expect(page.locator('.vertical-calc')).toHaveCount(Number(a) >= 10 || Number(b) >= 10 ? 1 : 0);
     if (i === 0) {
-      await answer(page, [correctAnswer(problem.id)[0] + 1]);
+      // キーボードだけで: 答えを入れて Enter で答え、結果の画面にとどまる
+      await page.locator('.answer-input input').first().fill(String(correctAnswer(problem.id)[0] + 1));
+      await page.keyboard.press('Enter');
+      await expect(page.getByRole('button', { name: '次の問題へ' })).toBeVisible();
       await expect(page.getByText('不正解')).toBeVisible();
       // まちがえたら解説が出る（019）
       await expect(page.getByText('💡 かんがえかた')).toBeVisible();
@@ -56,7 +59,17 @@ test('足し算: 正解・不正解の判定と、けたの多い問題のひっ
     } else {
       await solveCorrectly(page, problem.id);
     }
-    problem = await waitProblem(page, () => page.getByRole('button', { name: '次の問題へ' }).click());
+    // 結果の画面では Enter で次の問題へ進める（021）。ボタンにフォーカスがあっても 1問だけ進む
+    if (i === 1) {
+      await page.getByRole('button', { name: '次の問題へ' }).focus();
+    }
+    let loads = 0;
+    const count = (r: { url(): string }) => { if (r.url().startsWith(`${API}/api/problems/next`)) loads++; };
+    page.on('response', count);
+    problem = await waitProblem(page, () => i < 2 ? page.keyboard.press('Enter') : page.getByRole('button', { name: '次の問題へ' }).click());
+    await page.waitForTimeout(1000);
+    page.off('response', count);
+    expect(loads).toBe(1);
   }
 });
 
