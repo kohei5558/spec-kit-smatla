@@ -17,13 +17,13 @@ public static partial class ExplanationBuilder
     // 解説の中のひき算の記号（画面のひっ算と同じ）
     private const string Minus = "−";
 
-    public static Explanation? Build(Problem problem, int answer, int? remainder) => problem.CalculationType switch
+    /// <param name="text">文字の答え（漢字の問題、022）</param>
+    public static Explanation? Build(Problem problem, int answer, int? remainder, string? text = null) => problem.CalculationType switch
     {
         CalculationType.Time => Time(problem.Question, answer, remainder),
         CalculationType.Measurement => Measurement(problem.Question, answer, remainder),
         CalculationType.WordProblem => WordProblem(problem.Question, answer, remainder),
-        // 漢字（020）の解説は、文の一覧を保護者に確認してもらってから足す
-        CalculationType.KanjiReading or CalculationType.KanjiWriting or CalculationType.KanjiWords => null,
+        CalculationType.KanjiReading or CalculationType.KanjiWriting or CalculationType.KanjiWords => Kanji(problem, text?.Trim()),
         _ => Arithmetic(problem.CalculationType, problem.Question, answer, remainder)
     };
 

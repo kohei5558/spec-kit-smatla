@@ -27,7 +27,7 @@
 - `GET /api/problems/next` に `subject`（`Math` / `Japanese`）を足す。種類の指定が無いとき（すべて）は、その教科の種類だけから選ぶ。`subject` も無いときは算数（今までどおり）
 - 回答 API に `text` を足す。`CorrectText` がある問題は、前後の空白を除いた `text` が一致すれば正解（数の欄は見ない）
 - 問題 API は `choices` を返す（正解は返さない）。回答の結果・学習記録は `correctText`・`studentText` を返す
-- 解説（019）は 漢字では まだ出さない（`ExplanationBuilder` は null）。文の一覧を作って確認してから足す
+- 解説は 022 で足した（[022-kanji-explanations](../022-kanji-explanations/explanations.md)）
 - デイリーチャレンジは 今までどおり 四則だけ
 
 ## 画面

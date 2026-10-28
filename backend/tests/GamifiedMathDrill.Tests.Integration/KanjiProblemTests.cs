@@ -60,9 +60,14 @@ public class KanjiProblemTests : IClassFixture<TestWebApplicationFactory>
         var wrong = await AnswerAsync(client, family, problem.Id, problem.CorrectText + "あ");
         Assert.False(wrong.GetProperty("isCorrect").GetBoolean());
         Assert.Equal(problem.CorrectText, wrong.GetProperty("correctText").GetString());
+        // まちがえたら解説が出る（022）。送りがなまで入れたわけではないので一言は出ない
+        var steps = wrong.GetProperty("explanation").EnumerateArray().Select(e => e.GetString()!).ToList();
+        Assert.EndsWith($"は「{problem.CorrectText}」と 読むよ", steps[0]);
+        Assert.Equal(JsonValueKind.Null, wrong.GetProperty("hint").ValueKind);
 
         var correct = await AnswerAsync(client, family, problem.Id, $" {problem.CorrectText} ");
         Assert.True(correct.GetProperty("isCorrect").GetBoolean());
+        Assert.Empty(correct.GetProperty("explanation").EnumerateArray());
         Assert.Equal(10, correct.GetProperty("pointsEarned").GetInt32());
 
         var records = await FamilyTestHelper.SendAsync(client, HttpMethod.Get, $"/api/learning-records?studentId={family.StudentId}&calculationType=KanjiReading", family.ChildJwt);

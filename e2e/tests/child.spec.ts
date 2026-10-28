@@ -103,6 +103,9 @@ test('こくご: 漢字の読みを 50音ボタンで答え、書きを選ぶ', 
   await page.getByRole('button', { name: '答える' }).click();
   await expect(page.getByText('不正解')).toBeVisible();
   await expect(page.getByText(correctText(problem.id), { exact: true })).toBeVisible();
+  // 漢字の解説（022）
+  await expect(page.getByText('💡 かんがえかた')).toBeVisible();
+  await expect(page.getByText(`は「${correctText(problem.id)}」と 読むよ`)).toBeVisible();
 
   problem = await waitProblem(page, () => page.getByRole('button', { name: '次の問題へ' }).click());
   await expect(page.locator('.kanji-target')).toBeVisible();
