@@ -55,6 +55,13 @@ public class ProblemService : IProblemService
             // 最近出た問題は除く。ただし問題が少ない難易度（時こくの難易度1は3問）で除くと何も無くなるときは、最近の問題でも出す
             var problem = await _problemRepository.GetRandomProblemAsync(difficultyLevel, type, excludeRecentIds)
                 ?? await _problemRepository.GetRandomProblemAsync(difficultyLevel, type);
+
+            // その むずかしさに まだ問題が無いとき（漢字は字を入れた分だけ下から うまる、025）は、問題がある いちばん上の むずかしさから出す
+            for (var lower = difficultyLevel - 1; problem == null && lower >= 1; lower--)
+            {
+                problem = await _problemRepository.GetRandomProblemAsync(lower, type, excludeRecentIds)
+                    ?? await _problemRepository.GetRandomProblemAsync(lower, type);
+            }
             if (problem != null)
             {
                 return problem;
