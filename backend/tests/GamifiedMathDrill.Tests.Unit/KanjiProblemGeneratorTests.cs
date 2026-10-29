@@ -95,8 +95,17 @@ public class KanjiProblemGeneratorTests
         Assert.Contains(CalculationType.WordProblem, Subjects.Types(Subject.Math));
     }
 
-    // 回ごとに、並びの順に 3字ずつ むずかしさ 1〜10 に分ける
-    private static int Difficulty(Row row) => row.Index / 3 + 1;
+    // すべての回を入れた順に通して、20字ずつ むずかしさ 1〜10 につめる（025。前に入れた字は動かない）
+    private static int Difficulty(Row row) => Rows.IndexOf(row) / 20 + 1;
+
+    [Fact]
+    public void Difficulties_AreFilled20KanjiEach_InTheOrderAdded()
+    {
+        var reading = Of(CalculationType.KanjiReading);
+        // 90字: むずかしさ1〜4 に 20字ずつ、5 に 10字
+        Assert.Equal(new[] { 20, 20, 20, 20, 10 }, Enumerable.Range(1, 5).Select(d => reading.Count(p => p.DifficultyLevel == d)));
+        Assert.DoesNotContain(reading, p => p.DifficultyLevel > 5);
+    }
 
     private static void AssertChoices(Problem p, string[] expected)
     {
