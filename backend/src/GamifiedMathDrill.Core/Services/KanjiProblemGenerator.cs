@@ -3,8 +3,9 @@ using GamifiedMathDrill.Core.Models;
 namespace GamifiedMathDrill.Core.Services;
 
 /// <summary>
-/// 漢字の問題（020）。中身は保護者が確認した KanjiBatch1 だけを使う。
-/// 字を並びの順に 3字ずつ むずかしさ 1〜10 に分ける（レベルが上がると新しい字が出る）
+/// 漢字の問題（020）。中身は保護者が確認した KanjiBatches だけを使う。
+/// 回ごとに、字を並びの順に 3字ずつ むずかしさ 1〜10 に分ける（レベルが上がると新しい字が出る。
+/// 回が増えると、どのむずかしさにも その回の字が足される、023）
 /// </summary>
 public static class KanjiProblemGenerator
 {
@@ -13,9 +14,19 @@ public static class KanjiProblemGenerator
     public static List<Problem> Generate(Random random)
     {
         var problems = new List<Problem>();
-        for (var i = 0; i < KanjiBatch1.Items.Length; i++)
+        foreach (var batch in KanjiBatches.All)
         {
-            var item = KanjiBatch1.Items[i];
+            problems.AddRange(Generate(batch, random));
+        }
+        return problems;
+    }
+
+    private static List<Problem> Generate(KanjiItem[] batch, Random random)
+    {
+        var problems = new List<Problem>();
+        for (var i = 0; i < batch.Length; i++)
+        {
+            var item = batch[i];
             var difficulty = Math.Min(10, i / KanjiPerDifficulty + 1);
 
             problems.Add(new Problem

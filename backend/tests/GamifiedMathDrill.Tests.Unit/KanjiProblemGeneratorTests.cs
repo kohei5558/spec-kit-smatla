@@ -6,7 +6,7 @@ using Xunit;
 namespace GamifiedMathDrill.Tests.Unit;
 
 /// <summary>
-/// 漢字の問題（020）が、保護者が確認した一覧（specs/020-kanji/kanji-batch1.md）とまったく同じ中身か。
+/// 漢字の問題（020・023）が、保護者が確認した一覧（specs/020-kanji/kanji-batch1.md・specs/023-kanji-batch2/kanji-batch2.md）とまったく同じ中身か。
 /// 一覧のファイルを読み、作られた問題と1つずつ比べる
 /// </summary>
 public class KanjiProblemGeneratorTests
@@ -16,13 +16,19 @@ public class KanjiProblemGeneratorTests
     private record Row(int Index, string Kanji, string ReadingQuestion, string ReadingAnswer, string WritingQuestion, string[] WritingChoices,
         string? WordReading, string[]? WordChoices);
 
-    private static readonly List<Row> Rows = ReadBatch();
+    // 回ごとの一覧（回の順）
+    private static readonly List<Row> Rows = ReadBatch("020-kanji/kanji-batch1.md").Concat(ReadBatch("023-kanji-batch2/kanji-batch2.md")).ToList();
 
     [Fact]
-    public void Batch_Has30Kanji()
+    public void Batches_Have30KanjiEach_AndNoKanjiTwice()
     {
-        Assert.Equal(30, Rows.Count);
-        Assert.Equal(30, Rows.Select(r => r.Kanji).Distinct().Count());
+        Assert.Equal(60, Rows.Count);
+        Assert.Equal(60, Rows.Select(r => r.Kanji).Distinct().Count());
+        // 問題文が回をまたいで重ならない（解説は問題文から字を探すため）
+        Assert.Equal(60, Rows.Select(r => r.ReadingQuestion).Distinct().Count());
+        Assert.Equal(60, Rows.Select(r => r.WritingQuestion).Distinct().Count());
+        var words = Rows.Where(r => r.WordReading != null).ToList();
+        Assert.Equal(words.Count, words.Select(r => r.WordReading).Distinct().Count());
     }
 
     [Fact]
@@ -89,7 +95,7 @@ public class KanjiProblemGeneratorTests
         Assert.Contains(CalculationType.WordProblem, Subjects.Types(Subject.Math));
     }
 
-    // 30字を並びの順に 3字ずつ むずかしさ 1〜10 に分ける
+    // 回ごとに、並びの順に 3字ずつ むずかしさ 1〜10 に分ける
     private static int Difficulty(Row row) => row.Index / 3 + 1;
 
     private static void AssertChoices(Problem p, string[] expected)
@@ -103,14 +109,14 @@ public class KanjiProblemGeneratorTests
 
     private static List<Problem> Of(CalculationType type) => All.Where(p => p.CalculationType == type).ToList();
 
-    private static List<Row> ReadBatch()
+    private static List<Row> ReadBatch(string path)
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir != null && !Directory.Exists(Path.Combine(dir.FullName, "specs")))
         {
             dir = dir.Parent;
         }
-        var lines = File.ReadAllLines(Path.Combine(dir!.FullName, "specs", "020-kanji", "kanji-batch1.md"));
+        var lines = File.ReadAllLines(Path.Combine(dir!.FullName, "specs", path));
         var rows = new List<Row>();
         foreach (var line in lines.Where(l => Regex.IsMatch(l, @"^\| \d+ \|")))
         {

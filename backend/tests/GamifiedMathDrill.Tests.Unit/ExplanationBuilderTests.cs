@@ -33,12 +33,12 @@ public class ExplanationBuilderTests
         }
     }
 
-    // 漢字の解説（022、型は specs/022-kanji-explanations/explanations.md）。中身は確認済みの KanjiBatch1 から作る
+    // 漢字の解説（022、型は specs/022-kanji-explanations/explanations.md）。中身は確認済みの KanjiBatches から作る
     [Fact]
     public void EveryKanjiProblem_HasExplanation_FromTheBatch()
     {
         var problems = ProblemGenerator.GenerateAll().Where(p => Subjects.Of(p.CalculationType) == Subject.Japanese).ToList();
-        Assert.Equal(88, problems.Count);
+        Assert.Equal(88 + 90, problems.Count); // 1回目88問（ことば28）＋2回目90問
         foreach (var p in problems)
         {
             var e = ExplanationBuilder.Build(p, 0, null, "ん");

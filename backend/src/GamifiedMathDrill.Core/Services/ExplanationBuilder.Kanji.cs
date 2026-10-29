@@ -5,7 +5,7 @@ namespace GamifiedMathDrill.Core.Services;
 
 /// <summary>
 /// 漢字の解説（022、型は specs/022-kanji-explanations/explanations.md）。
-/// 中身（字・読み・ことば）は確認済みの KanjiBatch1 から使い、新しく書く文は型だけ
+/// 中身（字・読み・ことば）は確認済みの KanjiBatches から使い、新しく書く文は型だけ
 /// </summary>
 public static partial class ExplanationBuilder
 {
@@ -26,7 +26,7 @@ public static partial class ExplanationBuilder
         {
             case CalculationType.KanjiReading:
                 {
-                    var item = KanjiBatch1.Items.FirstOrDefault(i => i.ReadingQuestion == question);
+                    var item = KanjiBatches.Items.FirstOrDefault(i => i.ReadingQuestion == question);
                     if (item == null)
                     {
                         return null;
@@ -42,7 +42,7 @@ public static partial class ExplanationBuilder
                 }
             case CalculationType.KanjiWriting:
                 {
-                    var item = KanjiBatch1.Items.FirstOrDefault(i => i.WritingQuestion == question);
+                    var item = KanjiBatches.Items.FirstOrDefault(i => i.WritingQuestion == question);
                     if (item == null)
                     {
                         return null;
@@ -53,7 +53,7 @@ public static partial class ExplanationBuilder
                 }
             case CalculationType.KanjiWords:
                 {
-                    var item = KanjiBatch1.Items.FirstOrDefault(i => i.WordReading == target.Groups[1].Value);
+                    var item = KanjiBatches.Items.FirstOrDefault(i => i.WordReading == target.Groups[1].Value);
                     if (item == null)
                     {
                         return null;
@@ -66,7 +66,7 @@ public static partial class ExplanationBuilder
         }
     }
 
-    // 「ことば: 駅員（えきいん）」。ことばの問題が無い字（寒・湖）は出さない
+    // 「ことば: 駅員（えきいん）」。ことばの問題が無い字（1回目の寒・湖）は出さない
     private static void AddWord(List<string> steps, KanjiItem item)
     {
         if (item.WordReading != null && item.WordChoices != null)
