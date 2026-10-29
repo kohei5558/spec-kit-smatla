@@ -6,7 +6,7 @@ using Xunit;
 namespace GamifiedMathDrill.Tests.Unit;
 
 /// <summary>
-/// 漢字の問題（020・023）が、保護者が確認した一覧（specs/020-kanji/kanji-batch1.md・specs/023-kanji-batch2/kanji-batch2.md）とまったく同じ中身か。
+/// 漢字の問題（020・023・024）が、保護者が確認した回ごとの一覧（specs/020-kanji・023-kanji-batch2・024-kanji-batch3）とまったく同じ中身か。
 /// 一覧のファイルを読み、作られた問題と1つずつ比べる
 /// </summary>
 public class KanjiProblemGeneratorTests
@@ -17,16 +17,16 @@ public class KanjiProblemGeneratorTests
         string? WordReading, string[]? WordChoices);
 
     // 回ごとの一覧（回の順）
-    private static readonly List<Row> Rows = ReadBatch("020-kanji/kanji-batch1.md").Concat(ReadBatch("023-kanji-batch2/kanji-batch2.md")).ToList();
+    private static readonly List<Row> Rows = ReadBatch("020-kanji/kanji-batch1.md").Concat(ReadBatch("023-kanji-batch2/kanji-batch2.md")).Concat(ReadBatch("024-kanji-batch3/kanji-batch3.md")).ToList();
 
     [Fact]
     public void Batches_Have30KanjiEach_AndNoKanjiTwice()
     {
-        Assert.Equal(60, Rows.Count);
-        Assert.Equal(60, Rows.Select(r => r.Kanji).Distinct().Count());
+        Assert.Equal(90, Rows.Count);
+        Assert.Equal(90, Rows.Select(r => r.Kanji).Distinct().Count());
         // 問題文が回をまたいで重ならない（解説は問題文から字を探すため）
-        Assert.Equal(60, Rows.Select(r => r.ReadingQuestion).Distinct().Count());
-        Assert.Equal(60, Rows.Select(r => r.WritingQuestion).Distinct().Count());
+        Assert.Equal(90, Rows.Select(r => r.ReadingQuestion).Distinct().Count());
+        Assert.Equal(90, Rows.Select(r => r.WritingQuestion).Distinct().Count());
         var words = Rows.Where(r => r.WordReading != null).ToList();
         Assert.Equal(words.Count, words.Select(r => r.WordReading).Distinct().Count());
     }
