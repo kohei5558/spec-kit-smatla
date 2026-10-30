@@ -98,7 +98,7 @@ public class KanjiProblemTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task HighLevel_StillGetsKanji_FromTheHighestFilledDifficulty()
     {
-        // 漢字がまだ入っていない むずかしさ（9〜10）の レベルでも、字がある いちばん上の むずかしさから出す（025）
+        // 漢字がまだ入っていない むずかしさ（10）の レベルでも、字がある いちばん上の むずかしさから出す（025）
         var client = _factory.CreateClient();
         var family = await FamilyTestHelper.CreateFamilyAsync(client, "漢字の高いレベル");
         await StudentLevelTestHelper.SetAsync(_factory.Services, family.StudentId, 10, 0, CalculationType.KanjiReading);
@@ -107,7 +107,7 @@ public class KanjiProblemTests : IClassFixture<TestWebApplicationFactory>
         {
             var data = await NextAsync(client, family, "category=KanjiReading");
             Assert.Equal("KanjiReading", data.GetProperty("calculationTypeText").GetString());
-            Assert.Equal(8, data.GetProperty("difficultyLevel").GetInt32());
+            Assert.Equal(9, data.GetProperty("difficultyLevel").GetInt32());
         }
     }
 
