@@ -98,17 +98,51 @@ public class KanjiProblemTests : IClassFixture<TestWebApplicationFactory>
     [Fact]
     public async Task HighLevel_StillGetsKanji_FromTheHighestFilledDifficulty()
     {
-        // 漢字がまだ入っていない むずかしさ（10）の レベルでも、字がある いちばん上の むずかしさから出す（025）
+        // 漢字がまだ入っていない むずかしさの レベルでも、字がある いちばん上の むずかしさから出す（025）。
+        // 小3の200字で 1〜10 が そろった（029）ので、むずかしさ10の 読みの問題を 一時的に 出さないようにして確かめる
         var client = _factory.CreateClient();
         var family = await FamilyTestHelper.CreateFamilyAsync(client, "漢字の高いレベル");
         await StudentLevelTestHelper.SetAsync(_factory.Services, family.StudentId, 10, 0, CalculationType.KanjiReading);
-
-        for (var i = 0; i < 5; i++)
+        await SetActiveAsync(CalculationType.KanjiReading, 10, false);
+        try
         {
-            var data = await NextAsync(client, family, "category=KanjiReading");
-            Assert.Equal("KanjiReading", data.GetProperty("calculationTypeText").GetString());
-            Assert.Equal(9, data.GetProperty("difficultyLevel").GetInt32());
+            for (var i = 0; i < 5; i++)
+            {
+                var data = await NextAsync(client, family, "category=KanjiReading");
+                Assert.Equal("KanjiReading", data.GetProperty("calculationTypeText").GetString());
+                Assert.Equal(9, data.GetProperty("difficultyLevel").GetInt32());
+            }
         }
+        finally
+        {
+            await SetActiveAsync(CalculationType.KanjiReading, 10, true);
+        }
+    }
+
+    [Fact]
+    public async Task AllDifficulties_HaveKanji_OnceGrade3IsComplete()
+    {
+        // 小3の200字で、読み・書きは むずかしさ 1〜10 に 20字ずつ（029）
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        foreach (var type in new[] { CalculationType.KanjiReading, CalculationType.KanjiWriting })
+        {
+            var counts = await db.Problems.Where(p => p.CalculationType == type && p.IsActive)
+                .GroupBy(p => p.DifficultyLevel).Select(g => new { g.Key, Count = g.Count() }).ToListAsync();
+            Assert.Equal(Enumerable.Range(1, 10), counts.Select(c => c.Key).OrderBy(k => k));
+            Assert.All(counts, c => Assert.Equal(20, c.Count));
+        }
+    }
+
+    private async Task SetActiveAsync(CalculationType type, int difficulty, bool active)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        foreach (var problem in await db.Problems.Where(p => p.CalculationType == type && p.DifficultyLevel == difficulty).ToListAsync())
+        {
+            problem.IsActive = active;
+        }
+        await db.SaveChangesAsync();
     }
 
     [Fact]

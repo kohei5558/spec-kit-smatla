@@ -38,7 +38,7 @@ public class ExplanationBuilderTests
     public void EveryKanjiProblem_HasExplanation_FromTheBatch()
     {
         var problems = ProblemGenerator.GenerateAll().Where(p => Subjects.Of(p.CalculationType) == Subject.Japanese).ToList();
-        Assert.Equal(88 + 90 * 4 + 88, problems.Count); // 1回目88問（ことば28）＋2〜5回目 90問ずつ＋6回目88問（ことば28）
+        Assert.Equal(88 + 90 * 4 + 88 + 54, problems.Count); // 1回目88問（ことば28）＋2〜5回目 90問ずつ＋6回目88問（ことば28）＋7回目54問（ことば14）
         foreach (var p in problems)
         {
             var e = ExplanationBuilder.Build(p, 0, null, "ん");
