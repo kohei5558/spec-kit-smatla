@@ -6,7 +6,7 @@ using Xunit;
 namespace GamifiedMathDrill.Tests.Unit;
 
 /// <summary>
-/// 漢字の問題（020・023・024・026〜028）が、保護者が確認した回ごとの一覧（specs/020-kanji・023-kanji-batch2・024-kanji-batch3・026-kanji-batch4〜028-kanji-batch6）とまったく同じ中身か。
+/// 漢字の問題（020・023・024・026〜029）が、保護者が確認した回ごとの一覧（specs/020-kanji・023-kanji-batch2・024-kanji-batch3・026-kanji-batch4〜029-kanji-batch7）とまったく同じ中身か。
 /// 一覧のファイルを読み、作られた問題と1つずつ比べる
 /// </summary>
 public class KanjiProblemGeneratorTests
@@ -19,16 +19,16 @@ public class KanjiProblemGeneratorTests
     // 回ごとの一覧（回の順）
     private static readonly List<Row> Rows = ReadBatch("020-kanji/kanji-batch1.md").Concat(ReadBatch("023-kanji-batch2/kanji-batch2.md")).Concat(ReadBatch("024-kanji-batch3/kanji-batch3.md"))
         .Concat(ReadBatch("026-kanji-batch4/kanji-batch4.md")).Concat(ReadBatch("027-kanji-batch5/kanji-batch5.md"))
-        .Concat(ReadBatch("028-kanji-batch6/kanji-batch6.md")).ToList();
+        .Concat(ReadBatch("028-kanji-batch6/kanji-batch6.md")).Concat(ReadBatch("029-kanji-batch7/kanji-batch7.md")).ToList();
 
     [Fact]
     public void Batches_Have30KanjiEach_AndNoKanjiTwice()
     {
-        Assert.Equal(180, Rows.Count);
-        Assert.Equal(180, Rows.Select(r => r.Kanji).Distinct().Count());
+        Assert.Equal(200, Rows.Count);
+        Assert.Equal(200, Rows.Select(r => r.Kanji).Distinct().Count());
         // 問題文が回をまたいで重ならない（解説は問題文から字を探すため）
-        Assert.Equal(180, Rows.Select(r => r.ReadingQuestion).Distinct().Count());
-        Assert.Equal(180, Rows.Select(r => r.WritingQuestion).Distinct().Count());
+        Assert.Equal(200, Rows.Select(r => r.ReadingQuestion).Distinct().Count());
+        Assert.Equal(200, Rows.Select(r => r.WritingQuestion).Distinct().Count());
         var words = Rows.Where(r => r.WordReading != null).ToList();
         Assert.Equal(words.Count, words.Select(r => r.WordReading).Distinct().Count());
     }
@@ -104,9 +104,9 @@ public class KanjiProblemGeneratorTests
     public void Difficulties_AreFilled20KanjiEach_InTheOrderAdded()
     {
         var reading = Of(CalculationType.KanjiReading);
-        // 180字: むずかしさ1〜9 に 20字ずつ
-        Assert.Equal(Enumerable.Repeat(20, 9), Enumerable.Range(1, 9).Select(d => reading.Count(p => p.DifficultyLevel == d)));
-        Assert.DoesNotContain(reading, p => p.DifficultyLevel > 9);
+        // 小3の200字: むずかしさ1〜10 に 20字ずつ
+        Assert.Equal(Enumerable.Repeat(20, 10), Enumerable.Range(1, 10).Select(d => reading.Count(p => p.DifficultyLevel == d)));
+        Assert.DoesNotContain(reading, p => p.DifficultyLevel > 10);
     }
 
     private static void AssertChoices(Problem p, string[] expected)
