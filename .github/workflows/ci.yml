@@ -55,8 +55,7 @@ jobs:
 
   # 画面の流れの自動テスト（018）。本物の API と画面を起動して Playwright で動かす。上のジョブと同時に動く
   e2e:
-    # ubuntu-latest（26.04）は Playwright 1.56.1 がブラウザを入れられないので、対応している 24.04 に固定する
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
       run:
