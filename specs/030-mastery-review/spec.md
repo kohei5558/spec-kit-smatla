@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/030-mastery-review`
 **Created**: 2026年11月25日
-**Status**: Draft（保護者の確認待ち）
+**Status**: Implemented
 **Input**: 漢字のレベル10で 同じ問題が くり返し出て、覚えた答えで ポイントを かせげてしまった（保護者から）
 
 ## きっかけ
@@ -38,8 +38,8 @@
 
 ## Tasks
 
-- [ ] T001 テスト: マスターした問題が出ない、まちがえた問題が 復習で出る、全部マスターで 下→上の むずかしさ、種類を全部マスターで 404 と文
-- [ ] T002 マスター・復習の判定（`ProblemService.GetNextProblemAsync`、学習記録から）
-- [ ] T003 API: 問題に「復習かどうか」を足す。全部マスターのときの文
-- [ ] T004 画面: 復習の目印、全部マスターの文
-- [ ] T005 E2E を通す
+- [x] T001 テスト: マスターした問題が出ない、まちがえた問題が 復習で出る、全部マスターで 下→上の むずかしさ、種類を全部マスターで 404 と文 - backend/tests/GamifiedMathDrill.Tests.Unit/ProblemMasteryTests.cs、backend/tests/GamifiedMathDrill.Tests.Integration/MasteryReviewTests.cs
+- [x] T002 マスター・復習の判定（`ProblemMastery`、`ProblemService.GetNextProblemAsync`、学習記録から）
+- [x] T003 API: 問題に「復習かどうか」（`isReview`）を足す。全部マスターのときは 404 で `errors` に "AllMastered"
+- [x] T004 画面: 復習の目印、全部マスターの文（`ProblemPage`）
+- [x] T005 E2E を通す（全部マスターの文を 確かめる テストを足した）

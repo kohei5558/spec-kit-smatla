@@ -48,6 +48,8 @@ public class ProblemDto
     public List<string> Choices { get; set; } = new();
     /// <summary>今日（日本時間）すでに答えた数（問題画面の「今日の◯問め」用）</summary>
     public int TodayAnsweredCount { get; set; }
+    /// <summary>まえに まちがえた問題を 復習で出したか（030）</summary>
+    public bool IsReview { get; set; }
 }
 
 public class SubmitAnswerDto
