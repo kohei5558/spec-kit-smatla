@@ -1,4 +1,4 @@
-import { test, expect, childLogin, waitProblem, correctAnswer, correctText, typeKana, answer, API } from './helpers';
+import { test, expect, childLogin, waitProblem, correctAnswer, correctText, typeKana, answer, masterAll, HANAKO, API } from './helpers';
 import type { Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
@@ -175,4 +175,13 @@ test('景品の交換を申請する', async ({ page }) => {
 
   await nav(page, '交換申請');
   await expect(page.locator('tr', { hasText: 'うまい棒 チーズ味' }).getByText('申請中')).toBeVisible();
+});
+
+test('その種類を ぜんぶ マスターすると、問題の かわりに 文が出る', async ({ page }) => {
+  // 時こくと時間（CalculationType.Time = 5）を 全部マスターした ことにする（030）
+  masterAll(HANAKO.name, 5);
+  await page.getByText('時こくと時間', { exact: true }).first().click();
+  await page.getByRole('button', { name: '問題を解く' }).click();
+  await expect(page.locator('.all-mastered')).toContainText('すごい！ 時こくと時間は ぜんぶ マスターしたよ！ ほかの もんだいにも チャレンジしてみよう');
+  await expect(page.locator('.problem-display')).toHaveCount(0);
 });

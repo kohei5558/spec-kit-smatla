@@ -18,7 +18,8 @@ public class ProblemApiClient
         };
     }
 
-    public async Task<ProblemDto?> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null, string? category = null)
+    /// <summary>次の問題。AllMastered は その種類の問題を 全部マスターしていたとき（030）</summary>
+    public async Task<(ProblemDto? Problem, bool AllMastered)> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null, string? category = null)
     {
         var queryParams = new List<string> { $"studentId={studentId}" };
         
@@ -46,10 +47,16 @@ public class ProblemApiClient
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<ProblemDto>>(_jsonOptions);
-            return result?.Data;
+            return (result?.Data, false);
         }
 
-        return null;
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            var error = await response.Content.ReadFromJsonAsync<ApiResponse<ProblemDto>>(_jsonOptions);
+            return (null, error?.Errors?.Contains("AllMastered") == true);
+        }
+
+        return (null, false);
     }
 
     public async Task<AnswerResultDto?> SubmitAnswerAsync(int problemId, int studentId, int answer, int? remainder = null, string? text = null)

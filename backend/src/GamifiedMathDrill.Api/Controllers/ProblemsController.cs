@@ -80,7 +80,13 @@ public class ProblemsController : ControllerBase
 
         try
         {
-            var problem = await _problemService.GetNextProblemAsync(studentId, excludeRecentIds, category, subject);
+            var next = await _problemService.GetNextProblemAsync(studentId, excludeRecentIds, category, subject);
+            var problem = next.Problem;
+            if (problem == null && next.AllMastered)
+            {
+                // その種類（「すべて」なら その教科）の問題を 全部マスターした（030）。画面は errors の "AllMastered" を見て 文を出す
+                return NotFound(ApiResponse<ProblemDto>.ErrorResponse("ぜんぶ マスターしたよ！", new List<string> { "AllMastered" }));
+            }
             if (problem == null)
             {
                 var message = category.HasValue
@@ -101,7 +107,8 @@ public class ProblemsController : ControllerBase
                 ClockTimes = problem.ClockTimes?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
                 AnswerUnits = problem.AnswerUnits?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
                 Choices = problem.Choices?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
-                TodayAnsweredCount = await _problemService.CountTodaysAnswersAsync(studentId)
+                TodayAnsweredCount = await _problemService.CountTodaysAnswersAsync(studentId),
+                IsReview = next.IsReview
             };
 
             return Ok(ApiResponse<ProblemDto>.SuccessResponse(problemDto));

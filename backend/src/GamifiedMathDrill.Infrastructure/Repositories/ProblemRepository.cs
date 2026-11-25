@@ -45,4 +45,16 @@ public class ProblemRepository : Repository<Problem>, IProblemRepository
             .Where(p => p.IsActive && p.DifficultyLevel >= minDifficulty && p.DifficultyLevel <= maxDifficulty)
             .ToListAsync();
     }
+
+    public async Task<List<Problem>> GetActiveByIdsAsync(IReadOnlyCollection<int> ids, IReadOnlyCollection<CalculationType> types)
+    {
+        return await _dbSet
+            .Where(p => p.IsActive && ids.Contains(p.Id) && types.Contains(p.CalculationType))
+            .ToListAsync();
+    }
+
+    public async Task<bool> AnyActiveAsync(IReadOnlyCollection<CalculationType> types)
+    {
+        return await _dbSet.AnyAsync(p => p.IsActive && types.Contains(p.CalculationType));
+    }
 }

@@ -26,6 +26,12 @@
                 今日の @(currentProblem.TodayAnsweredCount + 1) 問め
             </MudText>
 
+            @if (currentProblem.IsReview)
+            {
+                @* まちがえたままの問題を 復習で出したとき（030） *@
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="text-center mb-2 review-label">まえに まちがえた もんだい だよ</MudText>
+            }
+
             <!-- カテゴリ表示 -->
             @if (!string.IsNullOrEmpty(currentProblem.CalculationTypeText))
             {
@@ -64,6 +70,13 @@
                 <MudText Typo="Typo.h5" Style="color: white;">@(string.IsNullOrEmpty(answerResult.LeveledUpCalculationType) ? "" : GetCategoryName(answerResult.LeveledUpCalculationType) + "が ")レベル @answerResult.NewLevel.LevelNumber になったよ！</MudText>
             </MudPaper>
         }
+    }
+    else if (allMastered)
+    {
+        @* その種類の問題を 全部マスターした（030） *@
+        <MudAlert Severity="Severity.Success" Class="mb-4 all-mastered">
+            すごい！ @(MasteredName)は ぜんぶ マスターしたよ！ ほかの もんだいにも チャレンジしてみよう
+        </MudAlert>
     }
     else
     {
@@ -118,6 +131,10 @@
     private bool isLoading = true;
     private bool isSubmitting = false;
     private bool showFeedback = false;
+    private bool allMastered = false;
+
+    // 全部マスターした種類の名前。さんすうの「すべて」は「さんすう」（030）
+    private string MasteredName => selectedCategory == null ? "さんすう" : GetCategoryName(selectedCategory);
     private List<int> recentProblemIds = new();
     private const int MaxRecentProblems = 10;
     private string? selectedCategory;
@@ -194,7 +211,7 @@
         try
         {
             // CategoryStateService から選択されたカテゴリを取得して API に渡す
-            currentProblem = await ProblemApi.GetNextProblemAsync(student.Id, recentProblemIds, selectedCategory);
+            (currentProblem, allMastered) = await ProblemApi.GetNextProblemAsync(student.Id, recentProblemIds, selectedCategory);
             
             if (currentProblem != null)
             {
@@ -205,7 +222,7 @@
                     recentProblemIds.RemoveAt(0);
                 }
             }
-            else
+            else if (!allMastered)
             {
                 // 問題が取得できなかった場合
                 var categoryName = GetCategoryName(selectedCategory ?? "");

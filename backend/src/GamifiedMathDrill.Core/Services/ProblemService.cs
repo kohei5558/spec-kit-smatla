@@ -33,7 +33,7 @@ public class ProblemService : IProblemService
         return records.Count();
     }
 
-    public async Task<Problem?> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null, CalculationType? category = null, Subject? subject = null)
+    public async Task<NextProblem> GetNextProblemAsync(int studentId, List<int>? excludeRecentIds = null, CalculationType? category = null, Subject? subject = null)
     {
         var student = await _studentRepository.GetByIdWithDetailsAsync(studentId);
         if (student == null)
@@ -46,29 +46,58 @@ public class ProblemService : IProblemService
             ? new[] { category.Value }
             : Subjects.Types(subject ?? Subject.Math).OrderBy(_ => Random.Shared.Next()).ToArray();
 
+        // マスターした問題（3回つづけて正解）は出さない。まちがえたままの問題は ときどき 復習で出す（030）
+        var status = ProblemMastery.Analyze(await _learningRecordRepository.GetAnswerHistoryAsync(studentId) ?? []);
+        var recent = excludeRecentIds ?? [];
+        var reviewIds = status.NeedsReview.Except(recent).ToList();
+        if (reviewIds.Count > 0 && Random.Shared.NextDouble() < ProblemMastery.ReviewRate)
+        {
+            var reviews = await _problemRepository.GetActiveByIdsAsync(reviewIds, types);
+            if (reviews.Count > 0)
+            {
+                return new NextProblem(reviews[Random.Shared.Next(reviews.Count)], true, false);
+            }
+        }
+
+        // 出さない問題: マスターした問題（と、できれば 最近出た問題）
+        var mastered = status.Mastered.ToList();
+        var masteredOrRecent = status.Mastered.Union(recent).ToList();
         foreach (var type in types)
         {
             var studentLevel = student.Levels.FirstOrDefault(l => l.CalculationType == type);
             var level = studentLevel?.Level ?? await _levelRepository.GetByIdAsync(studentLevel?.LevelId ?? 1);
             var difficultyLevel = ChooseDifficulty(level, studentLevel?.CorrectAnswers ?? 0);
 
+            // 選んだ むずかしさ → 下の むずかしさ（漢字は字を入れた分だけ下から うまる、025。マスターした分も ここで 下に さがる）→ 上の むずかしさ（030）の順に さがす。
             // 最近出た問題は除く。ただし問題が少ない難易度（時こくの難易度1は3問）で除くと何も無くなるときは、最近の問題でも出す
-            var problem = await _problemRepository.GetRandomProblemAsync(difficultyLevel, type, excludeRecentIds)
-                ?? await _problemRepository.GetRandomProblemAsync(difficultyLevel, type);
-
-            // その むずかしさに まだ問題が無いとき（漢字は字を入れた分だけ下から うまる、025）は、問題がある いちばん上の むずかしさから出す
-            for (var lower = difficultyLevel - 1; problem == null && lower >= 1; lower--)
+            foreach (var difficulty in DifficultyOrder(difficultyLevel))
             {
-                problem = await _problemRepository.GetRandomProblemAsync(lower, type, excludeRecentIds)
-                    ?? await _problemRepository.GetRandomProblemAsync(lower, type);
-            }
-            if (problem != null)
-            {
-                return problem;
+                var problem = await _problemRepository.GetRandomProblemAsync(difficulty, type, masteredOrRecent)
+                    ?? await _problemRepository.GetRandomProblemAsync(difficulty, type, mastered);
+                if (problem != null)
+                {
+                    return new NextProblem(problem, status.NeedsReview.Contains(problem.Id), false);
+                }
             }
         }
 
-        return null;
+        // 問題は あるのに 出せない ＝ 全部マスターした
+        return new NextProblem(null, false, await _problemRepository.AnyActiveAsync(types));
+    }
+
+    // 問題の むずかしさは 1〜10（008）
+    private const int MaxDifficulty = 10;
+
+    private static IEnumerable<int> DifficultyOrder(int chosen)
+    {
+        for (var d = chosen; d >= 1; d--)
+        {
+            yield return d;
+        }
+        for (var d = chosen + 1; d <= MaxDifficulty; d++)
+        {
+            yield return d;
+        }
     }
 
     /// <summary>

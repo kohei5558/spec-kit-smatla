@@ -96,6 +96,29 @@ export function correctText(problemId: number): string {
   }
 }
 
+/**
+ * その種類の 出題する問題を 全部、3回つづけて 正解した 学習記録を E2E 用の DB に 入れる（マスター、030）
+ */
+export function masterAll(childName: string, calculationType: number) {
+  const db = new DatabaseSync(join(DATA_DIR, 'e2e.db'));
+  try {
+    const student = db.prepare('SELECT Id FROM Students WHERE Name = ?').get(childName) as { Id: number } | undefined;
+    if (!student) {
+      throw new Error(`E2E の DB に ${childName} がいない`);
+    }
+    const ids = db.prepare('SELECT Id FROM Problems WHERE IsActive = 1 AND CalculationType = ?').all(calculationType) as { Id: number }[];
+    const insert = db.prepare(
+      'INSERT INTO LearningRecords (StudentId, ProblemId, StudentAnswer, IsCorrect, PointsEarned, TimeTakenSeconds, SolvedAt) VALUES (?, ?, 0, 1, 0, 0, ?)');
+    for (const { Id } of ids) {
+      for (let i = 0; i < 3; i++) {
+        insert.run(student.Id, Id, `2026-01-01 00:00:0${i}`);
+      }
+    }
+  } finally {
+    db.close();
+  }
+}
+
 // 50音ボタンで入れるときの、もとの字と 押すボタン（てんてん・まる・小さい字）
 const KANA_CHANGES: [string, string, string][] = [
   ['かきくけこさしすせそたちつてとはひふへほ', 'がぎぐげござじずぜぞだぢづでどばびぶべぼ', '゛'],

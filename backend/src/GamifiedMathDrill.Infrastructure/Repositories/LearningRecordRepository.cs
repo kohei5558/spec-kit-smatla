@@ -31,4 +31,12 @@ public class LearningRecordRepository : Repository<LearningRecord>, ILearningRec
             .OrderByDescending(lr => lr.SolvedAt)
             .ToListAsync();
     }
+
+    public async Task<List<AnswerHistory>> GetAnswerHistoryAsync(int studentId)
+    {
+        return await _dbSet
+            .Where(lr => lr.StudentId == studentId)
+            .Select(lr => new AnswerHistory(lr.Id, lr.ProblemId, lr.IsCorrect, lr.SolvedAt))
+            .ToListAsync();
+    }
 }
