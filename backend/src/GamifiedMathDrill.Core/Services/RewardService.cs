@@ -10,17 +10,20 @@ public class RewardService : IRewardService
     private readonly IAcquiredRewardRepository _acquiredRewardRepository;
     private readonly IStudentRepository _studentRepository;
     private readonly IImageStorageService _imageStorageService;
+    private readonly ITransactionRunner _transaction;
 
     public RewardService(
         IRewardRepository rewardRepository,
         IAcquiredRewardRepository acquiredRewardRepository,
         IStudentRepository studentRepository,
-        IImageStorageService imageStorageService)
+        IImageStorageService imageStorageService,
+        ITransactionRunner transaction)
     {
         _rewardRepository = rewardRepository;
         _acquiredRewardRepository = acquiredRewardRepository;
         _studentRepository = studentRepository;
         _imageStorageService = imageStorageService;
+        _transaction = transaction;
     }
 
     public async Task<IEnumerable<Reward>> GetRewardsAsync(string parentId, string? category = null, int? maxPoints = null)
@@ -158,32 +161,35 @@ public class RewardService : IRewardService
             return (false, "在庫がありません。", null);
         }
 
-        // Perform transaction (atomic update)
+        // 在庫・ポイント・獲得記録は まとめて保存する。途中で失敗したら 全部 取り消される（#31）
         try
         {
-            // 在庫を先に減らす（同時に交換されて競合したとき、ポイントだけ減らないように）
-            if (reward.IsPhysical && reward.Stock.HasValue)
+            var savedAcquiredReward = await _transaction.RunAsync(async () =>
             {
-                reward.Stock -= 1;
-                reward.RenewRowVersion();
-                await _rewardRepository.UpdateAsync(reward);
-            }
+                // 在庫を先に減らす（同時に交換されて競合したとき、ポイントだけ減らないように）
+                if (reward.IsPhysical && reward.Stock.HasValue)
+                {
+                    reward.Stock -= 1;
+                    reward.RenewRowVersion();
+                    await _rewardRepository.UpdateAsync(reward);
+                }
 
-            // Deduct points from student
-            student.TotalPoints -= reward.RequiredPoints;
-            await _studentRepository.UpdateAsync(student);
+                // Deduct points from student
+                student.TotalPoints -= reward.RequiredPoints;
+                await _studentRepository.UpdateAsync(student);
 
-            // Create acquired reward record
-            var acquiredReward = new AcquiredReward
-            {
-                StudentId = studentId,
-                RewardId = rewardId,
-                PointsSpent = reward.RequiredPoints,
-                AcquiredAt = DateTime.UtcNow,
-                Reward = reward
-            };
+                // Create acquired reward record
+                var acquiredReward = new AcquiredReward
+                {
+                    StudentId = studentId,
+                    RewardId = rewardId,
+                    PointsSpent = reward.RequiredPoints,
+                    AcquiredAt = DateTime.UtcNow,
+                    Reward = reward
+                };
 
-            var savedAcquiredReward = await _acquiredRewardRepository.AddAsync(acquiredReward);
+                return await _acquiredRewardRepository.AddAsync(acquiredReward);
+            });
 
             return (true, $"「{reward.Name}」を交換しました！", savedAcquiredReward);
         }
@@ -193,7 +199,6 @@ public class RewardService : IRewardService
         }
         catch (Exception ex)
         {
-            // Rollback would be handled by transaction scope in production
             throw new InvalidOperationException("景品の交換に失敗しました。", ex);
         }
     }

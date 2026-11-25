@@ -63,6 +63,7 @@ builder.Services.AddScoped<IExchangeRequestRepository, ExchangeRequestRepository
 builder.Services.AddScoped<IDailyChallengeRepository, DailyChallengeRepository>();
 builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 builder.Services.AddScoped<IPresetAvatarRepository, PresetAvatarRepository>();
+builder.Services.AddScoped<ITransactionRunner, EfTransactionRunner>();
 
 // Register services
 builder.Services.AddScoped<IStudentService, StudentService>();

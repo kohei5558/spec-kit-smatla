@@ -13,17 +13,20 @@ public class ExchangeRequestService : IExchangeRequestService
     private readonly IRewardRepository _rewardRepository;
     private readonly IStudentRepository _studentRepository;
     private readonly IAcquiredRewardRepository _acquiredRewardRepository;
+    private readonly ITransactionRunner _transaction;
 
     public ExchangeRequestService(
         IExchangeRequestRepository exchangeRequestRepository,
         IRewardRepository rewardRepository,
         IStudentRepository studentRepository,
-        IAcquiredRewardRepository acquiredRewardRepository)
+        IAcquiredRewardRepository acquiredRewardRepository,
+        ITransactionRunner transaction)
     {
         _exchangeRequestRepository = exchangeRequestRepository;
         _rewardRepository = rewardRepository;
         _studentRepository = studentRepository;
         _acquiredRewardRepository = acquiredRewardRepository;
+        _transaction = transaction;
     }
 
     public async Task<ExchangeRequest> CreateRequestAsync(int studentId, int rewardId)
@@ -55,38 +58,42 @@ public class ExchangeRequestService : IExchangeRequestService
         }
 
         // 在庫チェック（実物景品の場合）
-        if (reward.IsPhysical && reward.Stock.HasValue)
+        if (reward.IsPhysical && reward.Stock.HasValue && reward.Stock.Value <= 0)
         {
-            if (reward.Stock.Value <= 0)
-            {
-                throw new InvalidOperationException("在庫がありません。");
-            }
-
-            // 在庫を減らす（申請時点で仮確保）
-            reward.Stock--;
-            reward.UpdatedAt = DateTime.UtcNow;
-            reward.RenewRowVersion();
-            try
-            {
-                await _rewardRepository.UpdateAsync(reward);
-            }
-            catch (ConcurrencyConflictException)
-            {
-                throw new ConcurrencyConflictException(RewardService.SimultaneousExchangeMessage);
-            }
+            throw new InvalidOperationException("在庫がありません。");
         }
 
-        // 交換申請を作成
-        var exchangeRequest = new ExchangeRequest
+        // 在庫を減らすのと 申請を作るのは まとめて保存する（途中で失敗したら 在庫も戻す、#31）
+        return await _transaction.RunAsync(async () =>
         {
-            StudentId = studentId,
-            RewardId = rewardId,
-            Status = ExchangeStatus.Pending,
-            RequestedAt = DateTime.UtcNow,
-            RequiredPoints = reward.RequiredPoints
-        };
+            if (reward.IsPhysical && reward.Stock.HasValue)
+            {
+                // 在庫を減らす（申請時点で仮確保）
+                reward.Stock--;
+                reward.UpdatedAt = DateTime.UtcNow;
+                reward.RenewRowVersion();
+                try
+                {
+                    await _rewardRepository.UpdateAsync(reward);
+                }
+                catch (ConcurrencyConflictException)
+                {
+                    throw new ConcurrencyConflictException(RewardService.SimultaneousExchangeMessage);
+                }
+            }
 
-        return await _exchangeRequestRepository.AddAsync(exchangeRequest);
+            // 交換申請を作成
+            var exchangeRequest = new ExchangeRequest
+            {
+                StudentId = studentId,
+                RewardId = rewardId,
+                Status = ExchangeStatus.Pending,
+                RequestedAt = DateTime.UtcNow,
+                RequiredPoints = reward.RequiredPoints
+            };
+
+            return await _exchangeRequestRepository.AddAsync(exchangeRequest);
+        });
     }
 
     public async Task<IEnumerable<ExchangeRequest>> GetRequestsByStudentAsync(int studentId)
@@ -119,20 +126,16 @@ public class ExchangeRequestService : IExchangeRequestService
             throw new InvalidOperationException("承認済みまたは却下された申請はキャンセルできません。");
         }
 
-        // 在庫を戻す
-        var reward = await _rewardRepository.GetByIdAsync(request.RewardId);
-        if (reward != null && reward.IsPhysical && reward.Stock.HasValue)
+        // 在庫を戻すのと 状態を変えるのは まとめて保存する（途中で失敗したら 在庫も戻さない、#31）
+        await _transaction.RunAsync(async () =>
         {
-            reward.Stock++;
-            reward.UpdatedAt = DateTime.UtcNow;
-            reward.RenewRowVersion();
-            await _rewardRepository.UpdateAsync(reward);
-        }
+            await ReturnStockAsync(request.RewardId);
 
-        // ステータスを更新
-        request.Status = ExchangeStatus.Cancelled;
-        request.CancelledAt = DateTime.UtcNow;
-        await _exchangeRequestRepository.UpdateAsync(request);
+            // ステータスを更新
+            request.Status = ExchangeStatus.Cancelled;
+            request.CancelledAt = DateTime.UtcNow;
+            return await _exchangeRequestRepository.UpdateAsync(request);
+        });
     }
 
     public async Task<ExchangeRequest> ApproveRequestAsync(int requestId, string approverId, string? parentNote)
@@ -161,31 +164,35 @@ public class ExchangeRequestService : IExchangeRequestService
             throw new InvalidOperationException("生徒のポイントが不足しています。");
         }
 
-        // ポイントを消費
-        student.TotalPoints -= request.RequiredPoints;
-        await _studentRepository.UpdateAsync(student);
-
-        // 申請を承認
-        request.Status = ExchangeStatus.Approved;
-        request.ApprovedAt = DateTime.UtcNow;
-        request.ApprovedBy = approverId;
-        request.ParentNote = parentNote;
-
-        var updatedRequest = await _exchangeRequestRepository.UpdateAsync(request);
-
-        // 承認時に獲得商品を作成（保護者承認後に表示されるべきレコード）
-        var acquiredReward = new AcquiredReward
+        // ポイントの消費・承認・獲得記録は まとめて保存する（途中で失敗したら ポイントも減らさない、#31）
+        return await _transaction.RunAsync(async () =>
         {
-            StudentId = request.StudentId,
-            RewardId = request.RewardId,
-            PointsSpent = request.RequiredPoints,
-            AcquiredAt = DateTime.UtcNow,
-            Reward = request.Reward
-        };
+            // ポイントを消費
+            student.TotalPoints -= request.RequiredPoints;
+            await _studentRepository.UpdateAsync(student);
 
-        await _acquiredRewardRepository.AddAsync(acquiredReward);
+            // 申請を承認
+            request.Status = ExchangeStatus.Approved;
+            request.ApprovedAt = DateTime.UtcNow;
+            request.ApprovedBy = approverId;
+            request.ParentNote = parentNote;
 
-        return updatedRequest;
+            var updatedRequest = await _exchangeRequestRepository.UpdateAsync(request);
+
+            // 承認時に獲得商品を作成（保護者承認後に表示されるべきレコード）
+            var acquiredReward = new AcquiredReward
+            {
+                StudentId = request.StudentId,
+                RewardId = request.RewardId,
+                PointsSpent = request.RequiredPoints,
+                AcquiredAt = DateTime.UtcNow,
+                Reward = request.Reward
+            };
+
+            await _acquiredRewardRepository.AddAsync(acquiredReward);
+
+            return updatedRequest;
+        });
     }
 
     public async Task<ExchangeRequest> RejectRequestAsync(int requestId, string reason, string? parentNote)
@@ -202,8 +209,25 @@ public class ExchangeRequestService : IExchangeRequestService
             throw new InvalidOperationException("この申請は既に処理されています。");
         }
 
-        // 在庫を戻す
-        var reward = await _rewardRepository.GetByIdAsync(request.RewardId);
+        // 在庫を戻すのと 状態を変えるのは まとめて保存する（途中で失敗したら 在庫も戻さない、#31）
+        return await _transaction.RunAsync(async () =>
+        {
+            await ReturnStockAsync(request.RewardId);
+
+            // 申請を却下
+            request.Status = ExchangeStatus.Rejected;
+            request.RejectedAt = DateTime.UtcNow;
+            request.RejectionReason = reason;
+            request.ParentNote = parentNote;
+
+            return await _exchangeRequestRepository.UpdateAsync(request);
+        });
+    }
+
+    // 申請で仮に確保した在庫を戻す（取り消し・却下）
+    private async Task ReturnStockAsync(int rewardId)
+    {
+        var reward = await _rewardRepository.GetByIdAsync(rewardId);
         if (reward != null && reward.IsPhysical && reward.Stock.HasValue)
         {
             reward.Stock++;
@@ -211,13 +235,5 @@ public class ExchangeRequestService : IExchangeRequestService
             reward.RenewRowVersion();
             await _rewardRepository.UpdateAsync(reward);
         }
-
-        // 申請を却下
-        request.Status = ExchangeStatus.Rejected;
-        request.RejectedAt = DateTime.UtcNow;
-        request.RejectionReason = reason;
-        request.ParentNote = parentNote;
-
-        return await _exchangeRequestRepository.UpdateAsync(request);
     }
 }

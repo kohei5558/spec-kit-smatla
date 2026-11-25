@@ -28,9 +28,11 @@ public class SqliteWebApplicationFactory : TestWebApplicationFactory
         {
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<ApplicationDbContext>>();
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(_connection));
+            services.AddDbContext<ApplicationDbContext>(ConfigureDbContext);
         });
     }
+
+    protected virtual void ConfigureDbContext(DbContextOptionsBuilder options) => options.UseSqlite(_connection);
 
     protected override void Dispose(bool disposing)
     {

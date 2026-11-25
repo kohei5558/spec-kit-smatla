@@ -28,7 +28,8 @@ public class RewardServiceBasicTests
             _mockRewardRepository.Object,
             _mockAcquiredRewardRepository.Object,
             _mockStudentRepository.Object,
-            _mockImageStorageService.Object
+            _mockImageStorageService.Object,
+            new ImmediateTransactionRunner()
         );
     }
 
