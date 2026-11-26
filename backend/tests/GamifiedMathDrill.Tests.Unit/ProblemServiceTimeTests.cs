@@ -28,7 +28,7 @@ public class ProblemServiceTimeTests
         var levels = new Mock<ILevelRepository>();
         levels.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((int id) => new Level { Id = id, LevelNumber = id, RequiredCorrectAnswers = 5, MinDifficulty = 1, MaxDifficulty = 2 });
 
-        var service = new ProblemService(problems.Object, students.Object, records.Object, levels.Object, new FixedTimeProvider(now));
+        var service = new ProblemService(problems.Object, students.Object, records.Object, levels.Object, new FixedTimeProvider(now), new ImmediateTransactionRunner());
         await service.SubmitAnswerAsync(7, 1, 3);
 
         Assert.Equal(now.UtcDateTime, saved!.SolvedAt);

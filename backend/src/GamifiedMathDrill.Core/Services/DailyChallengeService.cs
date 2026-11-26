@@ -22,6 +22,7 @@ public class DailyChallengeService : IDailyChallengeService
     private readonly ILearningRecordRepository _learningRecordRepository;
     private readonly ILevelRepository _levelRepository;
     private readonly TimeProvider _timeProvider;
+    private readonly ITransactionRunner _transaction;
 
     public DailyChallengeService(
         IDailyChallengeRepository challengeRepository,
@@ -29,8 +30,10 @@ public class DailyChallengeService : IDailyChallengeService
         IStudentRepository studentRepository,
         ILearningRecordRepository learningRecordRepository,
         ILevelRepository levelRepository,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        ITransactionRunner transaction)
     {
+        _transaction = transaction;
         _challengeRepository = challengeRepository;
         _problemRepository = problemRepository;
         _studentRepository = studentRepository;
@@ -114,32 +117,36 @@ public class DailyChallengeService : IDailyChallengeService
         var isCorrect = answer == problem.CorrectAnswer;
         var bonusPoints = isCorrect ? challenge.BonusPoints : 0;
 
-        // 先に回答済みにする。同時に答えが送られた場合、後のものはここで弾かれポイントは増えない
-        challenge.AnsweredAt = _timeProvider.GetUtcNow().UtcDateTime;
-        challenge.IsCorrect = isCorrect;
-        challenge.StudentAnswer = answer;
-        if (!await _challengeRepository.TrySaveAnswerAsync(challenge))
+        // 回答済み・学習記録・ボーナスは まとめて保存する。途中で失敗したら 回答済みにもしない（もう一度 答えられる、#31 と同じ形）
+        return await _transaction.RunAsync(async () =>
         {
-            return new DailyChallengeAnswerResult(DailyChallengeAnswerStatus.AlreadyAnswered);
-        }
+            // 先に回答済みにする。同時に答えが送られた場合、後のものはここで弾かれポイントは増えない
+            challenge.AnsweredAt = _timeProvider.GetUtcNow().UtcDateTime;
+            challenge.IsCorrect = isCorrect;
+            challenge.StudentAnswer = answer;
+            if (!await _challengeRepository.TrySaveAnswerAsync(challenge))
+            {
+                return new DailyChallengeAnswerResult(DailyChallengeAnswerStatus.AlreadyAnswered);
+            }
 
-        // 学習記録に残す（正答率に入る）。連続正解数・レベルは通常の問題だけで決まるため変えない
-        await _learningRecordRepository.AddAsync(new LearningRecord
-        {
-            StudentId = studentId,
-            ProblemId = problem.Id,
-            IsCorrect = isCorrect,
-            StudentAnswer = answer,
-            PointsEarned = bonusPoints,
-            TimeTakenSeconds = 0,
-            SolvedAt = challenge.AnsweredAt.Value
+            // 学習記録に残す（正答率に入る）。連続正解数・レベルは通常の問題だけで決まるため変えない
+            await _learningRecordRepository.AddAsync(new LearningRecord
+            {
+                StudentId = studentId,
+                ProblemId = problem.Id,
+                IsCorrect = isCorrect,
+                StudentAnswer = answer,
+                PointsEarned = bonusPoints,
+                TimeTakenSeconds = 0,
+                SolvedAt = challenge.AnsweredAt.Value
+            });
+
+            student.TotalProblems++;
+            student.TotalPoints += bonusPoints;
+            await _studentRepository.UpdateAsync(student);
+
+            return new DailyChallengeAnswerResult(DailyChallengeAnswerStatus.Answered, isCorrect, bonusPoints, problem.CorrectAnswer,
+                isCorrect ? null : ExplanationBuilder.Build(problem, answer, null));
         });
-
-        student.TotalProblems++;
-        student.TotalPoints += bonusPoints;
-        await _studentRepository.UpdateAsync(student);
-
-        return new DailyChallengeAnswerResult(DailyChallengeAnswerStatus.Answered, isCorrect, bonusPoints, problem.CorrectAnswer,
-            isCorrect ? null : ExplanationBuilder.Build(problem, answer, null));
     }
 }
