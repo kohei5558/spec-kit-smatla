@@ -10,14 +10,17 @@ public class ProblemService : IProblemService
     private readonly ILearningRecordRepository _learningRecordRepository;
     private readonly ILevelRepository _levelRepository;
     private readonly TimeProvider _timeProvider;
+    private readonly ITransactionRunner _transaction;
 
     public ProblemService(
         IProblemRepository problemRepository,
         IStudentRepository studentRepository,
         ILearningRecordRepository learningRecordRepository,
         ILevelRepository levelRepository,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        ITransactionRunner transaction)
     {
+        _transaction = transaction;
         _problemRepository = problemRepository;
         _studentRepository = studentRepository;
         _learningRecordRepository = learningRecordRepository;
@@ -173,42 +176,46 @@ public class ProblemService : IProblemService
             SolvedAt = _timeProvider.GetUtcNow().UtcDateTime
         };
 
-        await _learningRecordRepository.AddAsync(learningRecord);
-
-        // 生徒の統計を更新。連続正解数とレベルは、この問題の種類のものだけを変える（014）
-        var studentLevel = StudentLevelRules.GetOrAdd(student, problem.CalculationType);
-        student.TotalProblems++;
-        if (isCorrect)
+        // 学習記録と、ポイント・連続正解数・レベルは まとめて保存する（途中で失敗したら 学習記録も残さない、#31 と同じ形）
+        return await _transaction.RunAsync(async () =>
         {
-            studentLevel.CorrectAnswers++;
-            student.TotalPoints += pointsEarned;
-        }
-        else
-        {
-            // 不正解の場合は連続正解数をリセット
-            studentLevel.CorrectAnswers = 0;
-        }
+            await _learningRecordRepository.AddAsync(learningRecord);
 
-        // レベルアップのチェック
-        var leveledUp = false;
-        Level? newLevel = null;
-
-        var currentLevel = studentLevel.Level ?? await _levelRepository.GetByIdAsync(studentLevel.LevelId);
-        if (isCorrect && currentLevel != null && studentLevel.CorrectAnswers >= currentLevel.RequiredCorrectAnswers)
-        {
-            var nextLevel = await _levelRepository.GetByIdAsync(studentLevel.LevelId + 1);
-            if (nextLevel != null)
+            // 生徒の統計を更新。連続正解数とレベルは、この問題の種類のものだけを変える（014）
+            var studentLevel = StudentLevelRules.GetOrAdd(student, problem.CalculationType);
+            student.TotalProblems++;
+            if (isCorrect)
             {
-                studentLevel.LevelId = nextLevel.Id;
-                studentLevel.Level = nextLevel;
-                studentLevel.CorrectAnswers = 0; // 連続正解数をリセット
-                leveledUp = true;
-                newLevel = nextLevel;
+                studentLevel.CorrectAnswers++;
+                student.TotalPoints += pointsEarned;
             }
-        }
+            else
+            {
+                // 不正解の場合は連続正解数をリセット
+                studentLevel.CorrectAnswers = 0;
+            }
 
-        await _studentRepository.UpdateAsync(student);
+            // レベルアップのチェック
+            var leveledUp = false;
+            Level? newLevel = null;
 
-        return (isCorrect, pointsEarned, leveledUp, newLevel, problem.CalculationType);
+            var currentLevel = studentLevel.Level ?? await _levelRepository.GetByIdAsync(studentLevel.LevelId);
+            if (isCorrect && currentLevel != null && studentLevel.CorrectAnswers >= currentLevel.RequiredCorrectAnswers)
+            {
+                var nextLevel = await _levelRepository.GetByIdAsync(studentLevel.LevelId + 1);
+                if (nextLevel != null)
+                {
+                    studentLevel.LevelId = nextLevel.Id;
+                    studentLevel.Level = nextLevel;
+                    studentLevel.CorrectAnswers = 0; // 連続正解数をリセット
+                    leveledUp = true;
+                    newLevel = nextLevel;
+                }
+            }
+
+            await _studentRepository.UpdateAsync(student);
+
+            return (isCorrect, pointsEarned, leveledUp, newLevel, problem.CalculationType);
+        });
     }
 }

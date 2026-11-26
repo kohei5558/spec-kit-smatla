@@ -114,7 +114,8 @@ public class DailyChallengeProblemSelectionTests
             studentRepository.Object,
             Mock.Of<ILearningRecordRepository>(),
             levelRepository.Object,
-            new FixedTimeProvider(now));
+            new FixedTimeProvider(now),
+            new ImmediateTransactionRunner());
         return (service, challengeRepository);
     }
 
