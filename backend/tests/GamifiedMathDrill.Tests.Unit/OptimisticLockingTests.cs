@@ -77,7 +77,8 @@ public class OptimisticLockingTests
             mockExchangeRequestRepo.Object,
             mockRewardRepo.Object,
             mockStudentRepo.Object,
-            mockAcquiredRewardRepo.Object);
+            mockAcquiredRewardRepo.Object,
+            new ImmediateTransactionRunner());
 
         // Act
         var request1Task = service.CreateRequestAsync(1, 1);
@@ -106,7 +107,7 @@ public class OptimisticLockingTests
         mockStudentRepo.Setup(s => s.GetByIdAsync(1)).ReturnsAsync(new Student { Id = 1, Name = "Student 1", TotalPoints = 100 });
         var mockExchangeRequestRepo = new Mock<IExchangeRequestRepository>();
 
-        var service = new ExchangeRequestService(mockExchangeRequestRepo.Object, mockRewardRepo.Object, mockStudentRepo.Object, new Mock<IAcquiredRewardRepository>().Object);
+        var service = new ExchangeRequestService(mockExchangeRequestRepo.Object, mockRewardRepo.Object, mockStudentRepo.Object, new Mock<IAcquiredRewardRepository>().Object, new ImmediateTransactionRunner());
 
         var exception = await Assert.ThrowsAsync<ConcurrencyConflictException>(() => service.CreateRequestAsync(1, 1));
 
@@ -158,7 +159,8 @@ public class OptimisticLockingTests
             mockRewardRepo.Object,
             mockAcquiredRewardRepo.Object,
             mockStudentRepo.Object,
-            mockImageStorage.Object);
+            mockImageStorage.Object,
+            new ImmediateTransactionRunner());
 
         var updatedReward1 = new Reward
         {
